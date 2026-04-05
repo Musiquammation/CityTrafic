@@ -16,10 +16,17 @@ class CarHandler {
     std::unordered_map<std::pair<int,int>, Car*, pair_hash> cars;
 
 public:
+    ~CarHandler();
+
+    
     Car* spawnCar(int x, int y, Direction direction);
     void updateCars();
     void moveCars();
     Car* getCar(int x, int y);
 
-    ~CarHandler();
+    // Iterators
+    auto begin() { return cars.begin(); }
+    auto end() { return cars.end(); }
+    auto begin() const { return cars.begin(); }
+    auto end() const { return cars.end(); }
 };
