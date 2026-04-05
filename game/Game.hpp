@@ -1,5 +1,7 @@
 #pragma once
 
-class Game {
+#include "Map.hpp"
 
+class Game {
+    Map map;
 };
