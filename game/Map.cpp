@@ -46,9 +46,14 @@ void Map::expand(int x, int y, int right, int bottom) {
 	this->height = bottom - y;
 }
 
-Cell* Map::getCell(int cx, int cy) const {
-	return &cells[(cy - this->y) * this->width + (cx - this->x)];
+Cell* Map::getCell(int x, int y) const {
+	return &this->cells[(y - this->y) * this->width + (x - this->x)];
 }
+
+carId_t* Map::getCarId(int x, int y) const {
+	return &this->carIds[(y - this->y) * this->width + (x - this->x)];
+}
+
 
 MapSize Map::getMapSize() const {
 	return (MapSize){this->x, this->y, this->width, this->height};
