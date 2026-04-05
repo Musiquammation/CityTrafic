@@ -3,5 +3,7 @@
 #include "Map.hpp"
 
 class Game {
-    Map map;
+public:
+    Map map{32,32};
+
 };

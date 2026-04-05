@@ -4,48 +4,52 @@
 #include <cstring>
 
 Map::Map(int width, int height)
-	: x(0), y(0), w(width), h(height) {
-	cells = (Cell*)malloc(sizeof(Cell) * w * h);
+	: x(0), y(0), width(width), height(height) {
+
+	this->cells = (Cell*)malloc(sizeof(Cell) * width * height);
+	this->carIds = (carId_t*)malloc(sizeof(carId_t) * width * height);
 }
 
 Map::~Map() {
-	if (cells) {
-		free(cells);
-		cells = nullptr;
-	}
+	free(this->cells);
+	free(this->carIds);
 }
 
-void Map::expand(int newX, int newY, int newW, int newH) {
-	int totalW = newX + newW;
-	int totalH = newY + newH;
+void Map::expand(int x, int y, int right, int bottom) {
+	int totalW = right - x;
+	int totalH = bottom - y;
 
 	Cell* newCells = (Cell*)malloc(sizeof(Cell) * totalW * totalH);
-	if (!newCells) return;
+	carId_t* newIds = (carId_t*)malloc(sizeof(carId_t) * totalW * totalH);
 
 	memset(newCells, 0, sizeof(Cell) * totalW * totalH);
 
-	for (int j = 0; j < this->h; ++j) {
-		for (int i = 0; i < this->w; ++i) {
-			int oldIndex = j * this->w + i;
-			int newIndex = (j + newY) * totalW + (i + newX);
+	int w = this->width;
+	int h = this->height;
+	for (int j = 0; j < h; ++j) {
+		for (int i = 0; i < w; ++i) {
+			int oldIndex = j * w + i;
+			int newIndex = (j - y) * totalW + (i - x);
 			newCells[newIndex] = this->cells[oldIndex];
+			newIds[newIndex] = this->carIds[oldIndex];
 		}
 	}
 
 	free(this->cells);
+	free(this->carIds);
+
 	this->cells = newCells;
-	this->x = newX;
-	this->y = newY;
-	this->w = totalW;
-	this->h = totalH;
+	this->carIds = newIds;
+	this->x = x;
+	this->y = y;
+	this->width = right - x;
+	this->height = bottom - y;
 }
 
 Cell* Map::getCell(int cx, int cy) const {
-	if (cx < x || cx >= x + w || cy < y || cy >= y + h)
-		return nullptr;
-	return &cells[(cy - y) * w + (cx - x)];
+	return &cells[(cy - this->y) * this->width + (cx - this->x)];
 }
 
 MapSize Map::getMapSize() const {
-	return (MapSize){this->x, this->y, this->w, this->h};
+	return (MapSize){this->x, this->y, this->width, this->height};
 }
