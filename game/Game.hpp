@@ -7,4 +7,7 @@ class Game {
 public:
     Map map{32,32};
     CarHandler carHandler{};
+
+
+    void frame();
 };

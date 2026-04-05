@@ -17,7 +17,8 @@ class CarHandler {
 
 public:
     Car* spawnCar(int x, int y, Direction direction);
-    void updateCarPositions();
+    void updateCars();
+    void moveCars();
     Car* getCar(int x, int y);
 
     ~CarHandler();
