@@ -1,0 +1,59 @@
+# Compilateurs
+CXX = g++
+EMXX = em++
+
+# Flags
+CXXFLAGS = -Wextra -Werror -g -std=c++20 -MMD -MP
+EMFLAGS = -sEXPORTED_FUNCTIONS='["_Api_create","_Api_delete","_Api_reserve"]' \
+          -sEXPORTED_RUNTIME_METHODS='["ccall","cwrap"]' \
+          -sMODULARIZE -sENVIRONMENT=web
+
+# Dossiers
+SRC_DIR = game
+BIN_DIR = game-bin
+
+# Fichiers
+SRC := $(shell find $(SRC_DIR) -type f -name "*.cpp")
+OBJ := $(patsubst $(SRC_DIR)/%.cpp,$(BIN_DIR)/%.o,$(SRC))
+DEP := $(OBJ:.o=.d)
+
+# Exécutable
+TARGET = $(BIN_DIR)/gametest
+
+# Règle par défaut
+all: $(TARGET)
+
+# Link final
+$(TARGET): $(OBJ)
+	@mkdir -p $(dir $@)
+	$(CXX) $(OBJ) -o $@
+
+# Compilation .cpp → .o
+$(BIN_DIR)/%.o: $(SRC_DIR)/%.cpp
+	@mkdir -p $(dir $@)
+	$(CXX) $(CXXFLAGS) -c $< -o $@
+
+# =========================
+# TEST
+# =========================
+test: $(TARGET)
+	@$(TARGET)
+
+# =========================
+# EMCC BUILD
+# =========================
+EM_TARGET = $(BIN_DIR)/api.js
+
+emcc:
+	@echo "Building with emcc..."
+	@mkdir -p $(BIN_DIR)
+	$(EMXX) $(SRC) $(EMFLAGS) -o $(EM_TARGET)
+
+# =========================
+# CLEAN
+# =========================
+clean:
+	rm -rf $(BIN_DIR)
+
+# Inclure dépendances auto
+-include $(DEP)
