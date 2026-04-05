@@ -19,7 +19,6 @@ int main() {
     Car* c2 = api->game.carHandler.getCar(3, 2);
 
 
-    api->game.frame();
 
     Api_delete(api);
 

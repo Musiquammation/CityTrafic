@@ -9,7 +9,14 @@ void Car::update() {
 }
 
 void Car::move() {
+	this->step += this->speed;
 
+	if (this->step >= 1) {
+		this->step -= 1;
+
+		this->x += DIRECTION_VECTORS[(int)this->direction].x;
+		this->y += DIRECTION_VECTORS[(int)this->direction].y;
+	}
 }
 
 Vector<float> Car::calcPosition() {
