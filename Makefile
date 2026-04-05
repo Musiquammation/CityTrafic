@@ -2,9 +2,15 @@
 CXX = g++
 EMXX = em++
 
+# Exported functions for emcc 
+EMCC_FUNCS = Api_create Api_delete Api_frame Api_reserve
+
+EMCC_FUNCS_JSON = $(shell printf '"_%s",' $(EMCC_FUNCS) | sed 's/,$$//')
+
+
 # Flags
 CXXFLAGS = -Wextra -Werror -g -std=c++20 -MMD -MP
-EMFLAGS = -sEXPORTED_FUNCTIONS='["_Api_create","_Api_delete","_Api_reserve"]' \
+EMFLAGS = -sEXPORTED_FUNCTIONS='[$(EMCC_FUNCS_JSON)]' \
           -sEXPORTED_RUNTIME_METHODS='["ccall","cwrap"]' \
           -sMODULARIZE -sENVIRONMENT=web
 
