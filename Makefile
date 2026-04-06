@@ -5,7 +5,7 @@ CXX = g++
 EMXX = em++
 
 # Exported functions for emcc 
-EMCC_FUNCS = Api_create Api_delete Api_frame Api_reserve
+EMCC_FUNCS = Api_create Api_delete Api_frame Api_take
 EMCC_FUNCS_JSON = $(shell printf '"_%s",' $(EMCC_FUNCS) | sed 's/,$$//')
 
 # =========================

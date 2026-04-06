@@ -33,7 +33,7 @@ struct Cell {
 	inline CellType getType() {
 		cell_t type = this->data & 0xf;
 
-		#ifdef TESTING
+		#if TESTING
 		if (type >= (cell_t)CellType::COUNT) {
 			throw std::out_of_range("Invalid id");
 		}

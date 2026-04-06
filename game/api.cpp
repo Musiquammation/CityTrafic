@@ -16,6 +16,6 @@ void Api_frame(Api* api) {
 }
 
 
-void Api_reserve(Api* api, int code) {
-	
+void* Api_take(Api* api, int code) {
+	return nullptr;
 }

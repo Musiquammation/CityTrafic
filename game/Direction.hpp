@@ -1,7 +1,9 @@
 #pragma once
 
-#include <stdint.h>
 #include "Vector.hpp"
+
+#include <stdint.h>
+#include <stdexcept>
 
 enum class Direction: uint8_t {
 	RIGHT,
@@ -25,24 +27,35 @@ constexpr Direction Direction_getRight(Direction dir) {
 	switch (dir) {
 	case Direction::RIGHT:
 		return Direction::DOWN;
+
 	case Direction::UP:
 		return Direction::RIGHT;
+
 	case Direction::LEFT:
 		return Direction::UP;
+
 	case Direction::DOWN:
 		return Direction::LEFT;
 	}
+
+	throw std::runtime_error("Invalid Direction");
 }
 
 constexpr Direction Direction_getLeft(Direction dir) {
 	switch (dir) {
 	case Direction::RIGHT:
 		return Direction::UP;
+
 	case Direction::UP:
 		return Direction::LEFT;
+
 	case Direction::LEFT:
 		return Direction::DOWN;
+
 	case Direction::DOWN:
 		return Direction::RIGHT;
-	}
+
+	};
+
+	throw std::runtime_error("Invalid Direction");
 }

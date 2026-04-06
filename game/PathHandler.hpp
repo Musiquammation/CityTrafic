@@ -1,22 +1,29 @@
 #pragma once
 
-
-typedef struct {
-	int x;
-	int y;
-	Direction dir;
-} PathPoint;
+#include "Vector.hpp"
+#include <stdint.h>
 
 class PathHandler {
-	PathPoint* array = nullptr;
-	int step = 0;
+	Vector<int>* array = nullptr;
+	uint8_t* bitArray = nullptr;
+	int step = -1;
 	int length = 0;
 
 
 public:
 	~PathHandler();
 
-	void fill(PathPoint* array, int length);
-	PathPoint* seek();
+	void fill(Vector<int>* array, uint8_t* bitArray, int length);
+
+	/**
+	 * @return (x,y) if next point is defined, else (INT_MAX, <?>)
+	 */
+	Vector<int> seek();
+
+	/**
+	 * @warning step is not checked by this function. Use `seek` to get status
+	 */
+	bool seekIsRight();
+
 	void next();
 };

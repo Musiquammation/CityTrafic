@@ -1,31 +1,44 @@
 #include "PathHandler.hpp"
+#include <limits.h>
+#include <stdexcept>
 
 
 PathHandler::~PathHandler() {
-	if (this->array) {
-		delete[] this->array;
-	}
+	delete this->array;
+	delete[] this->bitArray;
 }
 
-void PathHandler::fill(PathPoint* newArray, int newLength) {
-	if (this->array) {
-		delete[] this->array;
-	}
-
-	this->array = newArray;
-	this->length = newLength;
+void PathHandler::fill(Vector<int>* array, uint8_t* bitArray, int length) {
+	this->array = array;
+	this->bitArray = bitArray;
+	this->length = length;
 	this->step = 0;
 }
 
-PathPoint* PathHandler::seek() {
-	if (!this->array || this->step >= this->length) {
-		return nullptr;
-	}
-	return &this->array[this->step];
+Vector<int> PathHandler::seek() {
+	if (!this->array || this->step < 0)
+		return {INT_MAX, INT_MAX};
+		
+	return this->array[this->step];
+}
+
+bool PathHandler::seekIsRight() {
+	#if TESTING
+	if (!this->array || this->step < 0)
+		throw std::out_of_range("Step index out of range or array is null in seekRight");
+
+	#endif
+
+	int byteIndex = this->step / 8;
+	int bitInByte = this->step % 8;
+	return (this->bitArray[byteIndex] >> bitInByte) & 1;
+
 }
 
 void PathHandler::next() {
 	if (this->step < this->length) {
 		this->step++;
+	} else {
+		this->step = -1;
 	}
 }

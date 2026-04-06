@@ -33,5 +33,5 @@ public:
     void update(Game* game);
     void move();
 
-    Vector<float> calcPosition();
+    Vector<float> calcPosition() const;
 };
