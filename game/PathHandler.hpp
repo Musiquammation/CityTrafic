@@ -1,11 +1,12 @@
 #pragma once
 
 #include "Vector.hpp"
+#include "Direction.hpp"
 #include <stdint.h>
 
 class PathHandler {
 	Vector<int>* array = nullptr;
-	uint8_t* bitArray = nullptr;
+	uint8_t* dirArray = nullptr;
 	int step = -1;
 	int length = 0;
 
@@ -23,7 +24,7 @@ public:
 	/**
 	 * @warning step is not checked by this function. Use `seek` to get status
 	 */
-	bool seekIsRight();
+	Direction seekDirection();
 
 	void next();
 };

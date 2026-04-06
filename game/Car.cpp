@@ -34,13 +34,16 @@ void Car::update(Game* game) {
 	for (int dist = 1; dist <= VIEW_RANGE; dist++) {
 		// Check if we need to turn
 		if (spy.x == pathPoint.x && spy.y == pathPoint.y) {
-			bool right = this->pathHandler.seekIsRight();
+			Direction aim = this->pathHandler.seekDirection();
 			pathPoint = this->pathHandler.seek();
 
-			if (right) {
+			int turn = Direction_getTurn(spy.dir, aim);
+			if (turn == 1) {
 				spy.dir = Direction_getRight(spy.dir);
-			} else {
+			} else if (turn == -1) {
 				spy.dir = Direction_getLeft(spy.dir);
+			} else {
+				throw std::domain_error{"turn is 0"};
 			}
 		}
 
