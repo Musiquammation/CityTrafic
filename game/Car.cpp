@@ -1,6 +1,9 @@
 #include "Car.hpp"
+
+#include "getDanger.hpp"
 #include "Game.hpp"
 #include "Cell.hpp"
+
 
 Car::Car(int x, int y, Direction direction) 
 	: x(x), y(y), direction(direction)
@@ -8,69 +11,10 @@ Car::Car(int x, int y, Direction direction)
 
 
 
-typedef struct {
-	int x;
-	int y;
-	Direction dir;
 
-
-	void move() {
-		this->x += Direction_getVector(this->dir).x;
-		this->y += Direction_getVector(this->dir).x;
-	}
-
-} Spy;
 
 void Car::update(Game* game) {
-	enum {
-		VIEW_RANGE = 16
-	};
-
-
-	Spy spy{this->x, this->y, this->direction};
-	Vector<int> pathPoint = this->pathHandler.seek();
-
-
-	for (int dist = 1; dist <= VIEW_RANGE; dist++) {
-		// Check if we need to turn
-		if (spy.x == pathPoint.x && spy.y == pathPoint.y) {
-			Direction aim = this->pathHandler.seekDirection();
-			pathPoint = this->pathHandler.seek();
-
-			int turn = Direction_getTurn(spy.dir, aim);
-			if (turn == 1) {
-				spy.dir = Direction_getRight(spy.dir);
-			} else if (turn == -1) {
-				spy.dir = Direction_getLeft(spy.dir);
-			} else {
-				throw std::domain_error{"turn is 0"};
-			}
-		}
-
-		// Move
-		spy.move();
-
-		Cell* cell = game->getCell(spy.x, spy.y);
-		CellType cellType = cell->getType();
-		
-		// Handle cell
-		switch (cellType) {
-		case CellType::NONE:
-			goto finishUpdate;
-
-
-		}
-
-
-		// Check right priority
-		
-
-		
-	}
-
-
-	finishUpdate:
-	return;
+	auto danger = getDanger(this, game);
 }
 
 void Car::move() {

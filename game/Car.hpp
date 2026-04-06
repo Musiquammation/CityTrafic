@@ -24,7 +24,7 @@ public:
     float speed = 0;
     int speedLimit = 0.2f;
     
-    PathHandler pathHandler;
+    PathHandler<true> pathHandler;
     Direction direction;
     CarState state = CarState::FRONT;
 

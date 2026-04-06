@@ -2,27 +2,51 @@
 #include <limits.h>
 #include <stdexcept>
 
-
-PathHandler::~PathHandler() {
-	delete this->array;
-	delete[] this->dirArray;
+template<>
+PathHandler<true>::~PathHandler() {
+	if (this->array) {
+		delete this->array;
+		delete[] this->dirArray;
+	}
 }
 
-void PathHandler::fill(Vector<int>* array, uint8_t* bitArray, int length) {
+template<>
+PathHandler<false>::~PathHandler() {
+
+}
+
+template<bool freeArray>
+template<bool freeArraySrc>
+PathHandler<freeArray>::PathHandler(const PathHandler<freeArraySrc>& src) {
+	if constexpr (freeArray) {
+		static_assert(freeArraySrc == false, "This constructor is disabled for PathHandler<true>");
+
+	} else {
+		this->array = src.array;
+		this->dirArray = src.dirArray;
+		this->step = src.step;
+		this->length = src.length;
+	}
+}
+
+template<>
+void PathHandler<true>::fill(Vector<int>* array, uint8_t* bitArray, int length) {
 	this->array = array;
 	this->dirArray = bitArray;
 	this->length = length;
 	this->step = 0;
 }
 
-Vector<int> PathHandler::seek() {
+template<bool freeArray>
+Vector<int> PathHandler<freeArray>::seek() {
 	if (!this->array || this->step < 0)
 		return {INT_MAX, INT_MAX};
 		
 	return this->array[this->step];
 }
 
-Direction PathHandler::seekDirection() {
+template<bool freeArray>
+Direction PathHandler<freeArray>::seekDirection() {
 	#if TESTING
 	if (!this->array || this->step < 0)
 		throw std::out_of_range("Step index out of range or array is null in seekRight");
@@ -36,10 +60,15 @@ Direction PathHandler::seekDirection() {
 	return (Direction)((dirArray[byteIndex] >> bitInByte) & 0b11);
 }
 
-void PathHandler::next() {
+template<bool freeArray>
+void PathHandler<freeArray>::next() {
 	if (this->step < this->length) {
 		this->step++;
 	} else {
 		this->step = -1;
 	}
 }
+
+
+
+template PathHandler<false>::PathHandler(const PathHandler<true>&);
