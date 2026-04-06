@@ -1,6 +1,7 @@
 #include "CarHandler.hpp"
 
 #include "Car.hpp"
+#include <stdio.h>
 
 Car* CarHandler::spawnCar(int x, int y, Direction direction) {
 	auto car = new Car{x, y, direction};
@@ -22,6 +23,7 @@ void CarHandler::moveCars() {
 		Car* car = pair.second;
 		car->move();
 		newCars[{car->x, car->y}] = car;
+
 	}
 
 	this->cars = std::move(newCars);

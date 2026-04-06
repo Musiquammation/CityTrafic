@@ -15,10 +15,20 @@ void Game::frame() {
 	for (auto& [pos, car] : this->carHandler) {
 		Cell* cell = this->map.getCell(car->x, car->y);
 		cell->setCarOn();
-		printf("%d %d\n", car->x, car->y);
 	}
 }
 
 Cell* Game::getCell(int x, int y) {
 	return this->map.getCell(x, y);
+}
+
+bool Game::spawnCar(int x, int y, Direction direction) {
+	Cell* cell = this->map.getCell(x, y);
+	if (!cell || cell->hasCar()) {
+		return false;
+	}
+
+	this->carHandler.spawnCar(x, y, direction);
+	cell->setCarOn();
+	return true;
 }

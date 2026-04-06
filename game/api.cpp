@@ -12,7 +12,7 @@ void Api_delete(Api* api) {
 }
 
 void Api_frame(Api* api) {
-	
+	api->game.frame();
 }
 
 

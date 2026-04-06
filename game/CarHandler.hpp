@@ -25,8 +25,8 @@ public:
     Car* getCar(int x, int y);
 
     // Iterators
-    auto begin() { return cars.begin(); }
-    auto end() { return cars.end(); }
-    auto begin() const { return cars.begin(); }
-    auto end() const { return cars.end(); }
+    auto begin() { return this->cars.begin(); }
+    auto end() { return this->cars.end(); }
+    auto begin() const { return this->cars.begin(); }
+    auto end() const { return this->cars.end(); }
 };

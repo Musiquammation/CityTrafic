@@ -52,13 +52,18 @@ void Car::update(Game* game) {
 
 		Cell* cell = game->getCell(spy.x, spy.y);
 		CellType cellType = cell->getType();
-
+		
+		// Handle cell
 		switch (cellType) {
 		case CellType::NONE:
 			goto finishUpdate;
 
 
 		}
+
+
+		// Check right priority
+		
 
 		
 	}

@@ -14,8 +14,10 @@ public:
     friend int main();
 
 
-    Cell* getCell(int x, int y);
     void frame();
+
+    Cell* getCell(int x, int y);
+    bool spawnCar(int x, int y, Direction direction);
 
 
 
