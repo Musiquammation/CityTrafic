@@ -6,8 +6,7 @@
 #include <stdio.h>
 
 void Game::frame() {
-
-	this->carHandler.updateCars();
+	this->carHandler.updateCars(this);
 
 	this->carHandler.moveCars();
 
@@ -20,3 +19,6 @@ void Game::frame() {
 	}
 }
 
+Cell* Game::getCell(int x, int y) {
+	return this->map.getCell(x, y);
+}

@@ -20,7 +20,7 @@ public:
 
     
     Car* spawnCar(int x, int y, Direction direction);
-    void updateCars();
+    void updateCars(Game* game);
     void moveCars();
     Car* getCar(int x, int y);
 

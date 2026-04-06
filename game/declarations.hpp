@@ -1,6 +1,9 @@
 #pragma once
 
+struct Api;
+
 class Game;
 class Map;
-class Cell;
 class Car;
+
+struct Cell;

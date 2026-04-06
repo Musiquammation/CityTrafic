@@ -9,9 +9,9 @@ Car* CarHandler::spawnCar(int x, int y, Direction direction) {
 	return car;
 }
 
-void CarHandler::updateCars() {
+void CarHandler::updateCars(Game* game) {
 	for (auto& pair : this->cars) {
-		pair.second->update();
+		pair.second->update(game);
 	}
 }
 

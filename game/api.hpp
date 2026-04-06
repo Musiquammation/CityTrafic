@@ -3,9 +3,9 @@
 #include "declarations.hpp"
 #include "Game.hpp"
 
-typedef struct {
+struct Api {
     Game game;
-} Api;
+};
 
 
 

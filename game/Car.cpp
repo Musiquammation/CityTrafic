@@ -1,11 +1,38 @@
 #include "Car.hpp"
+#include "Game.hpp"
 
 Car::Car(int x, int y, Direction direction) 
 	: x(x), y(y), direction(direction)
 {}
 
-void Car::update() {
 
+
+typedef struct {
+	int x;
+	int y;
+	Direction dir;
+
+
+	void move() {
+		this->x += Direction_getVector(this->dir).x;
+		this->y += Direction_getVector(this->dir).x;
+	}
+
+} Spy;
+
+void Car::update(Game* game) {
+	enum {
+		VIEW_RANGE = 16
+	};
+
+
+	Spy spy{this->x, this->y, this->direction};
+
+	for (int dist = 1; dist <= VIEW_RANGE; dist++) {
+		spy.move();
+
+		
+	}
 }
 
 void Car::move() {
@@ -14,8 +41,8 @@ void Car::move() {
 	if (this->step >= 1) {
 		this->step -= 1;
 
-		this->x += DIRECTION_VECTORS[(int)this->direction].x;
-		this->y += DIRECTION_VECTORS[(int)this->direction].y;
+		this->x += Direction_getVector(this->direction).x;
+		this->y += Direction_getVector(this->direction).y;
 	}
 }
 

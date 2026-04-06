@@ -8,6 +8,12 @@
 
 template<typename T>
 class Array {
+	T* buffer = nullptr;
+	std::size_t reserved = 0;
+	std::size_t length = 0;
+
+	void ensureCapacity(std::size_t minCapacity);
+
 public:
 	using Comparator = std::function<int(const T&, const T&)>;
 
@@ -47,11 +53,5 @@ public:
 	T* data() { return buffer; }
 	const T* data() const { return buffer; }
 
-private:
-	T* buffer = nullptr;
-	std::size_t reserved = 0;
-	std::size_t length = 0;
-
-	void ensureCapacity(std::size_t minCapacity);
 };
 
