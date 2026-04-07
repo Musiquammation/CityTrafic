@@ -22,15 +22,15 @@ Cell* Game::getCell(int x, int y) {
 	return this->map.getCell(x, y);
 }
 
-bool Game::spawnCar(int x, int y, Direction direction) {
+Car* Game::spawnCar(int x, int y, Direction direction) {
 	Cell* cell = this->map.getCell(x, y);
 	if (!cell || cell->hasCar()) {
-		return false;
+		return nullptr;
 	}
 
-	this->carHandler.spawnCar(x, y, direction);
+	Car* car = this->carHandler.spawnCar(x, y, direction);
 	cell->setCarOn();
-	return true;
+	return car;
 }
 
 Car* Game::getCar(int x, int y) {

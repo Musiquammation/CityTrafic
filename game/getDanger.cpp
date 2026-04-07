@@ -35,13 +35,13 @@ getDanger_t getDanger(const Car* car, Game* game) {
 	const float speedLimit = car->speedLimit;
 	const float carSpeed = car->speed;
 	const float carSpeed2 = carSpeed * carSpeed;
-	const float stopDist = (.5f/Car::SOFT_DECELERATION) * carSpeed2;
 
-	const auto appendStopDist = [stopDist, carSpeed, carSpeed2,
-		speedLimit, &bestAcceleration](float dist)
+	const auto appendStopDist = [ carSpeed, carSpeed2,
+		speedLimit, &bestAcceleration](float dist, float deceleration)
 	{
 
-		printf("d: %2.3f ; ", dist);
+		#define stopDist ((.5f/deceleration) * carSpeed2)
+		// printf("d: %2.3f ; ", dist);
 		// Slow down
 		if (dist <= 0) {
 			bestAcceleration = -carSpeed;
@@ -51,7 +51,7 @@ getDanger_t getDanger(const Car* car, Game* game) {
 			if (acc < bestAcceleration)
 				bestAcceleration = acc;
 			
-			printf("aS: %2.3f ; ", bestAcceleration);
+			// printf("aS: %2.3f ; ", bestAcceleration);
 
 		} else if (bestAcceleration > 0) {
 			float acc = (speedLimit - carSpeed) * (1.0f/Car::SPEED_FACTOR);
@@ -65,9 +65,9 @@ getDanger_t getDanger(const Car* car, Game* game) {
 			bestAcceleration = dist - carSpeed;
 		}
 
-
 		
-		printf("aM: %2.3f ; ", bestAcceleration);
+		// printf("aM: %2.3f ; ", bestAcceleration);
+		#undef stopDist
 	};
 
 
@@ -103,14 +103,20 @@ getDanger_t getDanger(const Car* car, Game* game) {
 		switch (cellType) {
 		case CellType::NONE:
 		{
-			appendStopDist((float)dist - car->step - Car::WIDTH/2);
+			appendStopDist(
+				(float)dist - car->step - Car::WIDTH/2,
+				Car::SOFT_DECELERATION
+			);
 			goto finishUpdate;
 		}
 
 		case CellType::ROAD:
 		{
 			if (other) {
-				// appendStopDist((float)dist + other->step - car->step - Car::WIDTH);
+				appendStopDist(
+					(float)dist + other->step - car->step - Car::WIDTH,
+					Car::FRONT_DECELERATION
+				);
 			}
 			break;
 		}		

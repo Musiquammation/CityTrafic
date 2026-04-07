@@ -19,7 +19,8 @@ class Car {
 
 public:
 	static constexpr float MAX_DECELERATION = .01f;
-	static constexpr float SOFT_DECELERATION = .003f;
+	static constexpr float SOFT_DECELERATION = .002f;
+	static constexpr float FRONT_DECELERATION = .009f;
 	static constexpr float MAX_ACCELERATION = .005f;
 	static constexpr int SPEED_FACTOR = 30;
 	static constexpr float WIDTH = .9f;

@@ -55,7 +55,7 @@ void Car::move() {
 		this->y += Direction_getVector(this->direction).y;
 	}
 
-	printf("x: %.3f, v: %.3f\n", (float)this->x + this->step, this->speed);
+	// printf("x: %.3f, v: %.3f\n", (float)this->x + this->step, this->speed);
 }
 
 Vector<float> Car::calcPosition() const {

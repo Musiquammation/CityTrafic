@@ -9,11 +9,15 @@
 int main() {
 	Api* api = Api_create();
 
-	for (int i = 0; i < 26; i++)
+	for (int i = 0; i < 31; i++)
 		api->game.getCell(i, 5)->setType(CellType::ROAD);
 
 
-	api->game.spawnCar(0, 5, Direction::RIGHT);
+	Car* c0 = api->game.spawnCar(0, 5, Direction::RIGHT);
+	c0->speed = .4f;
+	Car* c1 = api->game.spawnCar(1, 5, Direction::RIGHT);
+	c0->speed = .4f;
+	Car* c2 = api->game.spawnCar(2, 5, Direction::RIGHT);
 
 
 	FILE* file = fopen("draft/output.txt", "w");
@@ -22,8 +26,13 @@ int main() {
 		return 1;
 	}
 
-	for (int frame = 0; frame < 360; frame++) {
+	for (int frame = 0; frame < 600; frame++) {
 		fprintf(file, "FRAME:START(%d)\n", frame);
+
+		if (frame == 100) {
+			for (int i = 20; i < 30; i++)
+					api->game.getCell(i, 5)->setType(CellType::ROAD);
+		}
 
 		MapSize size = api->game.map.getMapSize();
 		for (int y = size.y; y < size.height; y++) {
