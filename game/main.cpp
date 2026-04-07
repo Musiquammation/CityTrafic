@@ -26,7 +26,7 @@ int main() {
 		return 1;
 	}
 
-	for (int frame = 0; frame < 600; frame++) {
+	for (int frame = 0; frame < 300; frame++) {
 		fprintf(file, "FRAME:START(%d)\n", frame);
 
 		if (frame == 100) {

@@ -12,17 +12,16 @@ typedef struct {
 	int y;
 	Direction dir;
 
-
 	void move() {
 		this->x += Direction_getVector(this->dir).x;
 		this->y += Direction_getVector(this->dir).y;
 	}
-
 } Spy;
 
 getDanger_t getDanger(const Car* car, Game* game) {
 	enum {
-		FRONT_RANGE = 32
+		FRONT_RANGE = 32,
+		SIDE_RANGE = 16
 	};
 
 	static constexpr float INFINITY = 
@@ -36,9 +35,10 @@ getDanger_t getDanger(const Car* car, Game* game) {
 	const float carSpeed = car->speed;
 	const float carSpeed2 = carSpeed * carSpeed;
 
-	const auto appendStopDist = [ carSpeed, carSpeed2,
-		speedLimit, &bestAcceleration](float dist, float deceleration)
-	{
+	const auto appendStopDist = [
+		carSpeed, carSpeed2,
+		speedLimit, &bestAcceleration
+	](float dist, float deceleration) {
 
 		#define stopDist ((.5f/deceleration) * carSpeed2)
 		// printf("d: %2.3f ; ", dist);
@@ -70,11 +70,113 @@ getDanger_t getDanger(const Car* car, Game* game) {
 		#undef stopDist
 	};
 
+	/**
+	 * @return `true` if should stop checking line
+	 */
+	const auto applyPriority = [car](int intFrontDist, int intSideDist, Car* other) {
+		float frontDist = (float)intFrontDist + car->step +
+			(1.0f-Car::HEIGHT-Car::WIDTH)/2;
+			
+		// printf("frontDist")
+		return true;
+	};
 
 	Spy spy{car->x, car->y, car->direction};
 	Vector<int> pathPoint = pathHandler.seek();
 
-	for (int dist = 1; dist <= FRONT_RANGE; dist++) {
+	for (int dist = 0; dist <= FRONT_RANGE; dist++) {
+		const Cell* cell = game->getCell(spy.x, spy.y);
+		CellType cellType = cell->getType();
+		Car* other = cell->hasCar() ?
+			game->getCar(spy.x, spy.y) :
+			nullptr;
+		
+
+		bool checkRightPriority;
+		bool checkLeftPriority;
+		// Handle cell
+		switch (cellType) {
+		case CellType::NONE:
+		{
+			appendStopDist(
+				(float)dist - car->step - Car::WIDTH/2,
+				Car::SOFT_DECELERATION
+			);
+			goto finishUpdate;
+		}
+
+		case CellType::ROAD:
+		{
+			if (other && other != car) {
+				appendStopDist(
+					(float)dist + other->step - car->step - Car::WIDTH,
+					Car::FRONT_DECELERATION
+				);
+			}
+			checkRightPriority = true;
+			checkLeftPriority = false;
+			break;
+		}
+
+		default:
+			checkRightPriority = false;
+			checkLeftPriority = false;
+			break;
+		}
+
+		if (dist >= SIDE_RANGE)
+			goto finishLeftPriority;
+
+		// Check right priority
+		if (checkRightPriority) {
+			// Place front right
+			Spy checker{spy};
+			const Direction otherDir = Direction_getLeft(spy.dir);
+
+			checker.move();
+			checker.dir = Direction_getRight(spy.dir);
+			checker.move();
+			
+
+			// Get first cell
+			const Cell* checkCell = game->getCell(checker.x, checker.y);
+			switch (checkCell->getType()) {
+			case CellType::NONE:
+			// case CellType::YIELD:
+			{
+				goto finishRightPriority;
+			}
+
+			case CellType::ROAD:
+			{
+				if (!checkCell->hasCar())
+					break;
+			
+				Car* other = game->getCar(checker.x, checker.y);
+				if (!other || other == car || other->direction != otherDir)
+					break;
+
+				if (applyPriority(dist, 0, other))
+					goto finishRightPriority; // finish
+
+				break;
+			}
+			}
+
+
+		}
+
+		finishRightPriority:
+
+
+		if (checkLeftPriority) {
+
+		}
+
+		finishLeftPriority:
+
+
+
 		// Check if we need to turn
 		if (spy.x == pathPoint.x && spy.y == pathPoint.y) {
 			Direction aim = pathHandler.seekDirection();
@@ -92,41 +194,6 @@ getDanger_t getDanger(const Car* car, Game* game) {
 
 		// Move
 		spy.move();
-
-		Cell* cell = game->getCell(spy.x, spy.y);
-		CellType cellType = cell->getType();
-		Car* other = cell->hasCar() ?
-			game->getCar(spy.x, spy.y) :
-			nullptr;
-		
-		// Handle cell
-		switch (cellType) {
-		case CellType::NONE:
-		{
-			appendStopDist(
-				(float)dist - car->step - Car::WIDTH/2,
-				Car::SOFT_DECELERATION
-			);
-			goto finishUpdate;
-		}
-
-		case CellType::ROAD:
-		{
-			if (other) {
-				appendStopDist(
-					(float)dist + other->step - car->step - Car::WIDTH,
-					Car::FRONT_DECELERATION
-				);
-			}
-			break;
-		}		
-		}
-
-
-		// Check right priority
-
-
-		
 	}
 
 
