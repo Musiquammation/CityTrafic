@@ -1,6 +1,7 @@
 #include "api.hpp"
 #include "Game.hpp"
 #include "Cell.hpp"
+#include "Car.hpp"
 
 #include <array>
 #include <stdio.h>
@@ -8,11 +9,11 @@
 int main() {
 	Api* api = Api_create();
 
-	for (int i = 1; i < 30; i++)
+	for (int i = 0; i < 26; i++)
 		api->game.getCell(i, 5)->setType(CellType::ROAD);
 
 
-	api->game.spawnCar(1, 5, Direction::RIGHT);
+	api->game.spawnCar(0, 5, Direction::RIGHT);
 
 
 	FILE* file = fopen("draft/output.txt", "w");
@@ -21,7 +22,7 @@ int main() {
 		return 1;
 	}
 
-	for (int frame = 0; frame < 240; frame++) {
+	for (int frame = 0; frame < 360; frame++) {
 		fprintf(file, "FRAME:START(%d)\n", frame);
 
 		MapSize size = api->game.map.getMapSize();
@@ -29,11 +30,12 @@ int main() {
 			for (int x = size.x; x < size.width; x++) {
 				Cell* cell = api->game.map.getCell(x, y);
 				if (cell->hasCar()) {
-					fprintf(file, "[%02d]", (int)cell->getType());
+					Car* car = api->game.getCar(x, y);
+					fprintf(file, "%02d:%c:%.2f ", (int)cell->getType(), 'a' + (char)car->direction, car->step);
 				} else if (cell->getType() == CellType::NONE) {
-					fprintf(file, " .. ");
+					fprintf(file, "X ");
 				} else {
-					fprintf(file, " %02d ", (int)cell->getType());
+					fprintf(file, "%02d ", (int)cell->getType());
 				}
 			}
 

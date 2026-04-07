@@ -31,7 +31,7 @@ getDanger_t getDanger(const Car* car, Game* game) {
 	auto pathHandler = PathHandler<false>{car->pathHandler};
 	
 
-	float bestAcceleration = 0;
+	float bestAcceleration = Car::MAX_ACCELERATION;
 	const float speedLimit = car->speedLimit;
 	const float carSpeed = car->speed;
 	const float carSpeed2 = carSpeed * carSpeed;
@@ -41,24 +41,33 @@ getDanger_t getDanger(const Car* car, Game* game) {
 		speedLimit, &bestAcceleration](float dist)
 	{
 
-		printf("L: %f\n", stopDist);
+		printf("d: %2.3f ; ", dist);
 		// Slow down
-		if (dist < stopDist) {
+		if (dist <= 0) {
+			bestAcceleration = -carSpeed;
+
+		} else if (dist < stopDist) {
 			float acc = -.5f * carSpeed2 / dist;
 			if (acc < bestAcceleration)
 				bestAcceleration = acc;
+			
+			printf("aS: %2.3f ; ", bestAcceleration);
 
-			return;
+		} else if (bestAcceleration > 0) {
+			float acc = (speedLimit - carSpeed) * (1.0f/Car::SPEED_FACTOR);
+			if (acc < bestAcceleration)
+				bestAcceleration = acc;
+
 		}
 
-		// Accelerate
-		if (bestAcceleration < 0)
-			return;
+		// Check if next speed will exceed
+		if (carSpeed + bestAcceleration >= dist) {
+			bestAcceleration = dist - carSpeed;
+		}
 
-		float acc = (speedLimit - carSpeed) * (1.0f/Car::SPEED_FACTOR);
-		if (acc > bestAcceleration)
-			bestAcceleration = acc;
+
 		
+		printf("aM: %2.3f ; ", bestAcceleration);
 	};
 
 
@@ -86,8 +95,9 @@ getDanger_t getDanger(const Car* car, Game* game) {
 
 		Cell* cell = game->getCell(spy.x, spy.y);
 		CellType cellType = cell->getType();
-		// Car* other = game->getCar(spy.x, spy.y);
-		Car* other = nullptr;
+		Car* other = cell->hasCar() ?
+			game->getCar(spy.x, spy.y) :
+			nullptr;
 		
 		// Handle cell
 		switch (cellType) {
@@ -118,6 +128,8 @@ getDanger_t getDanger(const Car* car, Game* game) {
 
 	
 
+	// if (bestAcceleration < -Car::MAX_DECELERATION)
+		// bestAcceleration = -Car::MAX_DECELERATION;
 
 	return {
 		bestAcceleration

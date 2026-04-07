@@ -18,6 +18,7 @@ enum class CarState: uint8_t {
 class Car {
 
 public:
+	static constexpr float MAX_DECELERATION = .01f;
 	static constexpr float SOFT_DECELERATION = .003f;
 	static constexpr float MAX_ACCELERATION = .005f;
 	static constexpr int SPEED_FACTOR = 30;
@@ -28,7 +29,7 @@ public:
 	int y;
 	float step = 0.5;
 	float speed = 0;
-	float speedLimit = 0.2f;
+	float speedLimit = 0.4f;
 	
 	PathHandler<true> pathHandler;
 	Direction direction;
