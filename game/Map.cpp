@@ -8,7 +8,7 @@
 Map::Map(int width, int height)
 	: x(0), y(0), width(width), height(height) {
 
-	this->cells = (Cell*)malloc(sizeof(Cell) * width * height);
+	this->cells = (Cell*)calloc(width * height, sizeof(Cell));
 }
 
 Map::~Map() {
@@ -19,9 +19,8 @@ void Map::expand(int x, int y, int right, int bottom) {
 	int totalW = right - x;
 	int totalH = bottom - y;
 
-	Cell* newCells = (Cell*)malloc(sizeof(Cell) * totalW * totalH);
+	Cell* newCells = (Cell*)calloc(totalW * totalH, sizeof(Cell));
 
-	memset(newCells, 0, sizeof(Cell) * totalW * totalH);
 
 	int w = this->width;
 	int h = this->height;
@@ -43,6 +42,13 @@ void Map::expand(int x, int y, int right, int bottom) {
 }
 
 Cell* Map::getCell(int x, int y) const {
+	#if TESTING
+	if (x < this->x || x >= this->x + this->width || y < this->y || y >= this->y + this->height) {
+		throw std::range_error{"Cell coordinates out of range"};
+	}
+
+	#endif
+	
 	return &this->cells[(y - this->y) * this->width + (x - this->x)];
 }
 

@@ -32,3 +32,7 @@ bool Game::spawnCar(int x, int y, Direction direction) {
 	cell->setCarOn();
 	return true;
 }
+
+Car* Game::getCar(int x, int y) {
+	return this->carHandler.getCar(x, y);
+}

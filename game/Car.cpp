@@ -15,10 +15,24 @@ Car::Car(int x, int y, Direction direction)
 
 void Car::update(Game* game) {
 	auto danger = getDanger(this, game);
+	if (danger.acceleration < 0) {
+		this->speed += danger.acceleration;
+		if (this->speed < 0) {
+			this->speed = 0;
+		}
+
+	} else if (danger.acceleration > 0) {
+		this->speed += danger.acceleration;
+		if (this->speed > this->speedLimit) {
+			this->speed = this->speedLimit;
+		}
+	}
+
 }
 
 void Car::move() {
 	this->step += this->speed;
+	
 
 	if (this->step >= 1) {
 		this->step -= 1;
@@ -40,6 +54,8 @@ void Car::move() {
 		this->x += Direction_getVector(this->direction).x;
 		this->y += Direction_getVector(this->direction).y;
 	}
+
+	printf("x: %f\n", (float)this->x + this->step);
 }
 
 Vector<float> Car::calcPosition() const {
@@ -49,26 +65,26 @@ Vector<float> Car::calcPosition() const {
 		switch (this->direction) {
 		case Direction::RIGHT:
 			return Vector<float>{
-				this->x + this->step,
+				(float)this->x + this->step,
 				(float)this->y
 			};
 
 		case Direction::LEFT:
 			return Vector<float>{
-				this->x - this->step,
+				(float)this->x - this->step,
 				(float)this->y
 			};
 
 		case Direction::UP:
 			return Vector<float>{
 				(float)this->x,
-				this->y - this->step
+				(float)this->y - this->step
 			};
 
 		case Direction::DOWN:
 			return Vector<float>{
 				(float)this->x,
-				this->y + this->step
+				(float)this->y + this->step
 			};
 		}
 

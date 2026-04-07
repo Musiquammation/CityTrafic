@@ -8,9 +8,9 @@
 #include <stdint.h>
 
 enum class CarState: uint8_t {
-    FRONT,
-    TURN_RIGHT,
-    TURN_LEFT,
+	FRONT,
+	TURN_RIGHT,
+	TURN_LEFT,
 };
 
 
@@ -18,20 +18,26 @@ enum class CarState: uint8_t {
 class Car {
 
 public:
-    int x;
-    int y;
-    float step = 0.5;
-    float speed = 0;
-    int speedLimit = 0.2f;
-    
-    PathHandler<true> pathHandler;
-    Direction direction;
-    CarState state = CarState::FRONT;
+	static constexpr float SOFT_DECELERATION = .003f;
+	static constexpr float MAX_ACCELERATION = .005f;
+	static constexpr int SPEED_FACTOR = 30;
+	static constexpr float WIDTH = .9f;
+	static constexpr float HEIGHT = .6f;
 
-    Car(int x, int y, Direction direction);
+	int x;
+	int y;
+	float step = 0.5;
+	float speed = 0;
+	float speedLimit = 0.2f;
+	
+	PathHandler<true> pathHandler;
+	Direction direction;
+	CarState state = CarState::FRONT;
 
-    void update(Game* game);
-    void move();
+	Car(int x, int y, Direction direction);
 
-    Vector<float> calcPosition() const;
+	void update(Game* game);
+	void move();
+
+	Vector<float> calcPosition() const;
 };

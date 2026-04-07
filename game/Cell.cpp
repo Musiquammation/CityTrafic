@@ -13,7 +13,7 @@ bool Cell::hasCar() const {
 }
 
 CellType Cell::getType() const {
-	cell_t type = this->data & 0x0f;
+	cell_t type = this->data & 0xf;
 
 	#ifdef TESTING
 	if (type >= (cell_t)CellType::COUNT) {

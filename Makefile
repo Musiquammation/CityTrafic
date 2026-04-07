@@ -4,6 +4,17 @@
 CXX = g++
 EMXX = em++
 
+# =========================
+# SANITIZER
+# =========================
+SANITIZE ?= 1
+
+ifeq ($(SANITIZE),1)
+	SAN_FLAGS = -fsanitize=address,undefined -fno-omit-frame-pointer
+	CXXFLAGS += $(SAN_FLAGS)
+	LDFLAGS += $(SAN_FLAGS)
+endif
+
 # Exported functions for emcc 
 EMCC_FUNCS = Api_create Api_delete Api_frame Api_take
 EMCC_FUNCS_JSON = $(shell printf '"_%s",' $(EMCC_FUNCS) | sed 's/,$$//')
@@ -11,7 +22,7 @@ EMCC_FUNCS_JSON = $(shell printf '"_%s",' $(EMCC_FUNCS) | sed 's/,$$//')
 # =========================
 # Flags
 # =========================
-CXXFLAGS = -Wextra -Werror -g -std=c++20 -MMD -MP
+CXXFLAGS = -Wextra -Werror -Wconversion -g -std=c++20 -MMD -MP
 EMFLAGS = -sEXPORTED_FUNCTIONS='[$(EMCC_FUNCS_JSON)]' \
           -sEXPORTED_RUNTIME_METHODS='["ccall","cwrap"]' \
           -sMODULARIZE -sENVIRONMENT=web
@@ -52,7 +63,7 @@ all: $(TARGET)
 # Link final
 $(TARGET): $(OBJ)
 	@mkdir -p $(dir $@)
-	$(CXX) $(OBJ) -o $@
+	$(CXX) $(OBJ) $(LDFLAGS) -o $@
 
 # Compilation .cpp → .o
 $(BIN_DIR)/%.o: $(SRC_DIR)/%.cpp
@@ -80,5 +91,8 @@ emcc:
 clean:
 	rm -rf $(BIN_DIR)
 
+gdb: $(TARGET)
+	gdb --args $(TARGET) $(ARGS)
+	
 # Inclure dépendances auto
 -include $(DEP)

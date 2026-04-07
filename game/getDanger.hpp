@@ -4,7 +4,7 @@
 #include "Direction.hpp"
 
 typedef struct {
-    float speed;
+    float acceleration;
 } getDanger_t;
 
 

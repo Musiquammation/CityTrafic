@@ -18,7 +18,7 @@ public:
 
     Cell* getCell(int x, int y);
     bool spawnCar(int x, int y, Direction direction);
-
+    Car* getCar(int x, int y);
 
 
 };
