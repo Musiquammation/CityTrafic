@@ -8,6 +8,7 @@ class Game {
 private:
     Map map{32,32};
     CarHandler carHandler{};
+    int frameCount = 0;
 
 public:
     friend struct Api;
@@ -21,5 +22,6 @@ public:
     Car* spawnCar(int x, int y, Direction direction);
     Car* getCar(int x, int y);
 
+    int getFrame() const;
 
 };

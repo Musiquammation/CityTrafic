@@ -12,13 +12,12 @@ void Game::frame() {
 
 	this->map.resetCarMarks();
 
-	printf("FRAME: ");
 	for (auto& [pos, car] : this->carHandler) {
 		auto cell = this->map.getEditCell(car->x, car->y);
 		cell->setCarOn();
 	}
 
-	printf("\n");
+	this->frameCount++;
 }
 
 Cell* Game::getEditCell(int x, int y) {
@@ -42,4 +41,9 @@ Car* Game::spawnCar(int x, int y, Direction direction) {
 
 Car* Game::getCar(int x, int y) {
 	return this->carHandler.getCar(x, y);
+}
+
+
+int Game::getFrame() const {
+	return this->frameCount;
 }

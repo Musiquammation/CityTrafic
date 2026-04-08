@@ -15,25 +15,32 @@ Car::Car(int x, int y, Direction direction)
 
 void Car::update(Game* game) {
 	auto danger = getDanger(this, game);
+
+	this->realTargetPoint = danger.targetPoint;
+
 	if (danger.acceleration < 0) {
-		this->speed += danger.acceleration;
-		if (this->speed < 0) {
-			this->speed = 0;
+		this->realSpeed += danger.acceleration;
+		if (this->realSpeed < 0) {
+			this->realSpeed = 0;
 		}
 
 	} else if (danger.acceleration > 0) {
-		this->speed += danger.acceleration;
-		if (this->speed > this->speedLimit) {
-			this->speed = this->speedLimit;
+		this->realSpeed += danger.acceleration;
+		if (this->realSpeed > this->speedLimit) {
+			this->realSpeed = this->speedLimit;
 		}
 	}
 
 }
 
 void Car::move() {
-	this->step += this->speed;
+	// Make members public
+	this->publicSpeed = this->realSpeed;
+	this->publicTargetPoint = this->realTargetPoint;
+	this->publicTargetPoint = this->realTargetPoint;
 	
-
+	// Move
+	this->step += this->realSpeed;
 	if (this->step >= 1) {
 		this->step -= 1;
 
@@ -107,4 +114,18 @@ Vector<float> Car::calcPosition() const {
 	}
 
 	return Vector<float>{0,0};
+}
+
+
+
+float Car::getSpeed() const {
+	return this->publicSpeed;
+}
+
+float Car::getAcceleration() const {
+	return this->publicAcceleration;
+}
+
+Vector<int> Car::getTargetPoint() const {
+	return this->publicTargetPoint;
 }

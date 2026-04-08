@@ -16,6 +16,14 @@ enum class CarState: uint8_t {
 
 
 class Car {
+private:
+	Vector<int> realTargetPoint;
+	Vector<int> publicTargetPoint{-1, -1};
+	float realAcceleration;
+	float publicAcceleration;
+	float realSpeed;
+	float publicSpeed = 0;
+
 
 public:
 	static constexpr float MAX_DECELERATION = .01f;
@@ -29,7 +37,6 @@ public:
 	int x;
 	int y;
 	float step = 0.5;
-	float speed = 0;
 	float speedLimit = 0.4f;
 	
 	PathHandler<true> pathHandler;
@@ -42,4 +49,8 @@ public:
 	void move();
 
 	Vector<float> calcPosition() const;
+
+	float getAcceleration() const;
+	float getSpeed() const;
+	Vector<int> getTargetPoint() const;
 };

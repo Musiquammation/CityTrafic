@@ -4,7 +4,9 @@
 #include "PathHandler.hpp"
 #include "Game.hpp"
 #include "Cell.hpp"
+
 #include <limits>
+#include <vector>
 
 
 typedef struct {
@@ -18,6 +20,11 @@ typedef struct {
 	}
 } Spy;
 
+typedef struct {
+	float slowAcc; // acceleration when we pass after  the car
+	float fastAcc; // acceleration when we pass before the car
+} PriorityAcceleration;
+
 getDanger_t getDanger(const Car* car, Game* game) {
 	enum {
 		FRONT_RANGE = 32,
@@ -28,40 +35,47 @@ getDanger_t getDanger(const Car* car, Game* game) {
 		std::numeric_limits<float>::infinity();
 
 	auto pathHandler = PathHandler<false>{car->pathHandler};
-	
+	std::vector<PriorityAcceleration> accelerations{};
 
 	float bestAcceleration = Car::MAX_ACCELERATION;
 	const float speedLimit = car->speedLimit;
-	const float carSpeed = car->speed;
+	const float carSpeed = car->getSpeed();
 	const float carSpeed2 = carSpeed * carSpeed;
+	Vector<int> targetPoint{-1, -1};
 
 	const auto appendStopDist = [
-		carSpeed, carSpeed2,
+		carSpeed, carSpeed2, &targetPoint,
 		speedLimit, &bestAcceleration
-	](float dist, float deceleration) {
+	](float dist, float deceleration, Vector<int> targetPt) {
 
 		#define stopDist ((.5f/deceleration) * carSpeed2)
 		// printf("d: %2.3f ; ", dist);
 		// Slow down
 		if (dist <= 0) {
 			bestAcceleration = -carSpeed;
+			targetPoint = targetPt;
 
 		} else if (dist < stopDist) {
 			float acc = -.5f * carSpeed2 / dist;
-			if (acc < bestAcceleration)
+			if (acc < bestAcceleration) {
+				targetPoint = targetPt;
 				bestAcceleration = acc;
+			}
 			
 			// printf("aS: %2.3f ; ", bestAcceleration);
 
 		} else if (bestAcceleration > 0) {
 			float acc = (speedLimit - carSpeed) * (1.0f/Car::SPEED_FACTOR);
-			if (acc < bestAcceleration)
+			if (acc < bestAcceleration) {
+				targetPoint = targetPt;
 				bestAcceleration = acc;
+			}
 
 		}
 
 		// Check if next speed will exceed
 		if (carSpeed + bestAcceleration >= dist) {
+			targetPoint = targetPt;
 			bestAcceleration = dist - carSpeed;
 		}
 
@@ -73,11 +87,21 @@ getDanger_t getDanger(const Car* car, Game* game) {
 	/**
 	 * @return `true` if should stop checking line
 	 */
-	const auto applyPriority = [car](int intFrontDist, int intSideDist, Car* other) {
-		float frontDist = (float)intFrontDist + car->step +
+	const auto applyPriority = [
+		car, &accelerations
+	](int intFrontDist, int intSideDist, Car* other) {
+		float carEntryDist = (float)intFrontDist + car->step +
 			(1.0f-Car::HEIGHT-Car::WIDTH)/2;
 
-		// printf("frontDist")
+		float carExitDist = carEntryDist + Car::HEIGHT;
+
+		float sideEntryDist = (float)intSideDist +
+			(Car::HEIGHT + Car::WIDTH)/2 - car->step;
+
+		float sideExitDist = sideEntryDist + 1 + (Car::WIDTH - Car::HEIGHT)/2;
+
+
+
 		return true;
 	};
 
@@ -100,7 +124,8 @@ getDanger_t getDanger(const Car* car, Game* game) {
 		{
 			appendStopDist(
 				(float)dist - car->step - Car::WIDTH/2,
-				Car::SOFT_DECELERATION
+				Car::SOFT_DECELERATION,
+				{spy.x, spy.y}
 			);
 			goto finishUpdate;
 		}
@@ -110,7 +135,8 @@ getDanger_t getDanger(const Car* car, Game* game) {
 			if (other && other != car) {
 				appendStopDist(
 					(float)dist + other->step - car->step - Car::WIDTH,
-					Car::FRONT_DECELERATION
+					Car::FRONT_DECELERATION,
+					{spy.x, spy.y}
 				);
 			}
 			checkRightPriority = true;
@@ -205,6 +231,7 @@ getDanger_t getDanger(const Car* car, Game* game) {
 		// bestAcceleration = -Car::MAX_DECELERATION;
 
 	return {
-		bestAcceleration
+		bestAcceleration,
+		targetPoint
 	};
 }
