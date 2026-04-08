@@ -6,6 +6,7 @@
 #include "PathHandler.hpp"
 
 #include <stdint.h>
+#include <vector>
 
 enum class CarState: uint8_t {
 	FRONT,
@@ -20,13 +21,13 @@ private:
 	Vector<int> realTargetPoint;
 	Vector<int> publicTargetPoint{-1, -1};
 	float realAcceleration;
-	float publicAcceleration;
-	float realSpeed;
+	float publicAcceleration = 0;
+	float realSpeed = 0;
 	float publicSpeed = 0;
 
 
 public:
-	static constexpr float MAX_DECELERATION = .01f;
+	static constexpr float MAX_DECELERATION = .03f;
 	static constexpr float SOFT_DECELERATION = .002f;
 	static constexpr float FRONT_DECELERATION = .009f;
 	static constexpr float MAX_ACCELERATION = .005f;
@@ -45,7 +46,7 @@ public:
 
 	Car(int x, int y, Direction direction);
 
-	void update(Game* game);
+	void update(Game* game, std::vector<PriorityNode>& prioritiesBuffer);
 	void move();
 
 	Vector<float> calcPosition() const;

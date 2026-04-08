@@ -1,13 +1,94 @@
 #include "getDanger.hpp"
 
+#include "utils/mfor.hpp"
 #include "Car.hpp"
 #include "PathHandler.hpp"
 #include "Game.hpp"
 #include "Cell.hpp"
+#include "debugFile.hpp"
+#include "PriorityNode.hpp"
 
 #include <limits>
 #include <vector>
+#include <math.h>
 
+
+static constexpr float INFINITY_F = std::numeric_limits<float>::infinity();
+
+float computeAcceleration(
+	float vx0, float vy0,
+	float a_y,
+	float vx_max, float vy_max,
+	float X, float Y
+) {
+	// Helper: compute y(t) saturation parameters
+	float t_star;
+	float Vysat;
+
+	if (a_y > 0.0f) {
+		Vysat = vy_max;
+		t_star = (vy_max - vy0) / a_y;
+	} else if (a_y < 0.0f) {
+		Vysat = 0.0f;
+		t_star = -vy0 / a_y;
+	} else { // a_y == 0
+		Vysat = vy0;
+		t_star = INFINITY_F;
+	}
+
+	// Compute T such that y(T) = Y
+	float T;
+
+	if (a_y > 0.0f) {
+		float discriminant = vy0 * vy0 + 2.0f * a_y * Y;
+		if (discriminant < 0.0f) return INFINITY_F;
+
+		float T_before = (-vy0 + std::sqrt(discriminant)) / a_y;
+
+		if (T_before <= t_star) {
+			T = T_before;
+		} else {
+			float y_star = vy0 * t_star + 0.5f * a_y * t_star * t_star;
+			T = t_star + (Y - y_star) / Vysat;
+		}
+
+	} else if (a_y == 0.0f) {
+		if (vy0 <= 0.0f) return INFINITY_F;
+		T = Y / vy0;
+
+	} else { // a_y < 0
+		float discriminant = vy0 * vy0 - 2.0f * a_y * Y;
+		if (discriminant < 0.0f) return INFINITY_F;
+
+		float T_before = (-vy0 - std::sqrt(discriminant)) / a_y;
+
+		if (T_before <= t_star) {
+			T = T_before;
+		} else {
+			float y_max = vy0 * t_star + 0.5f * a_y * t_star * t_star;
+			if (Y > y_max) return INFINITY_F;
+			T = t_star;
+		}
+	}
+
+	// Avoid division by zero
+	if (T <= 0.0f) return INFINITY_F;
+
+	// Compute candidate a_x without x saturation
+	float a_x_no_sat = 2.0f * (X - vx0 * T) / (T * T);
+
+	if (a_x_no_sat > 0.0f) {
+		if (vx0 + a_x_no_sat * T > vx_max) {
+			return 0.5f * vx_max * vx_max - vx0 * vx0 / X;
+		}
+	} else if (a_x_no_sat < 0.0f) {
+		if (vx0 + a_x_no_sat * T < 0.0f) {
+			return -0.5f * vx0 * vx0 / X;
+		}
+	}
+
+	return a_x_no_sat;
+}
 
 typedef struct {
 	int x;
@@ -20,24 +101,211 @@ typedef struct {
 	}
 } Spy;
 
-typedef struct {
-	float slowAcc; // acceleration when we pass after  the car
-	float fastAcc; // acceleration when we pass before the car
-} PriorityAcceleration;
 
-getDanger_t getDanger(const Car* car, Game* game) {
+typedef struct {
+	int frontDist;
+	int sideDist;
+	const Car* other;
+	Vector<int> targetPoint;
+	std::vector<int> children{};
+
+
+	PriorityNode build() {
+		PriorityNode node;
+		node.frontDist = frontDist;
+		node.sideDist = sideDist;
+		node.other = other;
+		node.childrenLength = static_cast<int>(children.size());
+		node.targetPoint = targetPoint;
+
+		if (!children.empty()) {
+			node.children = new int[children.size()];
+			for (size_t i = 0; i < children.size(); ++i) {
+				node.children[i] = children[i];
+			}
+		} else {
+			node.children = nullptr;
+		}
+
+
+		return node;
+	}
+} NodeBuilder;
+
+
+
+int fillGraph(
+	int frontDist, int sideDist,
+	int range,
+	bool addEmptyChild,
+	Game* game,
+	std::vector<PriorityNode>& priorities,
+	Spy spy
+) {
+	auto cell = game->getCell(spy.x, spy.y);
+	
+	
+	// Check road
+	if (cell->hasCar()) {
+		Car* car = game->getCar(spy.x, spy.y);
+		
+	}
+
+
+	if (range <= 0)
+		return -1;
+
+	std::vector<int> children;
+
+	// Adapt to road
+	switch (cell->getType()) {
+	case CellType::NONE:
+		return -1;
+
+	// case CellType::YIELD:
+		if (addEmptyChild)
+			break;
+		// continue to ROAD behavior	
+
+	case CellType::ROAD:
+	{
+		// check to the right
+		Spy rspy = spy;
+		rspy.dir = Direction_getRight(spy.dir);
+		rspy.move();
+
+		int rnode = fillGraph(frontDist, sideDist+1,
+			range-1, false, game, priorities, rspy);
+
+		if (rnode >= 0) {
+			children.push_back(rnode);
+		}
+
+		
+		// Check to the left
+		Spy lspy = spy;
+		lspy.dir = Direction_getRight(spy.dir);
+		lspy.move();
+
+		int lnode = fillGraph(frontDist, sideDist+1,
+			range-1, false, game, priorities, lspy);
+
+		if (lnode >= 0) {
+			children.push_back(lnode);
+		}
+
+		
+		// Check in front
+		spy.move();
+		int fnode = fillGraph(frontDist, sideDist+1,
+			range-1, false, game, priorities, spy);
+
+		if (fnode >= 0) {
+			children.push_back(fnode);
+		}
+		
+		
+
+		break;
+	}
+	
+	}
+
+
+	
+	return -1;
+}
+
+
+float getNodeAcc(
+	const Car* car,
+	float maxAcceleration,
+	std::vector<PriorityNode>& priorities,
+	PriorityNode* node
+) {
+	float carEntryDist = (float)node->frontDist - car->step +
+		(1.0f + (1.0f-Car::HEIGHT)/2 - Car::WIDTH/2);
+
+	float carExitDist = carEntryDist + Car::HEIGHT;
+
+	float sideEntryDist = (float)node->sideDist +
+		(Car::HEIGHT + Car::WIDTH)/2 - car->step;
+
+	float sideExitDist = sideEntryDist + 1 + (Car::WIDTH - Car::HEIGHT)/2;
+
+	float fastAcc = computeAcceleration(
+		car->getSpeed(), node->other->getSpeed(),
+		node->other->getAcceleration(),
+		car->speedLimit, node->other->speedLimit,
+		carExitDist, sideEntryDist
+	);
+
+	if (fastAcc == INFINITY_F)
+		fastAcc = -INFINITY_F;
+
+	
+	// Needs to wait the car with the priority
+	float slowAcc = computeAcceleration(
+		car->getSpeed(), node->other->getSpeed(),
+		node->other->getAcceleration(),
+		car->speedLimit, node->other->speedLimit,
+		carEntryDist, sideExitDist
+	);
+
+	// if (slowAcc == INFINITY_F) // is this case even possible?
+		// slowAcc = maxAcceleration;
+
+
+	// Pass BEFORE the car (so try to use fastAcc)
+	if (fastAcc <= maxAcceleration) {
+		float min = maxAcceleration;
+		mfor(node->children, node->childrenLength, c) {
+			float acc = getNodeAcc(car, maxAcceleration,
+				priorities, &priorities[*c]);
+
+			if (acc < min)
+				min = acc;
+		}
+
+		if (min < fastAcc) {
+			// Needs to wait a car, so acceleration is reduced
+			// Let's make shure our slowAcc is verified
+			if (min > slowAcc)
+				min = slowAcc;
+		}
+
+		return min;
+	}
+	
+	// Wait for the car and its children
+	
+	float min = slowAcc;
+	mfor(node->children, node->childrenLength, c) {
+		float acc = getNodeAcc(car, maxAcceleration,
+			priorities, &priorities[*c]);
+
+		if (acc < min)
+			min = acc;
+	}
+
+	return slowAcc;
+}
+
+
+getDanger_t getDanger(
+	const Car* car,
+	Game* game,
+	std::vector<PriorityNode>& priorities
+) {
 	enum {
 		FRONT_RANGE = 32,
 		SIDE_RANGE = 16
 	};
 
-	static constexpr float INFINITY = 
-		std::numeric_limits<float>::infinity();
 
 	auto pathHandler = PathHandler<false>{car->pathHandler};
-	std::vector<PriorityAcceleration> accelerations{};
 
-	float bestAcceleration = Car::MAX_ACCELERATION;
+	float maxAcceleration = Car::MAX_ACCELERATION;
 	const float speedLimit = car->speedLimit;
 	const float carSpeed = car->getSpeed();
 	const float carSpeed2 = carSpeed * carSpeed;
@@ -45,79 +313,58 @@ getDanger_t getDanger(const Car* car, Game* game) {
 
 	const auto appendStopDist = [
 		carSpeed, carSpeed2, &targetPoint,
-		speedLimit, &bestAcceleration
+		speedLimit, &maxAcceleration
 	](float dist, float deceleration, Vector<int> targetPt) {
 
 		#define stopDist ((.5f/deceleration) * carSpeed2)
-		// printf("d: %2.3f ; ", dist);
 		// Slow down
 		if (dist <= 0) {
-			bestAcceleration = -carSpeed;
+			maxAcceleration = -carSpeed;
 			targetPoint = targetPt;
 
 		} else if (dist < stopDist) {
 			float acc = -.5f * carSpeed2 / dist;
-			if (acc < bestAcceleration) {
+			if (acc < maxAcceleration) {
 				targetPoint = targetPt;
-				bestAcceleration = acc;
+				maxAcceleration = acc;
 			}
 			
-			// printf("aS: %2.3f ; ", bestAcceleration);
 
-		} else if (bestAcceleration > 0) {
+		} else if (maxAcceleration > 0) {
 			float acc = (speedLimit - carSpeed) * (1.0f/Car::SPEED_FACTOR);
-			if (acc < bestAcceleration) {
+			if (acc < maxAcceleration) {
 				targetPoint = targetPt;
-				bestAcceleration = acc;
+				maxAcceleration = acc;
 			}
-
 		}
 
 		// Check if next speed will exceed
-		if (carSpeed + bestAcceleration >= dist) {
+		if (carSpeed + maxAcceleration >= dist) {
 			targetPoint = targetPt;
-			bestAcceleration = dist - carSpeed;
+			maxAcceleration = dist - carSpeed;
 		}
 
 		
-		// printf("aM: %2.3f ; ", bestAcceleration);
 		#undef stopDist
 	};
 
-	/**
-	 * @return `true` if should stop checking line
-	 */
-	const auto applyPriority = [
-		car, &accelerations
-	](int intFrontDist, int intSideDist, Car* other) {
-		float carEntryDist = (float)intFrontDist + car->step +
-			(1.0f-Car::HEIGHT-Car::WIDTH)/2;
 
-		float carExitDist = carEntryDist + Car::HEIGHT;
-
-		float sideEntryDist = (float)intSideDist +
-			(Car::HEIGHT + Car::WIDTH)/2 - car->step;
-
-		float sideExitDist = sideEntryDist + 1 + (Car::WIDTH - Car::HEIGHT)/2;
-
-
-
-		return true;
-	};
 
 	Spy spy{car->x, car->y, car->direction};
 	Vector<int> pathPoint = pathHandler.seek();
-
+	
+	
+	// Get terrain speed limit and check priorities
 	for (int dist = 0; dist <= FRONT_RANGE; dist++) {
 		auto cell = game->getCell(spy.x, spy.y);
 		CellType cellType = cell->getType();
-		Car* other = cell->hasCar() ?
+		const Car* other = cell->hasCar() ?
 			game->getCar(spy.x, spy.y) :
 			nullptr;
 		
-
 		bool checkRightPriority;
 		bool checkLeftPriority;
+
 		// Handle cell
 		switch (cellType) {
 		case CellType::NONE:
@@ -150,6 +397,7 @@ getDanger_t getDanger(const Car* car, Game* game) {
 			break;
 		}
 
+
 		if (dist >= SIDE_RANGE)
 			goto finishLeftPriority;
 
@@ -163,46 +411,26 @@ getDanger_t getDanger(const Car* car, Game* game) {
 			checker.dir = Direction_getRight(spy.dir);
 			checker.move();
 			
+			int previousNodeIdx = priorities.size() - 1;
+			int nodeIdx = fillGraph(dist, 0, SIDE_RANGE - dist,
+				true, game, priorities, checker);
 
-			// Get first cell
-			auto checkCell = game->getCell(checker.x, checker.y);
-			switch (checkCell->getType()) {
-			case CellType::NONE:
-			// case CellType::YIELD:
-			{
-				goto finishRightPriority;
+			if (nodeIdx >= 0 && previousNodeIdx >= 0) {
+				PriorityNode& node = priorities[nodeIdx];
+				node.children[node.childrenLength-1] = previousNodeIdx;
+				node.childrenLength++;
 			}
-
-			case CellType::ROAD:
-			{
-				if (!checkCell->hasCar())
-					break;
-			
-				Car* other = game->getCar(checker.x, checker.y);
-				if (!other || other == car || other->direction != otherDir)
-					break;
-
-				if (applyPriority(dist, 0, other))
-					goto finishRightPriority; // finish
-
-				break;
-			}
-			}
-
-
 		}
+
+
 
 		finishRightPriority:
 
 
-		if (checkLeftPriority) {
-
-		}
-
 		finishLeftPriority:
 
 
-
+	
 		// Check if we need to turn
 		if (spy.x == pathPoint.x && spy.y == pathPoint.y) {
 			Direction aim = pathHandler.seekDirection();
@@ -223,15 +451,24 @@ getDanger_t getDanger(const Car* car, Game* game) {
 	}
 
 
-	finishUpdate:
 
 	
 
-	// if (bestAcceleration < -Car::MAX_DECELERATION)
-		// bestAcceleration = -Car::MAX_DECELERATION;
 
+
+	finishUpdate:
+
+	// Get priority acceleration
+	if (priorities.size() >= 1) {
+		maxAcceleration = getNodeAcc(car, maxAcceleration, priorities, &priorities[0]);
+	}
+
+
+
+
+	priorities.clear();
 	return {
-		bestAcceleration,
+		maxAcceleration,
 		targetPoint
 	};
 }

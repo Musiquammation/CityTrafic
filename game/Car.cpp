@@ -13,8 +13,8 @@ Car::Car(int x, int y, Direction direction)
 
 
 
-void Car::update(Game* game) {
-	auto danger = getDanger(this, game);
+void Car::update(Game* game, std::vector<PriorityNode>& prioritiesBuffer) {
+	auto danger = getDanger(this, game, prioritiesBuffer);
 
 	this->realTargetPoint = danger.targetPoint;
 
@@ -73,24 +73,24 @@ Vector<float> Car::calcPosition() const {
 		case Direction::RIGHT:
 			return Vector<float>{
 				(float)this->x + this->step,
-				(float)this->y
+				(float)this->y + .5f
 			};
 
 		case Direction::LEFT:
 			return Vector<float>{
-				(float)this->x - this->step,
-				(float)this->y
+				(float)this->x + 1 - this->step,
+				(float)this->y + .5f
 			};
 
 		case Direction::UP:
 			return Vector<float>{
-				(float)this->x,
-				(float)this->y - this->step
+				(float)this->x + .5f,
+				(float)this->y + 1 - this->step
 			};
 
 		case Direction::DOWN:
 			return Vector<float>{
-				(float)this->x,
+				(float)this->x + .5f,
 				(float)this->y + this->step
 			};
 		}
