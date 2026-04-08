@@ -1,8 +1,14 @@
 # =========================
 # Compilateurs
 # =========================
-CXX = g++
+CXX  = g++
 EMXX = em++
+
+# =========================
+# Flags de base
+# =========================
+CXXFLAGS = -Wextra -Werror -Wconversion -Wswitch -g -std=c++20 -MMD -MP
+LDFLAGS  =
 
 # =========================
 # SANITIZER
@@ -12,20 +18,24 @@ SANITIZE ?= 1
 ifeq ($(SANITIZE),1)
 	SAN_FLAGS = -fsanitize=address,undefined -fno-omit-frame-pointer
 	CXXFLAGS += $(SAN_FLAGS)
-	LDFLAGS += $(SAN_FLAGS)
+	LDFLAGS  += $(SAN_FLAGS)
 endif
 
-# Exported functions for emcc 
+# =========================
+# Exported functions (Emscripten)
+# =========================
 EMCC_FUNCS = Api_create Api_delete Api_frame Api_take
 EMCC_FUNCS_JSON = $(shell printf '"_%s",' $(EMCC_FUNCS) | sed 's/,$$//')
 
 # =========================
-# Flags
+# Flags Emscripten
 # =========================
-CXXFLAGS = -Wextra -Werror -Wconversion -g -std=c++20 -MMD -MP
-EMFLAGS = -sEXPORTED_FUNCTIONS='[$(EMCC_FUNCS_JSON)]' \
+EMFLAGS = -std=c++20 -O3 \
+          -sEXPORTED_FUNCTIONS='[$(EMCC_FUNCS_JSON)]' \
           -sEXPORTED_RUNTIME_METHODS='["ccall","cwrap"]' \
-          -sMODULARIZE -sENVIRONMENT=web
+          -sMODULARIZE \
+          -sENVIRONMENT=web \
+          -sALLOW_MEMORY_GROWTH=1
 
 # =========================
 # Variables de test
@@ -34,7 +44,7 @@ TESTING_MACRO ?= 1
 
 ifeq ($(TESTING_MACRO),1)
 	CXXFLAGS += -DTESTING=1
-	EMFLAGS += -DTESTING=1
+	EMFLAGS  += -DTESTING=1
 endif
 
 # =========================
@@ -51,48 +61,53 @@ OBJ := $(patsubst $(SRC_DIR)/%.cpp,$(BIN_DIR)/%.o,$(SRC))
 DEP := $(OBJ:.o=.d)
 
 # =========================
-# Exécutable
+# Exécutables
 # =========================
-TARGET = $(BIN_DIR)/gametest
+TARGET    = $(BIN_DIR)/gametest
+EM_TARGET = $(BIN_DIR)/api.js
 
 # =========================
 # Règle par défaut
 # =========================
 all: $(TARGET)
 
-# Link final
+# =========================
+# Build natif
+# =========================
 $(TARGET): $(OBJ)
 	@mkdir -p $(dir $@)
 	$(CXX) $(OBJ) $(LDFLAGS) -o $@
 
-# Compilation .cpp → .o
 $(BIN_DIR)/%.o: $(SRC_DIR)/%.cpp
 	@mkdir -p $(dir $@)
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 # =========================
-# TEST
+# Test
 # =========================
 test: $(TARGET)
 	@$(TARGET)
 
 # =========================
-# EMCC BUILD
+# Build Emscripten
 # =========================
-EM_TARGET = $(BIN_DIR)/api.js
-
 emcc:
 	@mkdir -p $(BIN_DIR)
 	$(EMXX) $(SRC) $(EMFLAGS) -o $(EM_TARGET)
 
 # =========================
-# CLEAN
+# Debug
+# =========================
+gdb: $(TARGET)
+	gdb --args $(TARGET) $(ARGS)
+
+# =========================
+# Clean
 # =========================
 clean:
 	rm -rf $(BIN_DIR)
 
-gdb: $(TARGET)
-	gdb --args $(TARGET) $(ARGS)
-	
-# Inclure dépendances auto
+# =========================
+# Dépendances auto
+# =========================
 -include $(DEP)

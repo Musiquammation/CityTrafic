@@ -1,12 +1,15 @@
 #include "getDanger.hpp"
 
 #include "utils/mfor.hpp"
+#include "utils/mergeSortedVectors.hpp"
+
 #include "Car.hpp"
 #include "PathHandler.hpp"
 #include "Game.hpp"
 #include "Cell.hpp"
 #include "debugFile.hpp"
 #include "PriorityNode.hpp"
+
 
 #include <limits>
 #include <vector>
@@ -90,7 +93,7 @@ float computeAcceleration(
 	return a_x_no_sat;
 }
 
-typedef struct {
+struct Spy {
 	int x;
 	int y;
 	Direction dir;
@@ -99,7 +102,7 @@ typedef struct {
 		this->x += Direction_getVector(this->dir).x;
 		this->y += Direction_getVector(this->dir).y;
 	}
-} Spy;
+};
 
 
 
@@ -117,76 +120,108 @@ int fillGraph(
 	if (range <= 0)
 		return -1;
 		
-		
-		
+	
 	auto cell = game->getCell(spy.x, spy.y);
-	int children[3] = {-1, -1, -1};
-	int* childPtr = &children[0];
 
+	
 	// Adapt to road
 	switch (cell->getType()) {
 	case CellType::NONE:
 		return -1;
 
 	// case CellType::YIELD:
-		if (addEmptyChild)
-			break;
+		// if (addEmptyChild)
+			// goto checkRoad;
 		// continue to ROAD behavior	
-
+		
 	case CellType::ROAD:
 	{
-		// check to the right
-		Spy rspy = spy;
-		rspy.dir = Direction_getRight(spy.dir);
-		rspy.move();
+		int children[3];
+		int childrenNodeIdx = -1;
 
-		int rnode = fillGraph(frontDist, sideDist+1,
-			range-1, false, game, priorities, rspy);
+		Car* car;
+		if (cell->hasCar()) {
+			car = game->getCar(spy.x, spy.y);
+		} else {
+			car = nullptr;
+		}
 
-		if (rnode >= 0) {
-			*childPtr = rnode;
-			childPtr++;
+
+
+		{
+			// Check in front
+			Spy fspy = spy;
+			fspy.move();
+			children[0] = fillGraph(frontDist, sideDist+1,
+				range-1, false, game, priorities, fspy);
+	
+	
+			// check to the right
+			Spy rspy = spy;
+			rspy.dir = Direction_getRight(spy.dir);
+			rspy.move();
+	
+			children[1] = fillGraph(frontDist, sideDist+1,
+				range-1, false, game, priorities, rspy);
+	
+			
+			// Check to the left
+			Spy lspy = spy;
+			lspy.dir = Direction_getRight(spy.dir);
+			lspy.move();
+	
+			children[2] = fillGraph(frontDist, sideDist+1,
+				range-1, false, game, priorities, lspy);
 		}
 
 		
-		// Check to the left
-		Spy lspy = spy;
-		lspy.dir = Direction_getRight(spy.dir);
-		lspy.move();
 
-		int lnode = fillGraph(frontDist, sideDist+1,
-			range-1, false, game, priorities, lspy);
+		int validLength = 0;
+		for (int i = 0; i < 3; i++)
+			if (children[i] != -1)
+				validLength++;
+		
 
-		if (lnode >= 0) {
-			*childPtr = lnode;
-			childPtr++;
+		if (validLength == 1 && !car) {
+			for (int i = 0; true; i++)
+				if (children[i] >= 0)
+					return children[i];
 		}
 
-		
-		// Check in front
-		Spy fspy = spy;
-		fspy.move();
-		int fnode = fillGraph(frontDist, sideDist+1,
-			range-1, false, game, priorities, fspy);
+		if (validLength == 0 && !car)
+			return -1;
 
-		if (fnode >= 0) {
-			*childPtr = fnode;
-			childPtr++;
+		int fullValid = validLength + (addEmptyChild?0:1);
+		int* childrenArr = (int*)malloc((fullValid+1) * sizeof(PriorityNode));
+			
+		int j = 0;
+		for (int i = 0; i < 3; i++) {
+			if (children[i] >= 0) {
+				childrenArr[j] = children[i];
+				j++;
+			}
 		}
-		
-		
+		childrenArr[j] = -1;
+			
 
+		priorities.push_back({
+			frontDist,
+			sideDist,
+			childrenArr,
+			car
+		});
+
+		return (int)priorities.size() - 1;
 		break;
 	}
+
+
+	default:
+		break;
 	
 	}
 
 
-	// Check for a car
-	if (cell->hasCar()) {
-		Car* car = game->getCar(spy.x, spy.y);
-	}
-	
 	return -1;
 }
 
@@ -208,9 +243,9 @@ float getNodeAcc(
 	float sideExitDist = sideEntryDist + 1 + (Car::WIDTH - Car::HEIGHT)/2;
 
 	float fastAcc = computeAcceleration(
-		car->getSpeed(), node->other->getSpeed(),
-		node->other->getAcceleration(),
-		car->speedLimit, node->other->speedLimit,
+		car->getSpeed(), node->car->getSpeed(),
+		node->car->getAcceleration(),
+		car->speedLimit, node->car->speedLimit,
 		carExitDist, sideEntryDist
 	);
 
@@ -220,9 +255,9 @@ float getNodeAcc(
 	
 	// Needs to wait the car with the priority
 	float slowAcc = computeAcceleration(
-		car->getSpeed(), node->other->getSpeed(),
-		node->other->getAcceleration(),
-		car->speedLimit, node->other->speedLimit,
+		car->getSpeed(), node->car->getSpeed(),
+		node->car->getAcceleration(),
+		car->speedLimit, node->car->speedLimit,
 		carEntryDist, sideExitDist
 	);
 
@@ -233,11 +268,10 @@ float getNodeAcc(
 	// Pass BEFORE the car (so try to use fastAcc)
 	if (fastAcc <= maxAcceleration) {
 		float min = maxAcceleration;
-		mfor(node->children, 3, cptr) {
+		for(int* cptr = node->children; true; cptr++) {
 			int c = *cptr;
 			if (c < 0)
 				break;
-
 			float acc = getNodeAcc(car, maxAcceleration,
 				priorities, &priorities[c]);
 
@@ -258,11 +292,10 @@ float getNodeAcc(
 	// Wait for the car and its children
 	
 	float min = slowAcc;
-	mfor(node->children, 3, cptr) {
+	for(int* cptr = node->children; true; cptr++) {
 		int c = *cptr;
 		if (c < 0)
 			break;
-
 		float acc = getNodeAcc(car, maxAcceleration,
 			priorities, &priorities[c]);
 
@@ -393,14 +426,32 @@ getDanger_t getDanger(
 			checker.dir = Direction_getRight(spy.dir);
 			checker.move();
 			
-			int previousNodeIdx = priorities.size() - 1;
+			int previousNodeIdx = (int)priorities.size() - 1;
 			int nodeIdx = fillGraph(dist, 0, SIDE_RANGE - dist,
 				true, game, priorities, checker);
 
-			if (nodeIdx >= 0 && previousNodeIdx >= 0) {
-				PriorityNode& node = priorities[nodeIdx];
-				
+			
+			if (nodeIdx >= 0) {
+				if (previousNodeIdx >= 0) {
+					PriorityNode& previous = priorities[previousNodeIdx];
+					for (int* ptr = previous.children; true; ptr++) {
+						int i = *ptr;
+						if (i >= 0)
+							continue;
+
+						*ptr = nodeIdx;
+						ptr++;
+						*ptr = -1;
+
+						break;
+					}
+				}
+
+				previousNodeIdx = nodeIdx;
 			}
+
+
+			// PriorityNode& node = priorities[nodeIdx];
 		}
 
 
@@ -446,8 +497,11 @@ getDanger_t getDanger(
 
 
 
+	for (auto i: priorities)
+		free(i.children);
 
 	priorities.clear();
+
 	return {
 		maxAcceleration,
 		targetPoint

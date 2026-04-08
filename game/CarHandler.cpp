@@ -4,7 +4,7 @@
 #include "PriorityNode.hpp"
 
 #include <stdio.h>
-#include <format>
+#include <sstream>
 
 Car* CarHandler::spawnCar(int x, int y, Direction direction) {
 	auto car = new Car{x, y, direction};
@@ -31,7 +31,11 @@ void CarHandler::moveCars() {
 
 		if (newCars.find({car->x, car->y}) != newCars.end()) {
 			throw std::runtime_error{
-				std::format("Collision at ({}, {})", car->x, car->y)
+				[&]() {
+					std::ostringstream oss;
+					oss << "Collision at (" << car->x << ", " << car->y << ")";
+					return oss.str();
+				}()
 			};
 		}
 

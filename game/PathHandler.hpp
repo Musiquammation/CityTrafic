@@ -23,8 +23,7 @@ public:
 		
 	~PathHandler();
 
-	void fill(Vector<int>* array, uint8_t* bitArray, int length)
-		requires (freeArray);
+	void fill(Vector<int>* array, uint8_t* bitArray, int length);
 
 	/**
 	 * @return (x,y) if next point is defined, else (INT_MAX, INT_MAX)

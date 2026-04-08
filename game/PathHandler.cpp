@@ -37,6 +37,11 @@ void PathHandler<true>::fill(Vector<int>* array, uint8_t* bitArray, int length) 
 	this->step = 0;
 }
 
+template<>
+void PathHandler<false>::fill(Vector<int>* array, uint8_t* bitArray, int length) {
+		static_assert(1, "fill() is disabled for PathHandler<true>");
+}
+
 template<bool freeArray>
 Vector<int> PathHandler<freeArray>::seek() {
 	if (!this->array || this->step < 0)
