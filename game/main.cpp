@@ -10,14 +10,17 @@ int main() {
 	Api* api = Api_create();
 
 	for (int i = 0; i < 31; i++)
-		api->game.getCell(i, 5)->setType(CellType::ROAD);
+		api->game.getEditCell(i, 5)->setType(CellType::ROAD);
+
+	for (int i = 0; i < 31; i++)
+		api->game.getEditCell(10, i)->setType(CellType::ROAD);
 
 
-	Car* c0 = api->game.spawnCar(0, 5, Direction::RIGHT);
-	c0->speed = .4f;
-	Car* c1 = api->game.spawnCar(1, 5, Direction::RIGHT);
-	c0->speed = .4f;
-	Car* c2 = api->game.spawnCar(2, 5, Direction::RIGHT);
+	Car* cars[] = {
+		api->game.spawnCar(0, 5, Direction::RIGHT),
+		api->game.spawnCar(10, 13, Direction::UP),
+	};
+	
 
 
 	FILE* file = fopen("draft/output.txt", "w");
@@ -29,15 +32,10 @@ int main() {
 	for (int frame = 0; frame < 300; frame++) {
 		fprintf(file, "FRAME:START(%d)\n", frame);
 
-		if (frame == 100) {
-			for (int i = 20; i < 30; i++)
-					api->game.getCell(i, 5)->setType(CellType::ROAD);
-		}
-
 		MapSize size = api->game.map.getMapSize();
 		for (int y = size.y; y < size.height; y++) {
 			for (int x = size.x; x < size.width; x++) {
-				Cell* cell = api->game.map.getCell(x, y);
+				Cell* cell = api->game.map.getEditCell(x, y);
 				if (cell->hasCar()) {
 					Car* car = api->game.getCar(x, y);
 					fprintf(file, "%02d:%c:%.2f ", (int)cell->getType(), 'a' + (char)car->direction, car->step);

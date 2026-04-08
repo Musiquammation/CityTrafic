@@ -12,18 +12,25 @@ void Game::frame() {
 
 	this->map.resetCarMarks();
 
+	printf("FRAME: ");
 	for (auto& [pos, car] : this->carHandler) {
-		Cell* cell = this->map.getCell(car->x, car->y);
+		auto cell = this->map.getEditCell(car->x, car->y);
 		cell->setCarOn();
 	}
+
+	printf("\n");
 }
 
-Cell* Game::getCell(int x, int y) {
+Cell* Game::getEditCell(int x, int y) {
+	return this->map.getEditCell(x, y);
+}
+
+const Cell* Game::getCell(int x, int y) {
 	return this->map.getCell(x, y);
 }
 
 Car* Game::spawnCar(int x, int y, Direction direction) {
-	Cell* cell = this->map.getCell(x, y);
+	auto cell = this->map.getEditCell(x, y);
 	if (!cell || cell->hasCar()) {
 		return nullptr;
 	}

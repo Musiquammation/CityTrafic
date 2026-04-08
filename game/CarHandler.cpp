@@ -1,7 +1,9 @@
 #include "CarHandler.hpp"
 
 #include "Car.hpp"
+
 #include <stdio.h>
+#include <format>
 
 Car* CarHandler::spawnCar(int x, int y, Direction direction) {
 	auto car = new Car{x, y, direction};
@@ -22,6 +24,11 @@ void CarHandler::moveCars() {
 	for (auto& pair : this->cars) {
 		Car* car = pair.second;
 		car->move();
+		if (newCars.find({car->x, car->y}) != newCars.end()) {
+			throw std::runtime_error{
+				std::format("Collision at ({}, {})", car->x, car->y)
+			};
+		}
 		newCars[{car->x, car->y}] = car;
 
 	}

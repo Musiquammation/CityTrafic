@@ -41,13 +41,21 @@ void Map::expand(int x, int y, int right, int bottom) {
 	this->height = bottom - y;
 }
 
-Cell* Map::getCell(int x, int y) const {
+Cell* Map::getEditCell(int x, int y) const {
 	#if TESTING
 	if (x < this->x || x >= this->x + this->width || y < this->y || y >= this->y + this->height) {
 		throw std::range_error{"Cell coordinates out of range"};
 	}
-
 	#endif
+
+	return &this->cells[(y - this->y) * this->width + (x - this->x)];
+}
+
+
+const Cell* Map::getCell(int x, int y) const {
+	if (x < this->x || x >= this->x + this->width || y < this->y || y >= this->y + this->height) {
+		return &this->outCell;
+	}
 	
 	return &this->cells[(y - this->y) * this->width + (x - this->x)];
 }

@@ -2,6 +2,7 @@
 
 #include "declarations.hpp"
 
+#include "Cell.hpp"
 #include <stdint.h>
 
 
@@ -14,6 +15,7 @@ typedef struct {
 
 class Map {
     Cell* cells;
+    Cell outCell{.data = 0};
     int x;
     int y;
     int width;
@@ -24,7 +26,8 @@ public:
     ~Map();
 
     void expand(int left, int top, int right, int bottom);
-    Cell* getCell(int x, int y) const;
+    Cell* getEditCell(int x, int y) const;
+    const Cell* getCell(int x, int y) const;
     MapSize getMapSize() const;
 
     void resetCarMarks() const;

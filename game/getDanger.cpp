@@ -76,7 +76,7 @@ getDanger_t getDanger(const Car* car, Game* game) {
 	const auto applyPriority = [car](int intFrontDist, int intSideDist, Car* other) {
 		float frontDist = (float)intFrontDist + car->step +
 			(1.0f-Car::HEIGHT-Car::WIDTH)/2;
-			
+
 		// printf("frontDist")
 		return true;
 	};
@@ -85,7 +85,7 @@ getDanger_t getDanger(const Car* car, Game* game) {
 	Vector<int> pathPoint = pathHandler.seek();
 
 	for (int dist = 0; dist <= FRONT_RANGE; dist++) {
-		const Cell* cell = game->getCell(spy.x, spy.y);
+		auto cell = game->getCell(spy.x, spy.y);
 		CellType cellType = cell->getType();
 		Car* other = cell->hasCar() ?
 			game->getCar(spy.x, spy.y) :
@@ -139,7 +139,7 @@ getDanger_t getDanger(const Car* car, Game* game) {
 			
 
 			// Get first cell
-			const Cell* checkCell = game->getCell(checker.x, checker.y);
+			auto checkCell = game->getCell(checker.x, checker.y);
 			switch (checkCell->getType()) {
 			case CellType::NONE:
 			// case CellType::YIELD:
