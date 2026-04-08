@@ -102,35 +102,7 @@ typedef struct {
 } Spy;
 
 
-typedef struct {
-	int frontDist;
-	int sideDist;
-	const Car* other;
-	Vector<int> targetPoint;
-	std::vector<int> children{};
 
-
-	PriorityNode build() {
-		PriorityNode node;
-		node.frontDist = frontDist;
-		node.sideDist = sideDist;
-		node.other = other;
-		node.childrenLength = static_cast<int>(children.size());
-		node.targetPoint = targetPoint;
-
-		if (!children.empty()) {
-			node.children = new int[children.size()];
-			for (size_t i = 0; i < children.size(); ++i) {
-				node.children[i] = children[i];
-			}
-		} else {
-			node.children = nullptr;
-		}
-
-
-		return node;
-	}
-} NodeBuilder;
 
 
 
@@ -142,20 +114,14 @@ int fillGraph(
 	std::vector<PriorityNode>& priorities,
 	Spy spy
 ) {
-	auto cell = game->getCell(spy.x, spy.y);
-	
-	
-	// Check road
-	if (cell->hasCar()) {
-		Car* car = game->getCar(spy.x, spy.y);
-		
-	}
-
-
 	if (range <= 0)
 		return -1;
-
-	std::vector<int> children;
+		
+		
+		
+	auto cell = game->getCell(spy.x, spy.y);
+	int children[3] = {-1, -1, -1};
+	int* childPtr = &children[0];
 
 	// Adapt to road
 	switch (cell->getType()) {
@@ -178,7 +144,8 @@ int fillGraph(
 			range-1, false, game, priorities, rspy);
 
 		if (rnode >= 0) {
-			children.push_back(rnode);
+			*childPtr = rnode;
+			childPtr++;
 		}
 
 		
@@ -191,17 +158,20 @@ int fillGraph(
 			range-1, false, game, priorities, lspy);
 
 		if (lnode >= 0) {
-			children.push_back(lnode);
+			*childPtr = lnode;
+			childPtr++;
 		}
 
 		
 		// Check in front
-		spy.move();
+		Spy fspy = spy;
+		fspy.move();
 		int fnode = fillGraph(frontDist, sideDist+1,
-			range-1, false, game, priorities, spy);
+			range-1, false, game, priorities, fspy);
 
 		if (fnode >= 0) {
-			children.push_back(fnode);
+			*childPtr = fnode;
+			childPtr++;
 		}
 		
 		
@@ -212,6 +182,10 @@ int fillGraph(
 	}
 
 
+	// Check for a car
+	if (cell->hasCar()) {
+		Car* car = game->getCar(spy.x, spy.y);
+	}
 	
 	return -1;
 }
@@ -259,9 +233,13 @@ float getNodeAcc(
 	// Pass BEFORE the car (so try to use fastAcc)
 	if (fastAcc <= maxAcceleration) {
 		float min = maxAcceleration;
-		mfor(node->children, node->childrenLength, c) {
+		mfor(node->children, 3, cptr) {
+			int c = *cptr;
+			if (c < 0)
+				break;
+
 			float acc = getNodeAcc(car, maxAcceleration,
-				priorities, &priorities[*c]);
+				priorities, &priorities[c]);
 
 			if (acc < min)
 				min = acc;
@@ -280,9 +258,13 @@ float getNodeAcc(
 	// Wait for the car and its children
 	
 	float min = slowAcc;
-	mfor(node->children, node->childrenLength, c) {
+	mfor(node->children, 3, cptr) {
+		int c = *cptr;
+		if (c < 0)
+			break;
+
 		float acc = getNodeAcc(car, maxAcceleration,
-			priorities, &priorities[*c]);
+			priorities, &priorities[c]);
 
 		if (acc < min)
 			min = acc;
@@ -417,8 +399,7 @@ getDanger_t getDanger(
 
 			if (nodeIdx >= 0 && previousNodeIdx >= 0) {
 				PriorityNode& node = priorities[nodeIdx];
-				node.children[node.childrenLength-1] = previousNodeIdx;
-				node.childrenLength++;
+				
 			}
 		}
 

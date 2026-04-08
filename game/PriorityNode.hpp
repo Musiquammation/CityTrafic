@@ -5,12 +5,7 @@
 struct PriorityNode {
 	int frontDist;
 	int sideDist;
-	int childrenLength; 
+	int children[3];
 	const Car* other;
-	int* children;
 	Vector<int> targetPoint;
-
-	~PriorityNode() {
-		free(this->children);
-	}
 };

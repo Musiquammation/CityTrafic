@@ -1,0 +1,26 @@
+{
+  "name": "citytrafic",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "client": "vite",
+    "build": "vite build"
+  },
+  "devDependencies": {
+    "@types/node": "^24.10.2",
+    "@types/wicg-file-system-access": "^2023.10.7",
+    "@types/ws": "^8.18.1",
+    "tsx": "^4.21.0",
+    "typescript": "~5.8.3",
+    "vite": "^7.3.0"
+  },
+  "dependencies": {
+    "dotenv": "^17.2.3",
+    "ws": "^8.18.3"
+  },
+  "description": "",
+  "main": "index.js",
+  "author": "",
+  "license": "ISC"
+}
