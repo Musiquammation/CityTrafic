@@ -3,6 +3,7 @@
 #include "getDanger.hpp"
 #include "Game.hpp"
 #include "Cell.hpp"
+#include "debugFile.hpp"
 
 
 Car::Car(int x, int y, Direction direction) 
@@ -63,7 +64,8 @@ void Car::move() {
 		this->y += Direction_getVector(this->direction).y;
 	}
 
-	// printf("x: %.3f, v: %.3f\n", (float)this->x + this->step, this->speed);
+	debugLog("[%p] y: %.2f, v: %.2f\n", this,
+		 (float)this->y + this->step, this->realSpeed);
 }
 
 Vector<float> Car::calcPosition() const {

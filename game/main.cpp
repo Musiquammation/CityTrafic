@@ -5,8 +5,29 @@
 
 #include <array>
 #include <stdio.h>
+#include <iostream>
+#include <stdexcept>
 
 #include "debugFile.hpp"
+
+
+struct RedCerr {
+    template<typename T>
+    RedCerr& operator<<(const T& value) {
+        std::cerr << "\033[31m" << value << "\033[0m";
+        return *this;
+    }
+
+    // Pour std::endl et manipulators
+    RedCerr& operator<<(std::ostream& (*manip)(std::ostream&)) {
+        std::cerr << manip;
+        return *this;
+    }
+};
+
+RedCerr rcerr;
+
+
 
 int main() {
 	Api* api = Api_create();
@@ -21,14 +42,13 @@ int main() {
 
 
 	Car* cars[] = {
-		api->game.spawnCar(0, crossY, Direction::RIGHT),
-		api->game.spawnCar(1, crossY, Direction::RIGHT),
-		api->game.spawnCar(2, crossY, Direction::RIGHT),
+		// api->game.spawnCar(0, crossY, Direction::RIGHT),
+		// api->game.spawnCar(1, crossY, Direction::RIGHT),
+		// api->game.spawnCar(2, crossY, Direction::RIGHT),
 
-		api->game.spawnCar(crossX, 12, Direction::UP),
-		api->game.spawnCar(crossX, 13, Direction::UP),
-		api->game.spawnCar(crossX, 14, Direction::UP),
-		api->game.spawnCar(crossX, 15, Direction::UP),
+		api->game.spawnCar(crossX, 5, Direction::UP),
+		api->game.spawnCar(crossX, 6, Direction::UP),
+		
 	};
 
 	for (int i = 0; i < (int)(sizeof(cars) / sizeof(cars[0])); i++) {
@@ -65,11 +85,18 @@ int main() {
 
 		fprintf(debugFile, "FRAME:LOGS(%d)\n", frame);
 		
-		Api_frame(api);
+		try {
+			Api_frame(api);
+		} catch (const std::exception& error) {
+			rcerr << "Error: " << error.what() << std::endl;
+			goto stopLoop;
+		}
+
 		fprintf(debugFile, "FRAME:END(%d)\n", frame);
 		
 	}
 
+	stopLoop:
 	fclose(debugFile);
 
 	Api_delete(api);
