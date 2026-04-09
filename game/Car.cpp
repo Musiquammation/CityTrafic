@@ -35,8 +35,9 @@ void Car::update(Game* game, std::vector<PriorityNode>& prioritiesBuffer) {
 
 void Car::move() {
 	// Make members public
+	this->publicAcceleration = this->realSpeed -
+		this->publicSpeed; // newSpeed - oldSpeed
 	this->publicSpeed = this->realSpeed;
-	this->publicTargetPoint = this->realTargetPoint;
 	this->publicTargetPoint = this->realTargetPoint;
 	
 	// Move

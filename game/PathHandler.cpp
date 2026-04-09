@@ -75,5 +75,4 @@ void PathHandler<freeArray>::next() {
 }
 
 
-
 template PathHandler<false>::PathHandler(const PathHandler<true>&);

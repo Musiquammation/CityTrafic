@@ -142,6 +142,9 @@ int fillGraph(
 		Car* car;
 		if (cell->hasCar()) {
 			car = game->getCar(spy.x, spy.y);
+			if (car->direction != Direction_getOpposite(spy.dir))
+				car = nullptr;
+
 		} else {
 			car = nullptr;
 		}
@@ -183,10 +186,13 @@ int fillGraph(
 		
 
 		if (validLength == 1 && !car) {
-			for (int i = 0; true; i++)
-				if (children[i] >= 0)
+			for (int i = 0; true; i++) {
+				if (children[i] >= 0) {
 					return children[i];
+				}
+			}
 		}
+
 
 		if (validLength == 0 && !car)
 			return -1;
@@ -202,7 +208,8 @@ int fillGraph(
 			}
 		}
 		childrenArr[j] = -1;
-			
+
+		
 
 		priorities.push_back({
 			frontDist,
@@ -212,7 +219,6 @@ int fillGraph(
 		});
 
 		return (int)priorities.size() - 1;
-		break;
 	}
 
 
@@ -261,6 +267,13 @@ float getNodeAcc(
 		carEntryDist, sideExitDist
 	);
 
+	debugLog("%.3f %.3f ; %.3f %.3f ; %.3f %.3f\n",
+		slowAcc, fastAcc,
+		car->getAcceleration(), node->car->getAcceleration(),
+		carEntryDist, sideExitDist
+	);
+
+
 	// if (slowAcc == INFINITY_F) // is this case even possible?
 		// slowAcc = maxAcceleration;
 
@@ -272,6 +285,7 @@ float getNodeAcc(
 			int c = *cptr;
 			if (c < 0)
 				break;
+
 			float acc = getNodeAcc(car, maxAcceleration,
 				priorities, &priorities[c]);
 
@@ -313,8 +327,8 @@ getDanger_t getDanger(
 	std::vector<PriorityNode>& priorities
 ) {
 	enum {
-		FRONT_RANGE = 32,
-		SIDE_RANGE = 16
+		FRONT_RANGE = 64,
+		SIDE_RANGE = 64
 	};
 
 
@@ -367,7 +381,9 @@ getDanger_t getDanger(
 
 	Spy spy{car->x, car->y, car->direction};
 	Vector<int> pathPoint = pathHandler.seek();
-	
+	int firstNodeIdx = -1;
+	int previousNodeIdx = -1;
+
 	
 	// Get terrain speed limit and check priorities
 	for (int dist = 0; dist <= FRONT_RANGE; dist++) {
@@ -426,7 +442,6 @@ getDanger_t getDanger(
 			checker.dir = Direction_getRight(spy.dir);
 			checker.move();
 			
-			int previousNodeIdx = (int)priorities.size() - 1;
 			int nodeIdx = fillGraph(dist, 0, SIDE_RANGE - dist,
 				true, game, priorities, checker);
 
@@ -445,6 +460,9 @@ getDanger_t getDanger(
 
 						break;
 					}
+
+				} else {
+					firstNodeIdx = nodeIdx;
 				}
 
 				previousNodeIdx = nodeIdx;
@@ -491,8 +509,17 @@ getDanger_t getDanger(
 	finishUpdate:
 
 	// Get priority acceleration
-	if (priorities.size() >= 1) {
-		maxAcceleration = getNodeAcc(car, maxAcceleration, priorities, &priorities[0]);
+	if (firstNodeIdx >= 0) {
+		priorities[firstNodeIdx].print(priorities);
+		maxAcceleration = getNodeAcc(car, maxAcceleration,
+			priorities, &priorities[firstNodeIdx]);
+
+		if (car == (Car*)0x507000000090)
+			debugLog("rem(%.3f)\n", maxAcceleration);
+	} else {
+
+		if (car == (Car*)0x507000000090)
+			debugLog("acc(%.3f)\n", maxAcceleration);
 	}
 
 

@@ -41,6 +41,24 @@ Direction Direction_getLeft(Direction dir) {
 	throw std::runtime_error("Invalid Direction");
 }
 
+Direction Direction_getOpposite(Direction dir) {
+	switch (dir) {
+	case Direction::RIGHT:
+		return Direction::LEFT;
+
+	case Direction::UP:
+		return Direction::DOWN;
+
+	case Direction::LEFT:
+		return Direction::RIGHT;
+
+	case Direction::DOWN:
+		return Direction::UP;
+
+	};
+
+	throw std::runtime_error("Invalid Direction");
+}
 
 int Direction_getTurn(Direction origin, Direction target) {
 	int diff = ((int)target - (int)origin + 4) % 4;

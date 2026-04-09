@@ -20,7 +20,6 @@ class Car {
 private:
 	Vector<int> realTargetPoint;
 	Vector<int> publicTargetPoint{-1, -1};
-	float realAcceleration;
 	float publicAcceleration = 0;
 	float realSpeed = 0;
 	float publicSpeed = 0;
@@ -30,7 +29,7 @@ public:
 	static constexpr float MAX_DECELERATION = .03f;
 	static constexpr float SOFT_DECELERATION = .002f;
 	static constexpr float FRONT_DECELERATION = .009f;
-	static constexpr float MAX_ACCELERATION = .005f;
+	static constexpr float MAX_ACCELERATION = .02f;
 	static constexpr int SPEED_FACTOR = 30;
 	static constexpr float WIDTH = .9f;
 	static constexpr float HEIGHT = .6f;

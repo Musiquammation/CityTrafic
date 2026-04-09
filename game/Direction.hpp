@@ -22,5 +22,6 @@ constexpr Vector<int> DIRECTION_VECTORS[] = {
 Vector<int> Direction_getVector(Direction dir);
 Direction Direction_getRight(Direction dir);
 Direction Direction_getLeft(Direction dir);
+Direction Direction_getOpposite(Direction dir);
 int Direction_getTurn(Direction origin, Direction target);
 
