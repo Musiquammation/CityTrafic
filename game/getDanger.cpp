@@ -510,7 +510,6 @@ getDanger_t getDanger(
 
 	// Get priority acceleration
 	if (firstNodeIdx >= 0) {
-		priorities[firstNodeIdx].print(priorities);
 		maxAcceleration = getNodeAcc(car, maxAcceleration,
 			priorities, &priorities[firstNodeIdx]);
 
