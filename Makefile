@@ -17,25 +17,12 @@ SANITIZE ?= 1
 
 ifeq ($(SANITIZE),1)
 	SAN_FLAGS = -fsanitize=address,undefined -fno-omit-frame-pointer
-	CXXFLAGS += $(SAN_FLAGS)
-	LDFLAGS  += $(SAN_FLAGS)
+	CXXFLAGS_NATIVE = $(CXXFLAGS) $(SAN_FLAGS)
+	LDFLAGS_NATIVE  = $(LDFLAGS) $(SAN_FLAGS)
+else
+	CXXFLAGS_NATIVE = $(CXXFLAGS)
+	LDFLAGS_NATIVE  = $(LDFLAGS)
 endif
-
-# =========================
-# Exported functions (Emscripten)
-# =========================
-EMCC_FUNCS = Api_create Api_delete Api_frame Api_take
-EMCC_FUNCS_JSON = $(shell printf '"_%s",' $(EMCC_FUNCS) | sed 's/,$$//')
-
-# =========================
-# Flags Emscripten
-# =========================
-EMFLAGS = -std=c++20 -O3 \
-          -sEXPORTED_FUNCTIONS='[$(EMCC_FUNCS_JSON)]' \
-          -sEXPORTED_RUNTIME_METHODS='["ccall","cwrap"]' \
-          -sMODULARIZE \
-          -sENVIRONMENT=web \
-          -sALLOW_MEMORY_GROWTH=1
 
 # =========================
 # Variables de test
@@ -43,8 +30,7 @@ EMFLAGS = -std=c++20 -O3 \
 TESTING_MACRO ?= 1
 
 ifeq ($(TESTING_MACRO),1)
-	CXXFLAGS += -DTESTING=1
-	EMFLAGS  += -DTESTING=1
+	CXXFLAGS_NATIVE += -DTESTING=1
 endif
 
 # =========================
@@ -61,10 +47,34 @@ OBJ := $(patsubst $(SRC_DIR)/%.cpp,$(BIN_DIR)/%.o,$(SRC))
 DEP := $(OBJ:.o=.d)
 
 # =========================
-# Exécutables
+# Plateforme / Extension bibliothèque
+# =========================
+UNAME_S := $(shell uname -s)
+
+ifeq ($(UNAME_S),Linux)
+	LIB_EXT = so
+endif
+ifeq ($(UNAME_S),Darwin)
+	LIB_EXT = dylib
+endif
+ifeq ($(OS),Windows_NT)
+	LIB_EXT = dll
+endif
+
+LIB_TARGET = $(BIN_DIR)/api.$(LIB_EXT)
+
+# =========================
+# Exécutables / lib
 # =========================
 TARGET    = $(BIN_DIR)/gametest
 EM_TARGET = $(BIN_DIR)/api.js
+NAPI_TARGET = $(BIN_DIR)/addon.node
+
+# =========================
+# Node / N-API includes
+# =========================
+NODE_ADDON_API_DIR := $(shell node -p "require('node-addon-api').include")
+NODE_INCLUDE_DIR := $(shell node -p "require('node:path').join(process.execPath, '../../include/node')")
 
 # =========================
 # Règle par défaut
@@ -72,28 +82,71 @@ EM_TARGET = $(BIN_DIR)/api.js
 all: $(TARGET)
 
 # =========================
+# Compilation des .o natifs
+# =========================
+$(BIN_DIR)/%.o: $(SRC_DIR)/%.cpp
+	@mkdir -p $(dir $@)
+	$(CXX) $(CXXFLAGS_NATIVE) -c $< -o $@
+
+# =========================
+# Compilation des .o N-API (sans ASan)
+# =========================
+OBJ_NAPI := $(patsubst $(SRC_DIR)/%.cpp,$(BIN_DIR)/napi/%.o,$(SRC))
+
+$(BIN_DIR)/napi/%.o: $(SRC_DIR)/%.cpp
+	@mkdir -p $(dir $@)
+	$(CXX) $(CXXFLAGS) -fPIC \
+	      -I$(NODE_ADDON_API_DIR) \
+	      -I$(NODE_INCLUDE_DIR) \
+	      -DPRODUCE_NAPI=1 \
+	      -c $< -o $@
+
+# =========================
 # Build natif
 # =========================
 $(TARGET): $(OBJ)
 	@mkdir -p $(dir $@)
-	$(CXX) $(OBJ) $(LDFLAGS) -o $@
+	$(CXX) $(OBJ) $(LDFLAGS_NATIVE) -o $@
 
-$(BIN_DIR)/%.o: $(SRC_DIR)/%.cpp
-	@mkdir -p $(dir $@)
-	$(CXX) $(CXXFLAGS) -c $< -o $@
+# =========================
+# Build lib dynamique (portable)
+# =========================
+compile_lib: $(SRC)
+	@mkdir -p $(BIN_DIR)
+ifeq ($(LIB_EXT),dll)
+	$(CXX) -shared -o $(LIB_TARGET) $(SRC) $(CXXFLAGS_NATIVE) $(LDFLAGS_NATIVE)
+else
+	$(CXX) -shared -fPIC $(SRC) $(CXXFLAGS_NATIVE) -o $(LIB_TARGET) $(LDFLAGS_NATIVE)
+endif
+
+# =========================
+# Build Emscripten
+# =========================
+EMCC_FUNCS = Api_create Api_delete Api_frame Api_take
+EMCC_FUNCS_JSON = $(shell printf '"_%s",' $(EMCC_FUNCS) | sed 's/,$$//')
+EMFLAGS = -std=c++20 -O3 \
+          -sEXPORTED_FUNCTIONS='[$(EMCC_FUNCS_JSON)]' \
+          -sEXPORTED_RUNTIME_METHODS='["ccall","cwrap"]' \
+          -sMODULARIZE \
+          -sENVIRONMENT=web \
+          -sALLOW_MEMORY_GROWTH=1
+
+emcc:
+	@mkdir -p $(BIN_DIR)
+	$(EMXX) $(SRC) $(EMFLAGS) -o $(EM_TARGET)
+
+# =========================
+# Build N-API (Node 22+) sans sanitizer
+# =========================
+napi: $(OBJ_NAPI)
+	@mkdir -p $(BIN_DIR)
+	$(CXX) $(OBJ_NAPI) -shared -fPIC -o $(NAPI_TARGET) $(LDFLAGS)
 
 # =========================
 # Test
 # =========================
 test: $(TARGET)
 	@$(TARGET)
-
-# =========================
-# Build Emscripten
-# =========================
-emcc:
-	@mkdir -p $(BIN_DIR)
-	$(EMXX) $(SRC) $(EMFLAGS) -o $(EM_TARGET)
 
 # =========================
 # Debug

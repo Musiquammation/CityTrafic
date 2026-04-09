@@ -1,6 +1,5 @@
 #include "MutexPool.hpp"
 
-#include "MutexPool.hpp"
 
 void MutexPool::lock(MutexLabel label) {
 	size_t idx = static_cast<size_t>(label);

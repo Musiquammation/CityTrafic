@@ -1,4 +1,3 @@
-#include "api.hpp"
 #include "Game.hpp"
 #include "Cell.hpp"
 #include "Car.hpp"
@@ -30,24 +29,24 @@ RedCerr rcerr;
 
 
 int main() {
-	Api* api = Api_create();
+	Game game{};
 
 	int crossX = 19;
 	int crossY = 5;
 	for (int i = 0; i < 31; i++)
-		api->game.getEditCell(i, crossY)->setType(CellType::ROAD);
+		game.getEditCell(i, crossY)->setType(CellType::ROAD);
 
 	for (int i = 0; i < 31; i++)
-		api->game.getEditCell(crossX, i)->setType(CellType::ROAD);
+		game.getEditCell(crossX, i)->setType(CellType::ROAD);
 
 
 	Car* cars[] = {
-		// api->game.spawnCar(0, crossY, Direction::RIGHT),
-		// api->game.spawnCar(1, crossY, Direction::RIGHT),
-		// api->game.spawnCar(2, crossY, Direction::RIGHT),
+		// game.spawnCar(0, crossY, Direction::RIGHT),
+		// game.spawnCar(1, crossY, Direction::RIGHT),
+		// game.spawnCar(2, crossY, Direction::RIGHT),
 
-		api->game.spawnCar(crossX, 5, Direction::UP),
-		api->game.spawnCar(crossX, 6, Direction::UP),
+		game.spawnCar(crossX, 5, Direction::UP),
+		game.spawnCar(crossX, 6, Direction::UP),
 		
 	};
 
@@ -66,12 +65,12 @@ int main() {
 	for (int frame = 0; frame < 300; frame++) {
 		fprintf(debugFile, "FRAME:START(%d)\n", frame);
 
-		MapSize size = api->game.map.getMapSize();
+		MapSize size = game.map.getMapSize();
 		for (int y = size.y; y < size.height; y++) {
 			for (int x = size.x; x < size.width; x++) {
-				Cell* cell = api->game.map.getEditCell(x, y);
+				Cell* cell = game.map.getEditCell(x, y);
 				if (cell->hasCar()) {
-					Car* car = api->game.getCar(x, y);
+					Car* car = game.getCar(x, y);
 					fprintf(debugFile, "%02d:%c:%.2f ", (int)cell->getType(), 'a' + (char)car->direction, car->step);
 				} else if (cell->getType() == CellType::NONE) {
 					fprintf(debugFile, "X ");
@@ -86,7 +85,7 @@ int main() {
 		fprintf(debugFile, "FRAME:LOGS(%d)\n", frame);
 		
 		try {
-			Api_frame(api);
+			game.frame();
 		} catch (const std::exception& error) {
 			rcerr << "Error: " << error.what() << std::endl;
 			goto stopLoop;
@@ -99,7 +98,6 @@ int main() {
 	stopLoop:
 	fclose(debugFile);
 
-	Api_delete(api);
 
 	printf("Success!\n");
 	return 0;

@@ -1,26 +1,26 @@
 {
   "name": "citytrafic",
-  "private": true,
   "version": "0.0.0",
   "type": "module",
   "scripts": {
     "client": "vite",
-    "build": "vite build"
+    "build": "vite build",
+    "server": "tsx watch server/server.ts"
   },
   "devDependencies": {
-    "@types/node": "^24.10.2",
+    "@types/node": "^24.12.2",
     "@types/wicg-file-system-access": "^2023.10.7",
     "@types/ws": "^8.18.1",
+    "ts-node": "^10.9.2",
+    "ts-node-dev": "^2.0.0",
     "tsx": "^4.21.0",
     "typescript": "~5.8.3",
     "vite": "^7.3.0"
   },
   "dependencies": {
     "dotenv": "^17.2.3",
+    "node-addon-api": "^8.7.0",
+    "os": "^0.1.2",
     "ws": "^8.18.3"
-  },
-  "description": "",
-  "main": "index.js",
-  "author": "",
-  "license": "ISC"
+  }
 }
