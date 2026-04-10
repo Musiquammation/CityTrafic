@@ -9,13 +9,19 @@
 	<body>
 		<canvas id="gameCanvas"></canvas>
 
-        <div id="gameView">
+        <div id="gameView" class="view hidden">
 			<div id="fps"></div>
         </div>
+
+		<div id="homeView" class="view hidden">
+			<button id="home-createSession">Create session</button>
+			<button id="home-joinSession">Join session</button>
+		</div>
 
 		<script>
 			window.IMG_ROOT_PATH = "";
 			window.DEBUG = true;
+			window.SERV_ADDRESS = "ws://localhost:3704";
 
 			import("/src/index.ts").then(m => {m.startGame()});
 		</script>

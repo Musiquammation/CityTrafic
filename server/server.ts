@@ -43,7 +43,10 @@ const server = net.createServer(socket => {
 	const session = new Session();
 	socket.on('data', data => {
 		const reader = new DataReader(data.buffer);
-		session.receive(reader);
+		const writer = session.receive(reader);
+		if (writer) {
+			socket.write(Buffer.from(writer.toArrayBuffer()));
+		}
 
 
 	});

@@ -4,7 +4,7 @@ import { PauseElement } from "./PauseElement";
 import {InputHandler} from "./InputHandler";
 import { ImageLoader } from "./ImageLoader";
 import { GAME_COLORS } from "./GAME_COLORS";
-import { EmptyState } from "../states/EmptyState";
+import { HomeState } from "../states/HomeState";
 
 declare global {
 	interface Window {
@@ -42,7 +42,7 @@ export class GameHandler {
 		this.inputHandler.startKeydownListeners(keydownEventTarget);
 		this.inputHandler.startMouseListeners(mouseEventTarget);
 
-		this.state = new EmptyState();
+		this.state = new HomeState();
 		this.state.enter(undefined, this.inputHandler);
 
 		/// TODO: Load assets

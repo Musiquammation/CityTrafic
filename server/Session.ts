@@ -6,16 +6,16 @@ import { CLIENT_IDS } from "../netids/clientIds"
 import { SERVER_IDS } from "../netids/serverIds"
 
 export class Session {
-	receive(reader: DataReader) {
+	receive(reader: DataReader): DataWriter | null {
 		const action = reader.readUint8();
 
 		switch (action) {
 		case SERVER_IDS.CONNECT: // connect
 			return this.receive_connect(reader);
+
+		default:
+			throw new Error("Unknown action");
 		}
-
-
-		return null;
 	}
 
 
@@ -42,5 +42,6 @@ export class Session {
 		const writer = new DataWriter();
 		writer.writeUint8(CLIENT_IDS.JOIN_ALIVE);
 		writer.write256(matchId);
+		return writer;
 	}
 }
