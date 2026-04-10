@@ -45,8 +45,14 @@ int main() {
 		// game.spawnCar(1, crossY, Direction::RIGHT),
 		// game.spawnCar(2, crossY, Direction::RIGHT),
 
-		game.spawnCar(crossX, 5, Direction::UP),
-		game.spawnCar(crossX, 6, Direction::UP),
+		game.spawnCar(crossX, 23, Direction::UP),
+		game.spawnCar(crossX, 24, Direction::UP),
+		game.spawnCar(crossX, 25, Direction::UP),
+		game.spawnCar(crossX, 26, Direction::UP),
+		game.spawnCar(crossX, 27, Direction::UP),
+		game.spawnCar(crossX, 28, Direction::UP),
+		game.spawnCar(crossX, 29, Direction::UP),
+		game.spawnCar(crossX, 30, Direction::UP),
 		
 	};
 

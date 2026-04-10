@@ -380,6 +380,7 @@ getDanger_t getDanger(
 
 
 	Spy spy{car->x, car->y, car->direction};
+	const Direction spyOpposedDir = Direction_getOpposite(car->direction);
 	Vector<int> pathPoint = pathHandler.seek();
 	int firstNodeIdx = -1;
 	int previousNodeIdx = -1;
@@ -410,15 +411,36 @@ getDanger_t getDanger(
 
 		case CellType::ROAD:
 		{
-			if (other && other != car) {
-				appendStopDist(
-					(float)dist + other->step - car->step - Car::WIDTH,
-					Car::FRONT_DECELERATION,
-					{spy.x, spy.y}
-				);
-			}
 			checkRightPriority = true;
 			checkLeftPriority = false;
+
+			if (other == nullptr || other == car)
+				break;
+
+			Direction otherDirection = other->direction;
+			float stopDist;
+
+			if (otherDirection == spy.dir) {
+				float shrinkedStep = other->step - Car::WIDTH/2;
+				if (shrinkedStep > 0)
+					shrinkedStep = 0;
+				
+				stopDist = (float)dist + shrinkedStep - car->step - Car::WIDTH/2;
+
+			} else if (otherDirection == spyOpposedDir) {
+				stopDist = (float)dist - car->step + (
+					(1-Car::HEIGHT)/2 - Car::WIDTH/2);
+			} else { // Side direction
+				stopDist = 10e6f;
+				
+			}
+
+			appendStopDist(
+				stopDist,
+				Car::FRONT_DECELERATION,
+				{spy.x, spy.y}
+			);
+
 			break;
 		}
 
@@ -513,12 +535,6 @@ getDanger_t getDanger(
 		maxAcceleration = getNodeAcc(car, maxAcceleration,
 			priorities, &priorities[firstNodeIdx]);
 
-		if (car == (Car*)0x507000000090)
-			debugLog("rem(%.3f)\n", maxAcceleration);
-	} else {
-
-		if (car == (Car*)0x507000000090)
-			debugLog("acc(%.3f)\n", maxAcceleration);
 	}
 
 
