@@ -47,3 +47,26 @@ void Api::deleteSession(int id) {
 void* Api::take(int id, int datacode) {
 	return nullptr;
 }
+
+
+
+
+Api* Api_createApi(int threadnum) {
+	return new Api(threadnum);
+}
+
+void Api_deleteApi(Api* api) {
+	delete api;
+}
+
+int Api_createSession(Api* api) {
+	return api->createSession();
+}
+
+void Api_deleteSession(Api* api, int id) {
+	api->deleteSession(id);
+}
+
+void* Api_take(Api* api, int id, int datacode) {
+	return api->take(id, datacode);
+}
