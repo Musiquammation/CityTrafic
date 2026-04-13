@@ -2,19 +2,18 @@
 	"targets": [
 		{
 			"target_name": "addon",
-			"sources": ["ApiWrapper.cpp"],
+			"sources": [
+				"src/wrapper.cpp"
+			],
 			"include_dirs": [
-				"<!(node -p \"require('node-addon-api').include\")"
+				"<!(node -p \"require('node-addon-api').include\")",
+				"src"
 			],
 			"dependencies": [
 				"<!(node -p \"require('node-addon-api').gyp\")"
 			],
-			"libraries": [
-				
-			],
-			"cflags!": ["-fno-exceptions"],
-			"cflags_cc!": ["-fno-exceptions"],
-			"defines": ["NAPI_CPP_EXCEPTIONS"]
+			"cflags_cc!": [ "-fno-exceptions" ],
+			"defines": [ "NAPI_DISABLE_CPP_EXCEPTIONS" ]
 		}
 	]
 }
