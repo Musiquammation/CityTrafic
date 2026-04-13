@@ -43,7 +43,7 @@ public:
 	void init();
 	int createSession();
 	void deleteSession(int id);
-	void* take(int id, int datacode);
+	void* take(int id, int datacode, void* args);
 
 private:
 	int threadnum;
@@ -57,5 +57,5 @@ extern "C" {
 	void Api_deleteApi(Api* api);
 	int Api_createSession(Api* api);
 	void Api_deleteSession(Api* api, int id);
-	void* Api_take(Api* api, int id, int datacode);
+	void* Api_take(Api* api, int id, int datacode, void* args);
 }

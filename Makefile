@@ -127,7 +127,7 @@ endif
 # =========================
 # Build Emscripten (temp)
 # =========================
-EMCC_FUNCS = Api_createApi Api_deleteApi Api_createSession Api_deleteSession Api_take
+EMCC_FUNCS = Api_createApi Api_deleteApi Api_createSession Api_deleteSession Api_take malloc free
 
 EMCC_FUNCS_JSON = $(shell printf '"_%s",' $(EMCC_FUNCS) | sed 's/,$$//')
 

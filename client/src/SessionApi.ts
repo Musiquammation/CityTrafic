@@ -62,11 +62,12 @@ class SessionApi {
 	}
 
 
-	private run(code: number) {
+	private run(code: number, args: any = 0) {
 		return this.module._Api_take(
 			this.apiPtr,
 			this.sessionId,
-			code
+			code,
+			args
 		);
 	}
 
@@ -83,12 +84,26 @@ class SessionApi {
 		return {x, y, w, h};
 	}
 
-	takeCells(runner: Runner<void>) {
-		const ptr = this.run(ApiTakeCode.TAKE_MAP_CPY);
+	takeCells(rect: Rectangle, runner: Runner<Uint16Array>) {
+		const arg = this.module._malloc(4 * 4); 
+		this.module.HEAPU32[(arg>>2) + 0] = rect.x;
+		this.module.HEAPU32[(arg>>2) + 1] = rect.y;
+		this.module.HEAPU32[(arg>>2) + 2] = rect.w;
+		this.module.HEAPU32[(arg>>2) + 3] = rect.h;
 
-		runner();
+		const ptr = this.run(ApiTakeCode.TAKE_MAP_CPY, arg) >> 1;
+		
+		console.log(this.module);
+		this.module._free(arg);
+
+		const view = this.module.HEAPU16.subarray(
+			ptr,
+			ptr + (rect.w * rect.h)
+		);
+
+		runner(view);
+
 		this.run(ApiTakeCode.RLSE_MAP_CPY);
-
 	}
 }
 

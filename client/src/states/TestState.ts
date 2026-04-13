@@ -27,8 +27,9 @@ export class TestState extends GameState {
 
 
     test() {
-        const coords = api.takeCoords();
-        console.log(coords);
+        api.takeCells({x: 3, y: 5, w: 10, h: 4}, view => {
+            console.log(view);
+        });
     }
 
     frame(game: GameHandler): GameState | null {

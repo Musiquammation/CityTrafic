@@ -45,18 +45,17 @@ void Api::deleteSession(int id) {
 	thread.games.erase(id);
 }
 
-void* Api::take(int id, int datacode) {
+void* Api::take(int id, int datacode, void* args) {
 	ApiThread& thread = threads[id % threadnum];
 	ApiGame& s = thread.games[threadnum];
 
 	switch ((ApiTakeCode)datacode) {
 	case ApiTakeCode::TAKE_MAP_CPY:
 	{
-		/// TODO: fill with args
-		int x0 = 0;
-		int y0 = 0;
-		int w = 32;
-		int h = 32;
+		int x0 = ((uint32_t*)args)[0];
+		int y0 = ((uint32_t*)args)[1];
+		int w  = ((uint32_t*)args)[2];
+		int h  = ((uint32_t*)args)[3];
 
 
 		auto lock = s.game.mutexPool.lockRead(MutexLabel::MAP);
@@ -133,6 +132,6 @@ void Api_deleteSession(Api* api, int id) {
 	api->deleteSession(id);
 }
 
-void* Api_take(Api* api, int id, int datacode) {
-	return api->take(id, datacode);
+void* Api_take(Api* api, int id, int datacode, void* args) {
+	return api->take(id, datacode, args);
 }
