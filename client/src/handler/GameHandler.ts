@@ -5,17 +5,23 @@ import {InputHandler} from "./InputHandler";
 import { ImageLoader } from "./ImageLoader";
 import { GAME_COLORS } from "./GAME_COLORS";
 import { HomeState } from "../states/HomeState";
+import { TestState } from "../states/TestState";
 
 declare global {
 	interface Window {
 		IMG_ROOT_PATH: string;
+		switchToTestState: boolean;
 	}
 }
+
+
+window.switchToTestState = false;
+
 
 function setElementAsBackground(
 	element: HTMLCanvasElement | HTMLImageElement,
 	div: HTMLElement
-): void {
+) {
 	if (element instanceof HTMLCanvasElement) {
 		element.toBlob(blob => {
 			if (!blob) return;
@@ -26,6 +32,7 @@ function setElementAsBackground(
 		div.style.backgroundImage = `url(${element.src})`;
 	}
 }
+
 
 export class GameHandler {
 	private state: GameState;
@@ -57,6 +64,12 @@ export class GameHandler {
 			const data = this.state.exit();
 			this.state = next;
 			next.enter(data, this.inputHandler);
+		
+		} else if (window.switchToTestState) {
+			window.switchToTestState = false;
+			this.state.exit();
+			this.state = new TestState();
+			this.state.enter(null, this.inputHandler);
 		}
 	}
 

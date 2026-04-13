@@ -17,7 +17,6 @@ window.DEBUG = false;
 window.startGame = startGame;
 
 
-
 export function startGame() {
 	const FPS_FREQUENCY = 4;
 	const EXCESS_COUNT = 70;

@@ -1,5 +1,6 @@
 #include "Api.hpp"
 
+#include <string.h>
 
 Api::Api(int threadnum) : threadnum(threadnum), threads(threadnum) {}
 
@@ -45,33 +46,65 @@ void Api::deleteSession(int id) {
 }
 
 void* Api::take(int id, int datacode) {
-	ApiGame& s = threads[id % threadnum].games[threadnum];
+	ApiThread& thread = threads[id % threadnum];
+	ApiGame& s = thread.games[threadnum];
 
 	switch ((ApiTakeCode)datacode) {
-	case ApiTakeCode::TAKE_MAP:
+	case ApiTakeCode::TAKE_MAP_CPY:
 	{
-		s.locks[(size_t)ApiGameLockCode::MAP] =
-			s.game.mutexPool.lockRead(MutexLabel::MAP);
+		/// TODO: fill with args
+		int x0 = 0;
+		int y0 = 0;
+		int w = 32;
+		int h = 32;
 
-		return s.game.map.cells;
+
+		auto lock = s.game.mutexPool.lockRead(MutexLabel::MAP);
+		Cell* array = (Cell*)malloc(sizeof(Cell) * w*h);
+		const Cell* cells = s.game.map.cells;
+		int gridWidth = s.game.map.width;
+
+		int dx = x0 - s.game.map.x;
+		int dy = y0 - s.game.map.y;
+
+
+		/// TODO: test this portion
+		for (int y = 0; y < h; y++) {
+			int pos = (dy+y) * gridWidth + dx;
+
+			memcpy(
+				&array[y*w],
+				&array[pos],
+				w*sizeof(Cell)
+			);
+		}
+
+		thread.buffer = array;
+		return array;
 	}
 
-	case ApiTakeCode::RLSE_MAP:
+	case ApiTakeCode::RLSE_MAP_CPY:
 	{
-		s.locks[(size_t)ApiGameLockCode::MAP].reset(); // unlock
+		free(thread.buffer);
 		return nullptr;
 	}
 
 	case ApiTakeCode::TAKE_COORDS:
 	{
-		this->buffer = malloc(sizeof(MapSize));
-		*(MapSize*)this->buffer = s.game.map.getMapSize();
-		return this->buffer;
+		int32_t* array = (int32_t*)malloc(sizeof(int32_t) * 4);
+		MapSize size = s.game.map.getMapSize();
+		array[0] = size.x;
+		array[1] = size.y;
+		array[2] = size.width;
+		array[3] = size.height;
+
+		thread.buffer = array;
+		return thread.buffer;
 	}
 
 	case ApiTakeCode::RSLE_COORDS:
 	{
-		free(this->buffer);
+		free(thread.buffer);
 		return nullptr;
 	}
 

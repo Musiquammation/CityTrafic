@@ -40,6 +40,11 @@ SRC_DIR = game
 BIN_DIR = game-bin
 
 # =========================
+# Emscripten output final
+# =========================
+EMCC_FINAL_FOLDER = client/api
+
+# =========================
 # Fichiers
 # =========================
 SRC := $(shell find $(SRC_DIR) -type f -name "*.cpp")
@@ -66,8 +71,8 @@ LIB_TARGET = $(BIN_DIR)/api.$(LIB_EXT)
 # =========================
 # Exécutables / lib
 # =========================
-TARGET    = $(BIN_DIR)/gametest
-EM_TARGET = $(BIN_DIR)/api.js
+TARGET     = $(BIN_DIR)/gametest
+EM_TARGET  = $(BIN_DIR)/api.js
 NAPI_TARGET = $(BIN_DIR)/addon.node
 
 # =========================
@@ -89,7 +94,7 @@ $(BIN_DIR)/%.o: $(SRC_DIR)/%.cpp
 	$(CXX) $(CXXFLAGS_NATIVE) -c $< -o $@
 
 # =========================
-# Compilation des .o N-API (sans ASan)
+# Compilation des .o N-API
 # =========================
 OBJ_NAPI := $(patsubst $(SRC_DIR)/%.cpp,$(BIN_DIR)/napi/%.o,$(SRC))
 
@@ -109,7 +114,7 @@ $(TARGET): $(OBJ)
 	$(CXX) $(OBJ) $(LDFLAGS_NATIVE) -o $@
 
 # =========================
-# Build lib dynamique (portable)
+# Build lib dynamique
 # =========================
 compile_lib: $(SRC)
 	@mkdir -p $(BIN_DIR)
@@ -120,24 +125,34 @@ else
 endif
 
 # =========================
-# Build Emscripten
+# Build Emscripten (temp)
 # =========================
 EMCC_FUNCS = Api_createApi Api_deleteApi Api_createSession Api_deleteSession Api_take
 
 EMCC_FUNCS_JSON = $(shell printf '"_%s",' $(EMCC_FUNCS) | sed 's/,$$//')
+
 EMFLAGS = -std=c++20 -O3 \
           -sEXPORTED_FUNCTIONS='[$(EMCC_FUNCS_JSON)]' \
           -sEXPORTED_RUNTIME_METHODS='["ccall","cwrap"]' \
           -sMODULARIZE \
+		  -sEXPORT_ES6=1
           -sENVIRONMENT=web \
           -sALLOW_MEMORY_GROWTH=1
 
-emcc:
+emccTmp:
 	@mkdir -p $(BIN_DIR)
 	$(EMXX) $(SRC) $(EMFLAGS) -o $(EM_TARGET)
 
 # =========================
-# Build N-API (Node 22+) sans sanitizer
+# Build final Emscripten + copy
+# =========================
+emcc: emccTmp
+	@mkdir -p $(EMCC_FINAL_FOLDER)
+	cp $(EM_TARGET) $(EMCC_FINAL_FOLDER)/api.js
+	cp $(BIN_DIR)/api.wasm $(EMCC_FINAL_FOLDER)/api.wasm
+
+# =========================
+# Build N-API
 # =========================
 napi: $(OBJ_NAPI)
 	@mkdir -p $(BIN_DIR)

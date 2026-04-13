@@ -13,25 +13,16 @@ enum class ApiThreadState { ALIVE, FINISHING, DEAD };
 
 
 enum class ApiTakeCode {
-	TAKE_MAP,
-	RLSE_MAP,
+	TAKE_MAP_CPY,
+	RLSE_MAP_CPY,
 
 	TAKE_COORDS,
 	RSLE_COORDS
 };
 
-enum class ApiGameLockCode {
-	MAP,
-
-	COUNT
-};
 
 struct ApiGame {
 	Game game;
-	std::array<
-		std::optional<std::shared_lock<std::shared_mutex>>,
-		(size_t)ApiGameLockCode::COUNT
-	> locks;
 };
 
 struct ApiThread {
@@ -39,6 +30,7 @@ struct ApiThread {
 	std::mutex mutex;
 	std::map<int, ApiGame> games;
 	std::atomic<ApiThreadState> state{ApiThreadState::ALIVE};
+	void* buffer;
 };
 
 
@@ -54,7 +46,6 @@ public:
 	void* take(int id, int datacode);
 
 private:
-	void* buffer;
 	int threadnum;
 	int nextId{0};
 	std::vector<ApiThread> threads;
