@@ -1,8 +1,8 @@
-import { DataReader } from "../net/DataReader";
-import { DataWriter } from "../net/DataWriter";
+import { DataReader } from "../commons/DataReader";
+import { DataWriter } from "../commons/DataWriter";
 
-import { CLIENT_IDS } from "../net/clientIds"
-import { SERVER_IDS } from "../net/serverIds"
+import { CLIENT_IDS } from "../commons/clientIds"
+import { SERVER_IDS } from "../commons/serverIds"
 import { shared } from "./shared";
 
 export class Session {

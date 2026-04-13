@@ -1,6 +1,6 @@
 import dotenv from 'dotenv';
 import { WebSocketServer } from 'ws';
-import { DataReader } from '../net/DataReader';
+import { DataReader } from '../commons/DataReader';
 import { Session } from './Session';
 
 dotenv.config();
@@ -34,7 +34,7 @@ wss.on('connection', (socket) => {
 	});
 
 	socket.on('close', () => {
-		// cleanup si nécessaire
+		
 	});
 
 	socket.on('error', (err) => {

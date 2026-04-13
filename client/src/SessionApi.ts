@@ -4,20 +4,7 @@ import { Vector } from "./tools/Vector";
 import { Rectangle } from "./tools/Rectangle";
 
 
-enum ApiTakeCode {
-	MAKE_MAP,
-
-	COPY_CARS,
-	FREE_CARS,
-
-	COPY_COORDS,
-	FREE_COORDS,
-
-	TAKE_MAP_EDITS,
-	RLSE_MAP_EDITS,
-
-	PLACE_ROAD
-}
+import { ApiTakeCode } from "../../commons/ApiTakeCode"
 
 export class Chunk {
 	static readonly SIZE = 32;

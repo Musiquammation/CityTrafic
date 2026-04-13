@@ -22,6 +22,8 @@ class MatchApi {
 	deleteSession(id: number) {
 		this.api.deleteSession(id);
 	}
+
+	
 }
 
 

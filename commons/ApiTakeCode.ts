@@ -1,0 +1,14 @@
+export enum ApiTakeCode {
+	MAKE_MAP,
+
+	COPY_CARS,
+	FREE_CARS,
+
+	COPY_COORDS,
+	FREE_COORDS,
+
+	TAKE_MAP_EDITS,
+	RLSE_MAP_EDITS,
+
+	PLACE_ROAD
+}
