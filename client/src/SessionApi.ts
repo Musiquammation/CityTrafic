@@ -4,40 +4,57 @@ import { Vector } from "./tools/Vector";
 import { Rectangle } from "./tools/Rectangle";
 
 
-type Runner<T> = (arg: T) => void;
-
 enum ApiTakeCode {
-	TAKE_MAP_CPY,
-	RLSE_MAP_CPY,
+	MAKE_MAP,
 
-	TAKE_COORDS,
-	RSLE_COORDS
-};
+	COPY_CARS,
+	FREE_CARS,
 
+	COPY_COORDS,
+	FREE_COORDS,
 
+	TAKE_MAP_EDITS,
+	RLSE_MAP_EDITS,
+}
+
+class Chunk {
+	static readonly SIZE = 32;
+
+	cells: Uint16Array;
+
+	constructor() {
+		this.cells = new Uint16Array(Chunk.SIZE * Chunk.SIZE);
+	}
+
+	get(x: number, y: number): number {
+		return this.cells[y * Chunk.SIZE + x];
+	}
+
+	set(x: number, y: number, v: number) {
+		this.cells[y * Chunk.SIZE + x] = v;
+	}
+}
 
 class SessionApi {
 	private module: any = null;
 	private apiPtr: number = 0;
 	private sessionId: number | null = null;
 
+	private chunks = new Map<number, Chunk>();
+
 	async init() {
 		this.module = await createModule();
-
-		// Api_createApi(int threadnum)
 		this.apiPtr = this.module._Api_createApi(1);
 	}
 
 	cleanup() {
 		if (!this.module || !this.apiPtr) return;
 
-		// Api_deleteSession(Api*, int id)
 		if (this.sessionId !== null) {
 			this.module._Api_deleteSession(this.apiPtr, this.sessionId);
 			this.sessionId = null;
 		}
 
-		// Api_deleteApi(Api*)
 		this.module._Api_deleteApi(this.apiPtr);
 
 		this.apiPtr = 0;
@@ -46,7 +63,7 @@ class SessionApi {
 
 	createSession() {
 		if (this.sessionId !== null) {
-			throw new Error("Session already exists"); 
+			throw new Error("Session already exists");
 		}
 
 		this.sessionId = this.module._Api_createSession(this.apiPtr);
@@ -61,51 +78,171 @@ class SessionApi {
 		this.sessionId = null;
 	}
 
-
 	private run(code: number, args: any = 0) {
-		return this.module._Api_take(
-			this.apiPtr,
-			this.sessionId,
-			code,
-			args
-		);
+		return this.module._Api_take(this.apiPtr, this.sessionId, code, args);
 	}
+
+
+	private chunkKey(cx: number, cy: number): number {
+		return (cx << 16) ^ (cy & 0xffff);
+	}
+
+	private getChunk(cx: number, cy: number): Chunk {
+		const key = this.chunkKey(cx, cy);
+
+		let chunk = this.chunks.get(key);
+		if (!chunk) {
+			chunk = new Chunk();
+			this.chunks.set(key, chunk);
+		}
+
+		return chunk;
+	}
+
+	private worldToChunk(x: number, y: number) {
+		return {
+			cx: Math.floor(x / Chunk.SIZE),
+			cy: Math.floor(y / Chunk.SIZE),
+			lx: ((x % Chunk.SIZE) + Chunk.SIZE) % Chunk.SIZE,
+			ly: ((y % Chunk.SIZE) + Chunk.SIZE) % Chunk.SIZE,
+		};
+	}
+
+
 
 	takeCoords(): Rectangle {
-		const ptr = this.run(ApiTakeCode.TAKE_COORDS) >> 2;
+		const ptr = this.run(ApiTakeCode.COPY_COORDS) >> 2;
 
-		const x = this.module.HEAP32[ptr+0];
-		const y = this.module.HEAP32[ptr+1];
-		const w = this.module.HEAP32[ptr+2];
-		const h = this.module.HEAP32[ptr+3];
+		const x = this.module.HEAP32[ptr + 0];
+		const y = this.module.HEAP32[ptr + 1];
+		const w = this.module.HEAP32[ptr + 2];
+		const h = this.module.HEAP32[ptr + 3];
 
-		this.run(ApiTakeCode.RSLE_COORDS);
+		this.run(ApiTakeCode.FREE_COORDS);
 
-		return {x, y, w, h};
+		return { x, y, w, h };
 	}
 
-	takeCells(rect: Rectangle, runner: Runner<Uint16Array>) {
-		const arg = this.module._malloc(4 * 4); 
-		this.module.HEAPU32[(arg>>2) + 0] = rect.x;
-		this.module.HEAPU32[(arg>>2) + 1] = rect.y;
-		this.module.HEAPU32[(arg>>2) + 2] = rect.w;
-		this.module.HEAPU32[(arg>>2) + 3] = rect.h;
+	createCellGrid() {
+		this.chunks.clear();
 
-		const ptr = this.run(ApiTakeCode.TAKE_MAP_CPY, arg) >> 1;
-		
-		console.log(this.module);
+		const arg = this.module._malloc(4 * 4);
+		const view = this.module.HEAPU32.subarray(arg >> 2);
+		const rect = this.takeCoords();
+
+		view[0] = rect.x;
+		view[1] = rect.y;
+		view[2] = rect.w;
+		view[3] = rect.h;
+
+		const ptr = this.run(ApiTakeCode.MAKE_MAP, arg) >> 1;
 		this.module._free(arg);
 
-		const view = this.module.HEAPU16.subarray(
+		const viewCells = this.module.HEAPU16.subarray(
 			ptr,
-			ptr + (rect.w * rect.h)
+			ptr + rect.w * rect.h
 		);
 
-		runner(view);
+		for (let y = 0; y < rect.h; y++) {
+			for (let x = 0; x < rect.w; x++) {
+				const wx = rect.x + x;
+				const wy = rect.y + y;
 
-		this.run(ApiTakeCode.RLSE_MAP_CPY);
+				const { cx, cy, lx, ly } = this.worldToChunk(wx, wy);
+				const chunk = this.getChunk(cx, cy);
+
+				chunk.set(lx, ly, viewCells[y * rect.w + x]);
+			}
+		}
+	}
+
+	updateCells(viewX: number, viewY: number) {
+		const baseCX = Math.floor(viewX / Chunk.SIZE);
+		const baseCY = Math.floor(viewY / Chunk.SIZE);
+
+		// 3x3 chunk area
+		const bx = (baseCX - 1) * Chunk.SIZE;
+		const by = (baseCY - 1) * Chunk.SIZE;
+		const bw = 3 * Chunk.SIZE;
+		const bh = 3 * Chunk.SIZE;
+
+		const argPtr = this.module._malloc(4 * 4);
+		const arg = this.module.HEAPU32.subarray(argPtr >> 2);
+
+		arg[0] = bx;
+		arg[1] = by;
+		arg[2] = bw;
+		arg[3] = bh;
+
+		const ptr = this.run(ApiTakeCode.TAKE_MAP_EDITS, argPtr) >> 2;
+		this.module._free(argPtr);
+
+
+		const len = this.module.HEAPU32[ptr];
+		let cursor = ptr + 1;
+
+		for (let i = 0; i < len; i++) {
+			const packed = this.module.HEAPU32[cursor++];
+
+			const dx = (packed >> 24) & 0xff;
+			const dy = (packed >> 16) & 0xff;
+			const data = packed & 0xffff;
+
+			const wx = bx + dx;
+			const wy = by + dy;
+
+			const { cx, cy, lx, ly } = this.worldToChunk(wx, wy);
+			const chunk = this.getChunk(cx, cy);
+
+			chunk.set(lx, ly, data);
+		}
+
+		this.run(ApiTakeCode.RLSE_MAP_EDITS);
+	}
+
+	getCell(x: number, y: number) {
+		const { cx, cy, lx, ly } = this.worldToChunk(x, y);
+		const chunk = this.getChunk(cx, cy);
+		return chunk.get(lx, ly);
+	}
+
+	*getChunks(viewX: number, viewY: number, rangeW: number, rangeH: number) {
+		const halfW = Math.floor(rangeW / 2);
+		const halfH = Math.floor(rangeH / 2);
+
+		const minX = viewX - halfW;
+		const minY = viewY - halfH;
+		const maxX = viewX + halfW;
+		const maxY = viewY + halfH;
+
+		const minCX = Math.floor(minX / Chunk.SIZE) - 1;
+		const minCY = Math.floor(minY / Chunk.SIZE) - 1;
+		const maxCX = Math.floor(maxX / Chunk.SIZE) + 1;
+		const maxCY = Math.floor(maxY / Chunk.SIZE) + 1;
+
+
+		for (let cy = minCY; cy <= maxCY; cy++) {
+			for (let cx = minCX; cx <= maxCX; cx++) {
+				yield ({
+					x: cx * Chunk.SIZE,
+					y: cy * Chunk.SIZE,
+					chunk: this.getChunk(cx, cy),
+				});
+			}
+		}
+	}
+
+
+
+	takeCars() {
+		const srcPtr = this.run(ApiTakeCode.COPY_CARS) >> 2;
+
+		const number = this.module.HEAPU32[srcPtr];
+
+		this.run(ApiTakeCode.FREE_CARS);
 	}
 }
 
 export const api = new SessionApi();
 api.init();
+

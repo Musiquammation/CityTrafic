@@ -16,6 +16,8 @@ class CarHandler {
     std::unordered_map<std::pair<int,int>, Car*, pair_hash> cars;
 
 public:
+    friend class Api;
+
     ~CarHandler();
 
     

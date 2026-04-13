@@ -5,7 +5,14 @@
 
 #include <stdio.h>
 
+
+void Game::test() {
+	
+}
+
 void Game::frame() {
+	this->test();
+
 	// Car behavior
 	{
 		// needs to read map for getDanger

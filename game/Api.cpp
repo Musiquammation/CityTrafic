@@ -1,6 +1,9 @@
 #include "Api.hpp"
+#include "Car.hpp"
 
+#include <stdint.h>
 #include <string.h>
+#include <bit>
 
 Api::Api(int threadnum) : threadnum(threadnum), threads(threadnum) {}
 
@@ -50,7 +53,7 @@ void* Api::take(int id, int datacode, void* args) {
 	ApiGame& s = thread.games[threadnum];
 
 	switch ((ApiTakeCode)datacode) {
-	case ApiTakeCode::TAKE_MAP_CPY:
+	case ApiTakeCode::MAKE_MAP:
 	{
 		int x0 = ((uint32_t*)args)[0];
 		int y0 = ((uint32_t*)args)[1];
@@ -58,7 +61,6 @@ void* Api::take(int id, int datacode, void* args) {
 		int h  = ((uint32_t*)args)[3];
 
 
-		auto lock = s.game.mutexPool.lockRead(MutexLabel::MAP);
 		Cell* array = (Cell*)malloc(sizeof(Cell) * w*h);
 		const Cell* cells = s.game.map.cells;
 		int gridWidth = s.game.map.width;
@@ -67,6 +69,8 @@ void* Api::take(int id, int datacode, void* args) {
 		int dy = y0 - s.game.map.y;
 
 
+		auto lock = s.game.mutexPool.lockRead(MutexLabel::MAP);
+		
 		/// TODO: test this portion
 		for (int y = 0; y < h; y++) {
 			int pos = (dy+y) * gridWidth + dx;
@@ -82,13 +86,49 @@ void* Api::take(int id, int datacode, void* args) {
 		return array;
 	}
 
-	case ApiTakeCode::RLSE_MAP_CPY:
+
+	case ApiTakeCode::COPY_CARS:
+	{
+		auto lockStructure = s.game.mutexPool.lockRead(MutexLabel::CARS_STRUCTURE);
+
+		uint32_t carSize = (uint32_t)s.game.carHandler.cars.size();
+		/**
+		 * 1st element for length
+		 * 
+		 * Structure:
+		 * [+0]: x
+		 * [+1]: y
+		 * [+2]: step (float)
+		 * [+3]: direction, state
+		 */
+		uint32_t* const buffer = (uint32_t*)malloc(sizeof(uint32_t) +
+			(4*sizeof(uint32_t)) * carSize);
+
+
+		auto lockPositions = s.game.mutexPool.lockRead(MutexLabel::CARS_POSITIONS);
+
+		uint32_t* ptr = buffer;
+		*ptr++ = (uint32_t)carSize;
+		for (auto i: s.game.carHandler.cars) {
+			Car* car = i.second;
+			*ptr++ = std::bit_cast<uint32_t>(car->x);
+			*ptr++ = std::bit_cast<uint32_t>(car->y);
+			*ptr++ = std::bit_cast<uint32_t>(car->step);
+			*ptr++ = (uint32_t(car->direction) & 0xff)
+	   			| ((uint32_t(car->state) & 0xff) << 8);
+		}
+
+		thread.buffer = buffer;
+		return buffer;
+	}
+
+	case ApiTakeCode::FREE_CARS:
 	{
 		free(thread.buffer);
 		return nullptr;
 	}
 
-	case ApiTakeCode::TAKE_COORDS:
+	case ApiTakeCode::COPY_COORDS:
 	{
 		int32_t* array = (int32_t*)malloc(sizeof(int32_t) * 4);
 		MapSize size = s.game.map.getMapSize();
@@ -101,7 +141,28 @@ void* Api::take(int id, int datacode, void* args) {
 		return thread.buffer;
 	}
 
-	case ApiTakeCode::RSLE_COORDS:
+	case ApiTakeCode::FREE_COORDS:
+	{
+		free(thread.buffer);
+		return nullptr;
+	}
+
+	case ApiTakeCode::TAKE_MAP_EDITS:
+	{
+		auto lock = s.game.mutexPool.lockRead(MutexLabel::MAP);
+
+		int x0 = ((uint32_t*)args)[0];
+		int y0 = ((uint32_t*)args)[1];
+		int w  = ((uint32_t*)args)[2];
+		int h  = ((uint32_t*)args)[3];
+
+		uint32_t* buffer = s.game.map.collectEditedCells(x0, y0, w, h);
+
+		thread.buffer = buffer;
+		return buffer;
+	}
+
+	case ApiTakeCode::RLSE_MAP_EDITS:
 	{
 		free(thread.buffer);
 		return nullptr;

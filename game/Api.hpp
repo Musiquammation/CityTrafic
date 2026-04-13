@@ -13,11 +13,18 @@ enum class ApiThreadState { ALIVE, FINISHING, DEAD };
 
 
 enum class ApiTakeCode {
-	TAKE_MAP_CPY,
-	RLSE_MAP_CPY,
+	MAKE_MAP,
 
-	TAKE_COORDS,
-	RSLE_COORDS
+	COPY_CARS,
+	FREE_CARS,
+
+	COPY_COORDS,
+	FREE_COORDS,
+
+	TAKE_MAP_EDITS,
+	RLSE_MAP_EDITS,
+
+	PLACE_ROAD
 };
 
 

@@ -6,7 +6,6 @@
 
 enum class MutexLabel {
 	CARS_STRUCTURE,
-	CARS_STATUS,
 	CARS_POSITIONS,
 
 	MAP,

@@ -11,6 +11,7 @@ private:
     CarHandler carHandler{};
     MutexPool mutexPool{};
     int frameCount = 0;
+    void test();
 
 public:
     friend class Api;

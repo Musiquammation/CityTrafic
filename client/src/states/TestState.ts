@@ -6,6 +6,10 @@ import { api } from "../SessionApi";
 
 
 export class TestState extends GameState {
+    private camX = 0;
+    private camY = 0;
+    private camZ = 1;
+
     constructor() {
         super();
     }
@@ -27,9 +31,7 @@ export class TestState extends GameState {
 
 
     test() {
-        api.takeCells({x: 3, y: 5, w: 10, h: 4}, view => {
-            console.log(view);
-        });
+        
     }
 
     frame(game: GameHandler): GameState | null {
@@ -37,7 +39,12 @@ export class TestState extends GameState {
     }
 
     draw(args: DrawStateData): void {
-        
+        api.updateCells(this.camX, this.camY);
+
+        console.log("frame");
+        for (let i of api.getChunks(this.camX, this.camY, 1, 1)) {
+            console.log(i.x, i.y);
+        }
     }
 
     exit() {
