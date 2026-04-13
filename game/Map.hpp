@@ -14,8 +14,7 @@
 template<>
 struct std::hash<Vector<int>> {
     size_t operator()(const Vector<int>& v) const noexcept {
-        return (static_cast<size_t>(static_cast<uint32_t>(v.x)) << 32) |
-               static_cast<uint32_t>(v.y);
+        return (uint64_t(v.x) << 32) | uint64_t(v.y);
     }
 };
 

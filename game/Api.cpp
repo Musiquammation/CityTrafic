@@ -5,6 +5,8 @@
 #include <string.h>
 #include <bit>
 
+#define intArg(i) ((uint32_t*)args)[i]
+
 Api::Api(int threadnum) : threadnum(threadnum), threads(threadnum) {}
 
 Api::~Api() {
@@ -55,10 +57,10 @@ void* Api::take(int id, int datacode, void* args) {
 	switch ((ApiTakeCode)datacode) {
 	case ApiTakeCode::MAKE_MAP:
 	{
-		int x0 = ((uint32_t*)args)[0];
-		int y0 = ((uint32_t*)args)[1];
-		int w  = ((uint32_t*)args)[2];
-		int h  = ((uint32_t*)args)[3];
+		int x0 = intArg(0);
+		int y0 = intArg(1);
+		int w  = intArg(2);
+		int h  = intArg(3);
 
 
 		Cell* array = (Cell*)malloc(sizeof(Cell) * w*h);
@@ -111,9 +113,9 @@ void* Api::take(int id, int datacode, void* args) {
 		*ptr++ = (uint32_t)carSize;
 		for (auto i: s.game.carHandler.cars) {
 			Car* car = i.second;
-			*ptr++ = std::bit_cast<uint32_t>(car->x);
-			*ptr++ = std::bit_cast<uint32_t>(car->y);
-			*ptr++ = std::bit_cast<uint32_t>(car->step);
+			*ptr++ = *(uint32_t*)(&car->x);
+			*ptr++ = *(uint32_t*)(&car->y);
+			*ptr++ = *(uint32_t*)(&car->step);
 			*ptr++ = (uint32_t(car->direction) & 0xff)
 	   			| ((uint32_t(car->state) & 0xff) << 8);
 		}
@@ -151,10 +153,10 @@ void* Api::take(int id, int datacode, void* args) {
 	{
 		auto lock = s.game.mutexPool.lockRead(MutexLabel::MAP);
 
-		int x0 = ((uint32_t*)args)[0];
-		int y0 = ((uint32_t*)args)[1];
-		int w  = ((uint32_t*)args)[2];
-		int h  = ((uint32_t*)args)[3];
+		int x0 = intArg(0);
+		int y0 = intArg(1);
+		int w  = intArg(2);
+		int h  = intArg(3);
 
 		uint32_t* buffer = s.game.map.collectEditedCells(x0, y0, w, h);
 
@@ -165,6 +167,14 @@ void* Api::take(int id, int datacode, void* args) {
 	case ApiTakeCode::RLSE_MAP_EDITS:
 	{
 		free(thread.buffer);
+		return nullptr;
+	}
+
+	case ApiTakeCode::PLACE_ROAD:
+	{
+		auto lock = s.game.mutexPool.lockWrite(MutexLabel::MAP);
+		Cell* cell = s.game.getEditCell(intArg(0), intArg(1));
+		cell->setType(CellType::ROAD);
 		return nullptr;
 	}
 

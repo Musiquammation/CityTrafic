@@ -131,7 +131,7 @@ EMCC_FUNCS = Api_createApi Api_deleteApi Api_createSession Api_deleteSession Api
 
 EMCC_FUNCS_JSON = $(shell printf '"_%s",' $(EMCC_FUNCS) | sed 's/,$$//')
 
-EMFLAGS = -std=c++20 -O3 \
+EMFLAGS = -std=c++2b -O3 \
           -sEXPORTED_FUNCTIONS='[$(EMCC_FUNCS_JSON)]' \
           -sEXPORTED_RUNTIME_METHODS='["ccall","cwrap"]' \
           -sMODULARIZE \

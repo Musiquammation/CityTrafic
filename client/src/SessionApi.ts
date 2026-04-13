@@ -15,9 +15,11 @@ enum ApiTakeCode {
 
 	TAKE_MAP_EDITS,
 	RLSE_MAP_EDITS,
+
+	PLACE_ROAD
 }
 
-class Chunk {
+export class Chunk {
 	static readonly SIZE = 32;
 
 	cells: Uint16Array;
@@ -226,13 +228,24 @@ class SessionApi {
 				yield ({
 					x: cx * Chunk.SIZE,
 					y: cy * Chunk.SIZE,
-					chunk: this.getChunk(cx, cy),
+					cells: this.getChunk(cx, cy).cells,
 				});
 			}
 		}
 	}
 
 
+	placeRoad(x: number, y: number) {
+		const arg = this.module._malloc(4 * 2);
+		const view = this.module.HEAPU32.subarray(arg >> 2);
+
+		view[0] = x;
+		view[1] = y;
+
+		this.run(ApiTakeCode.PLACE_ROAD, arg);
+
+		this.module._free(arg);
+	}
 
 	takeCars() {
 		const srcPtr = this.run(ApiTakeCode.COPY_CARS) >> 2;
