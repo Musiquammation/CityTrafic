@@ -1,32 +1,24 @@
 import { Match } from "./Match";
+import { api } from "./MatchApi";
+
+
 
 class Shared {
-	apiLib: any;
 	matchs = new Map<string, Match>;
 
-	constructor(apiLib: any) {
-		this.apiLib = apiLib;
+	constructor() {
+		
 	}
 
 	createMatch() {
 		const hash = generateHash();
 
 		/// TODO: implement this function
-		const match = new Match(-1);
+		const match = new Match(api.createSession());
 		
 		return {match, hash};
 	}
 }
 
-let shared: null | Shared = null;
+export const shared = new Shared();
 
-export function setShared(apiLib: any) {
-	shared = new Shared(apiLib);
-}
-
-export function getShared() {
-	if (!shared)
-		throw new Error("Shared is missing");
-	
-	return shared;
-}

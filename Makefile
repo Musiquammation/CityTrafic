@@ -135,9 +135,10 @@ EMFLAGS = -std=c++2b -O3 \
           -sEXPORTED_FUNCTIONS='[$(EMCC_FUNCS_JSON)]' \
           -sEXPORTED_RUNTIME_METHODS='["ccall","cwrap"]' \
           -sMODULARIZE \
-		  -sEXPORT_ES6=1
+          -sEXPORT_ES6=1 \
           -sENVIRONMENT=web \
-          -sALLOW_MEMORY_GROWTH=1
+          -sALLOW_MEMORY_GROWTH=1 \
+          -sGEN_DEPENDENCIES=1
 
 emccTmp:
 	@mkdir -p $(BIN_DIR)

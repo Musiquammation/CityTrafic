@@ -48,4 +48,10 @@ Napi::Value ApiWrapper::Take(const Napi::CallbackInfo& info) {
 }
 
 
+Napi::Object InitAll(Napi::Env env, Napi::Object exports) {
+    return ApiWrapper::Init(env, exports);
+}
+
+NODE_API_MODULE(addon, InitAll)
+
 #endif

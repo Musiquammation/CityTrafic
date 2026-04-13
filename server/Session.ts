@@ -1,9 +1,9 @@
 import { DataReader } from "./DataReader";
 import { DataWriter } from "./DataWriter";
-import { getShared } from "./shared";
 
 import { CLIENT_IDS } from "../netids/clientIds"
 import { SERVER_IDS } from "../netids/serverIds"
+import { shared } from "./shared";
 
 export class Session {
 	receive(reader: DataReader): DataWriter | null {
@@ -21,7 +21,6 @@ export class Session {
 
 	private receive_connect(reader: DataReader) {
 		const matchId = reader.read256();
-		const shared = getShared();
 
 		if (matchId === "00000000") {
 			const writer = new DataWriter();

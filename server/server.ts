@@ -6,35 +6,21 @@ import net from 'net';
 import { createRequire } from 'module';
 import { DataReader } from './DataReader';
 import { Session } from './Session';
-import { setShared } from './shared';
 
 dotenv.config();
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-// Utiliser createRequire pour charger le .node
-const require = createRequire(import.meta.url);
-const libPath = path.resolve(__dirname, String(process.env.LIB_PATH));
-let apiAlive = true;
-
-const apiLib = require(libPath);
-
-const numThreads = Math.max(1, os.cpus().length - 1);
-apiLib.Api_create(numThreads);
 
 process.on('SIGINT', cleanApi);
 process.on('SIGTERM', cleanApi);
 process.on('exit', cleanApi);
 
-setShared(apiLib);
+let apiMustBeClean = true;
 
 function cleanApi() {
-	if (!apiAlive)
+	if (!apiMustBeClean)
 		return;
 
-	apiAlive = false;
-	apiLib.Api_delete();
+	apiMustBeClean = false;
 	console.log('Api deleted!');
 	process.exit(0);
 }
