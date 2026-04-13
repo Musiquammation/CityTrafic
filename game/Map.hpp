@@ -22,6 +22,8 @@ class Map {
     int height;
 
 public:
+    friend class Api;
+
     Map(int width, int height);
     ~Map();
 

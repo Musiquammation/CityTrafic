@@ -1,6 +1,6 @@
 #pragma once
 
-struct Api;
+class Api;
 
 class Game;
 class Map;

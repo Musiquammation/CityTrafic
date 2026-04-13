@@ -1,26 +1,30 @@
 #pragma once
 
+#include <shared_mutex>
 #include <mutex>
 #include <array>
-#include <stdexcept>
 
 enum class MutexLabel {
-	RES_A,
-	RES_W,
-    
+	CARS_STRUCTURE,
+	CARS_STATUS,
+	CARS_POSITIONS,
+
+	MAP,
+
+
 	COUNT
 };
 
 class MutexPool {
-	std::array<std::mutex, static_cast<size_t>(MutexLabel::COUNT)> mtxs;
+	std::array<std::shared_mutex, (size_t)MutexLabel::COUNT> mtxs;
+	std::shared_mutex& get(MutexLabel label);
 
 public:
 	MutexPool() = default;
 
-	void lock(MutexLabel label);
+	[[nodiscard("You must keep the lock alive")]]
+	std::shared_lock<std::shared_mutex> lockRead(MutexLabel label);
 
-	void unlock(MutexLabel label);
-
-	MutexPool(const MutexPool&) = delete;
-	MutexPool& operator=(const MutexPool&) = delete;
+	[[nodiscard("You must keep the lock alive")]]
+	std::unique_lock<std::shared_mutex> lockWrite(MutexLabel label);
 };

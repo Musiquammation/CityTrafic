@@ -1,18 +1,15 @@
 #include "MutexPool.hpp"
 
 
-void MutexPool::lock(MutexLabel label) {
-	size_t idx = static_cast<size_t>(label);
-	if (idx >= mtxs.size())
-		throw std::out_of_range("Mutex label out of range");
 
-	mtxs[idx].lock();
+std::shared_mutex& MutexPool::get(MutexLabel label) {
+    return mtxs.at((size_t)label);
 }
 
-void MutexPool::unlock(MutexLabel label) {
-	size_t idx = static_cast<size_t>(label);
-	if (idx >= mtxs.size())
-		throw std::out_of_range("Mutex label out of range");
+std::shared_lock<std::shared_mutex> MutexPool::lockRead(MutexLabel label) {
+    return std::shared_lock<std::shared_mutex>{get(label)};
+}
 
-	mtxs[idx].unlock();
+std::unique_lock<std::shared_mutex> MutexPool::lockWrite(MutexLabel label) {
+    return std::unique_lock<std::shared_mutex>{get(label)};
 }
