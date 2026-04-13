@@ -6,52 +6,52 @@ import { api } from "../SessionApi";
 
 
 export class PlayState extends GameState {
-    private camX = 0;
-    private camY = 0;
-    private camZ = 1;
+	private camX = 0;
+	private camY = 0;
+	private camZ = 1;
 
-    constructor() {
-        super();
-    }
+	constructor() {
+		super();
+	}
 
-    enter(data: any, input: InputHandler): void {
-        api.createSession();
+	enter(data: any, input: InputHandler): void {
+		api.createSession();
 
-        input.onMouseUp = e => {};
-        input.onMouseDown = e => {};
-        input.onMouseMove = e => {};
-        input.onScroll = e => {};
-        input.onTouchStart = e => {};
-        input.onTouchEnd = e => {};
-        input.onTouchMove = e => {};
-
-
-        this.test();
-    }
+		input.onMouseUp = e => {};
+		input.onMouseDown = e => {};
+		input.onMouseMove = e => {};
+		input.onScroll = e => {};
+		input.onTouchStart = e => {};
+		input.onTouchEnd = e => {};
+		input.onTouchMove = e => {};
 
 
-    test() {
-        
-    }
+		this.test();
+	}
 
-    frame(game: GameHandler): GameState | null {
-        return null;
-    }
 
-    draw(args: DrawStateData): void {
-        api.updateCells(this.camX, this.camY);
+	test() {
+		
+	}
 
-        console.log("frame");
-        for (let i of api.getChunks(this.camX, this.camY, 1, 1)) {
-            console.log(i.x, i.y);
-        }
-    }
+	frame(game: GameHandler): GameState | null {
+		return null;
+	}
 
-    exit() {
-        api.deleteSession();   
-    }
+	draw(args: DrawStateData): void {
+		api.updateCells(this.camX, this.camY);
 
-    getCamera(): Vector3 | null {
-        return {x: this.camX, y: this.camY, z: this.camZ};
-    }
+		
+		for (let i of api.getChunks(this.camX, this.camY, 1, 1)) {
+			
+		}
+	}
+
+	exit() {
+		api.deleteSession();   
+	}
+
+	getCamera(): Vector3 | null {
+		return {x: this.camX, y: this.camY, z: this.camZ};
+	}
 }

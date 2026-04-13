@@ -6,38 +6,38 @@ import { PlayState } from "../play/PlayState";
 
 
 export class TestState extends GameState {
-    constructor() {
-        super();
-    }
+	constructor() {
+		super();
+	}
 
-    enter(data: any, input: InputHandler): void {
-        input.onMouseUp = e => {};
-        input.onMouseDown = e => {};
-        input.onMouseMove = e => {};
-        input.onScroll = e => {};
-        input.onTouchStart = e => {};
-        input.onTouchEnd = e => {};
-        input.onTouchMove = e => {};
+	enter(data: any, input: InputHandler): void {
+		input.onMouseUp = e => {};
+		input.onMouseDown = e => {};
+		input.onMouseMove = e => {};
+		input.onScroll = e => {};
+		input.onTouchStart = e => {};
+		input.onTouchEnd = e => {};
+		input.onTouchMove = e => {};
 
-    }
+	}
 
 
-    test() {
-        
-    }
+	test() {
+		
+	}
 
-    frame(game: GameHandler): GameState | null {
-        return new PlayState();
-    }
+	frame(game: GameHandler): GameState | null {
+		return new PlayState();
+	}
 
-    draw(args: DrawStateData): void {
-    }
+	draw(args: DrawStateData): void {
+	}
 
-    exit() {
-           
-    }
+	exit() {
+		   
+	}
 
-    getCamera(): Vector3 | null {
-        return null;
-    }
+	getCamera(): Vector3 | null {
+		return null;
+	}
 }
