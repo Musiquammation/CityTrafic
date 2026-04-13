@@ -20,4 +20,3 @@ class MatchApi {
 
 export const api = new MatchApi();
 
-console.log(api.createSession());
