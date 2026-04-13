@@ -1,9 +1,5 @@
-import os from 'os';
 import dotenv from 'dotenv';
-import path from 'path';
-import { fileURLToPath } from 'url';
 import net from 'net';
-import { createRequire } from 'module';
 import { DataReader } from './DataReader';
 import { Session } from './Session';
 
@@ -33,8 +29,6 @@ const server = net.createServer(socket => {
 		if (writer) {
 			socket.write(Buffer.from(writer.toArrayBuffer()));
 		}
-
-
 	});
 	socket.on('close', () => {});
 	socket.on('error', (err) => { console.error(err); });

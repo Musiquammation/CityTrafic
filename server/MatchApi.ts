@@ -1,3 +1,5 @@
+import os from 'os'
+
 import { createRequire } from 'module';
 
 const require = createRequire(import.meta.url);
@@ -9,11 +11,16 @@ class MatchApi {
 	private api;
 
 	constructor() {
-		this.api = new addon.ApiWrapper(4);
+		const numThreads = Math.max(1, os.cpus().length - 1);
+		this.api = new addon.ApiWrapper(numThreads);
 	}
 
 	createSession(): number {
 		return this.api.createSession();
+	}
+
+	deleteSession(id: number) {
+		this.api.deleteSession(id);
 	}
 }
 
