@@ -1,40 +1,45 @@
 import dotenv from 'dotenv';
-import net from 'net';
-import { DataReader } from './DataReader';
+import { WebSocketServer } from 'ws';
+import { DataReader } from '../net/DataReader';
 import { Session } from './Session';
 
 dotenv.config();
 
+const PORT = Number(process.env.PORT) || 3000;
 
-process.on('SIGINT', cleanApi);
-process.on('SIGTERM', cleanApi);
-process.on('exit', cleanApi);
+const wss = new WebSocketServer({ port: PORT });
 
-let apiMustBeClean = true;
-
-function cleanApi() {
-	if (!apiMustBeClean)
-		return;
-
-	apiMustBeClean = false;
-	console.log('Api deleted!');
-	process.exit(0);
-}
-
-const server = net.createServer(socket => {
+wss.on('connection', (socket) => {
 	const session = new Session();
-	socket.on('data', data => {
-		const reader = new DataReader(data.buffer);
+
+	socket.on('message', async data => {
+		let buffer: ArrayBuffer;
+
+		if (data instanceof ArrayBuffer) {
+			buffer = data;
+		} else if (data instanceof Blob) {
+			buffer = await data.arrayBuffer();
+		} else if (typeof data === "string") {
+			buffer = new TextEncoder().encode(data).buffer;
+		} else {
+			throw new Error("Unsupported WebSocket message type");
+		}
+
+		const reader = new DataReader(buffer);
 		const writer = session.receive(reader);
+
 		if (writer) {
-			socket.write(Buffer.from(writer.toArrayBuffer()));
+			socket.send(Buffer.from(writer.toArrayBuffer()));
 		}
 	});
-	socket.on('close', () => {});
-	socket.on('error', (err) => { console.error(err); });
+
+	socket.on('close', () => {
+		// cleanup si nécessaire
+	});
+
+	socket.on('error', (err) => {
+		console.error(err);
+	});
 });
 
-const PORT = Number(process.env.PORT) || 3000;
-server.listen(PORT, () => {
-	console.log(`Server listening on port ${PORT}`);
-});
+console.log(`WebSocket server listening on port ${PORT}`);

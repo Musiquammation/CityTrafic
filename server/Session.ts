@@ -1,8 +1,8 @@
-import { DataReader } from "./DataReader";
-import { DataWriter } from "./DataWriter";
+import { DataReader } from "../net/DataReader";
+import { DataWriter } from "../net/DataWriter";
 
-import { CLIENT_IDS } from "../netids/clientIds"
-import { SERVER_IDS } from "../netids/serverIds"
+import { CLIENT_IDS } from "../net/clientIds"
+import { SERVER_IDS } from "../net/serverIds"
 import { shared } from "./shared";
 
 export class Session {
@@ -14,7 +14,7 @@ export class Session {
 			return this.receive_connect(reader);
 
 		default:
-			throw new Error("Unknown action");
+			throw new Error("Unknown action " + action);
 		}
 	}
 

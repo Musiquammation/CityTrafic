@@ -2,6 +2,11 @@ import { GameHandler } from "../handler/GameHandler";
 import { InputHandler } from "../handler/InputHandler";
 import { DrawStateData, GameState } from "../handler/states";
 import { Vector3 } from "../handler/Vector3";
+import { sendSocket } from "../net/gameSocket";
+import { DataWriter } from "../../../net/DataWriter"
+import { DataReader } from "../../../net/DataReader"
+import { SERVER_IDS } from "../../../net/serverIds"
+import { CLIENT_IDS } from "../../../net/clientIds"
 
 
 export class HomeState extends GameState {
@@ -16,7 +21,12 @@ export class HomeState extends GameState {
 			addEventListener('click', () => this.createSession());
 
 		document.getElementById("home-joinSession")?.
-			addEventListener('click', () => this.joinSession());
+			addEventListener('click', () => {
+				const code = prompt("Session");
+				if (code !== null)
+					this.joinSession(code);
+			}
+		);
 
 		input.onMouseUp = e => {};
 		input.onMouseDown = e => {};
@@ -44,10 +54,20 @@ export class HomeState extends GameState {
 	}
 
 	createSession() {
-
+		alert("allo");
+		const writer = new DataWriter();
+		writer.writeUint8(SERVER_IDS.CONNECT);
+		writer.write256("00000000");
+		sendSocket(writer.toArrayBuffer());
 	}
-
-	joinSession() {
-		
+	
+	joinSession(code: string) {
+		alert("lola");
+		const writer = new DataWriter();
+		writer.writeUint8(SERVER_IDS.CONNECT);
+		writer.write256(code);
+		sendSocket(writer.toArrayBuffer());
 	}
 }
+
+
