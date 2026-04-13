@@ -122,7 +122,8 @@ endif
 # =========================
 # Build Emscripten
 # =========================
-EMCC_FUNCS = Api_create Api_delete Api_frame Api_take
+EMCC_FUNCS = Api_createApi Api_deleteApi Api_createSession Api_deleteSession Api_take
+
 EMCC_FUNCS_JSON = $(shell printf '"_%s",' $(EMCC_FUNCS) | sed 's/,$$//')
 EMFLAGS = -std=c++20 -O3 \
           -sEXPORTED_FUNCTIONS='[$(EMCC_FUNCS_JSON)]' \
