@@ -2,6 +2,8 @@ import { CLIENT_IDS } from "../../../commons/clientIds";
 import { DataReader } from "../../../commons/DataReader";
 import { DataWriter } from "../../../commons/DataWriter";
 import { api } from "../SessionApi"
+import { getGameHandler } from "../gameHandler"
+import { PlayState } from "../play/PlayState";
 
 let REGION_SIZE = 1;
 
@@ -10,6 +12,7 @@ function net_joinCreated(reader: DataReader) {
     const hash = reader.read256();
     console.log(hash);
 
+    getGameHandler().setState(new PlayState());
     return null;
 }
 
@@ -18,6 +21,7 @@ function net_joinAlive(reader: DataReader) {
     const hash = reader.read256();
     console.log(hash);
 
+    getGameHandler().setState(new PlayState());
     return null;
 }
 

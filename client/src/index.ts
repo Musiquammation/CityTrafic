@@ -1,4 +1,5 @@
 import { GameHandler } from "./handler/GameHandler";
+import { setGameHandler } from "./gameHandler";
 
 declare global {
 	interface Window {
@@ -83,6 +84,8 @@ export function startGame() {
 		canvas,
 		document
 	);
+
+	setGameHandler(game);
 
 
 	function runGameLoop() {

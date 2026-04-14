@@ -32,6 +32,9 @@ export class PlayState extends GameState {
 		input.onTouchMove = e => {};
 
 
+		// Send request to load area
+		this.updateCamera(this.camX, this.camY, this.camZ);
+
 		this.test();
 	}
 
@@ -41,12 +44,6 @@ export class PlayState extends GameState {
 	}
 
 	frame(game: GameHandler): GameState | null {
-		if ((this.frameCount % 10) === 0) {
-			console.log("place", this.frameCount / 10);
-			api.placeRoad(this.frameCount / 10, 2);
-		}
-
-
 		this.frameCount++;
 		return null;
 	}

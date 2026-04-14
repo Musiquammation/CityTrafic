@@ -36,6 +36,7 @@ function setElementAsBackground(
 
 export class GameHandler {
 	private state: GameState;
+	private nextState: GameState | null = null;
 
 	inputHandler: InputHandler;
 	imgLoader = new ImageLoader(window.IMG_ROOT_PATH);
@@ -56,8 +57,21 @@ export class GameHandler {
 	}
 	
 
+	setState(state: GameState) {
+		this.nextState = state;
+	}
+
 	gameLogic() {
 		this.inputHandler.update();
+
+		if (this.nextState) {
+			this.state.exit();
+			this.state = this.nextState;
+			this.state.enter(null, this.inputHandler);
+			this.nextState = null;
+		}
+
+
 		const next = this.state.frame(this);
 
 		if (next) {
