@@ -15,6 +15,11 @@ const module = await createModule({
 interface Grid {
 	ptr: number;
 	view: Uint16Array;
+
+	mapX: number;
+	mapY: number;
+	mapW: number;
+	mapH: number;
 }
 
 
@@ -90,16 +95,87 @@ class MatchApi {
 			rect.w * rect.h
 		);
 		
-		s.grid = {ptr, view};
+		s.grid = {
+			ptr,
+			view,
+			mapX: rect.x,
+			mapY: rect.y,
+			mapW: rect.w,
+			mapH: rect.h
+		};
+
 		return view;
 	}
 
-	updateCells(viewX: number, viewY: number, rangeW: number, rangeH: number) {
-		
+	updateCells(s: Session, x0: number, y0: number, width: number, height: number) {
+		if (!s.grid)
+			throw new Error("Missing grid");
+
+		const argPtr = module._malloc(4 * 4);
+		const arg = module.HEAPU32.subarray(argPtr >> 2);
+
+		arg[0] = x0;
+		arg[1] = y0;
+		arg[2] = width;
+		arg[3] = height;
+
+		const ptr = this.run(s.id, ApiTakeCode.TAKE_MAP_EDITS, argPtr) >> 2;
+		module._free(argPtr);
+
+
+		const len = module.HEAPU32[ptr];
+		let cursor = ptr + 1;
+		const sx = s.grid.mapX;
+		const sy = s.grid.mapY;
+		const sw = s.grid.mapW;
+		const gridView = s.grid.view;
+
+		for (let i = 0; i < len; i++) {
+			const packed = module.HEAPU32[cursor++];
+
+			const dx = (packed >> 24) & 0xff;
+			const dy = (packed >> 16) & 0xff;
+			const data = packed & 0xffff;
+
+			const x = x0 + dx;
+			const y = y0 + dy;
+
+			const idx = (y - sy) * sw + (x - sx);
+
+			gridView[idx] = data;
+		}
 	}
 
-	collectArea(x: number, y: number, w: number, h: number) {
+	collectArea(s: Session, x: number, y: number, w: number, h: number): Uint16Array {
+		if (!s.grid)
+			throw new Error("Missing grid");
 
+		const { view, mapX, mapY, mapW, mapH } = s.grid;
+
+		if (
+			x < mapX || y < mapY ||
+			x + w > mapX + mapW ||
+			y + h > mapY + mapH
+		) {
+			throw new Error("Out of bounds");
+		}
+
+		const result = new Uint16Array(w * h);
+
+		const startX = x - mapX;
+		const startY = y - mapY;
+
+		for (let row = 0; row < h; row++) {
+			const srcOffset = (startY + row) * mapW + startX;
+			const dstOffset = row * w;
+
+			result.set(
+				view.subarray(srcOffset, srcOffset + w),
+				dstOffset
+			);
+		}
+
+		return result;
 	}
 }
 
