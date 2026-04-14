@@ -200,6 +200,12 @@ class SessionApi {
 		return chunk.get(lx, ly);
 	}
 
+	setCell(x: number, y: number, data: number) {
+		const { cx, cy, lx, ly } = this.worldToChunk(x, y);
+		const chunk = this.getChunk(cx, cy);
+		chunk.set(lx, ly, data);
+	}
+
 	*getChunks(viewX: number, viewY: number, rangeW: number, rangeH: number) {
 		const halfW = Math.floor(rangeW / 2);
 		const halfH = Math.floor(rangeH / 2);

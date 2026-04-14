@@ -16,8 +16,8 @@ class Shared {
 
 		/// TODO: implement this function
 		console.log("create");
-		const match = new Match(api.createSession());
-		console.log(api.takeCoords(match.session));
+		const match = api.createMatch();
+		console.log(api.takeCoords(match));
 		
 		return {match, hash};
 	}

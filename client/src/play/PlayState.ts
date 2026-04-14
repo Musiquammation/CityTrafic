@@ -1,8 +1,11 @@
+import { DataWriter } from "../../../commons/DataWriter";
+import { SERVER_IDS } from "../../../commons/serverIds";
 import { GAME_HEIGHT, GAME_WIDTH } from "../handler/dimensions";
 import { GameHandler } from "../handler/GameHandler";
 import { InputHandler } from "../handler/InputHandler";
 import { DrawStateData, GameState } from "../handler/states";
 import { Vector3 } from "../handler/Vector3";
+import { sendSocket } from "../net/sendSocket";
 import { api, Chunk } from "../SessionApi";
 import { drawCell } from "./drawCell";
 
@@ -34,7 +37,7 @@ export class PlayState extends GameState {
 
 
 	test() {
-		
+		console.log(this);	
 	}
 
 	frame(game: GameHandler): GameState | null {
@@ -92,5 +95,22 @@ export class PlayState extends GameState {
 
 	getCamera(): Vector3 | null {
 		return {x: this.camX, y: this.camY, z: this.camZ};
+	}
+
+
+	updateCamera(x: number, y: number, z: number) {
+		const EXPAND = 1.5;
+		const writer = new DataWriter();
+		writer.writeUint8(SERVER_IDS.LISTEN);
+
+		const width = EXPAND*GAME_WIDTH/z;
+		const height = EXPAND*GAME_HEIGHT/z;
+		
+		writer.writeUint32(Math.floor(x - width/2));
+		writer.writeUint32(Math.floor(y - height/2));
+		writer.writeUint32(Math.floor(width));
+		writer.writeUint32(Math.floor(height));
+
+		sendSocket(writer.toArrayBuffer());
 	}
 }
