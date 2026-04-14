@@ -5,6 +5,7 @@ import { ApiTakeCode } from "../commons/ApiTakeCode"
 
 // @ts-ignore
 import createModule from "./api/api";
+import { MatchSession } from './MatchSession';
 
 const wasmBinary = fs.readFileSync("server/api/api.wasm");
 
@@ -12,25 +13,7 @@ const module = await createModule({
 	wasmBinary,
 });
 
-interface Grid {
-	ptr: number;
-	view: Uint16Array;
 
-	mapX: number;
-	mapY: number;
-	mapW: number;
-	mapH: number;
-}
-
-
-class Session {
-	readonly id: number;
-	grid: Grid | null = null;
-	
-	constructor(id: number) {
-		this.id = id;
-	}
-}
 
 class MatchApi {
 	private apiPtr: number = 0;
@@ -40,12 +23,12 @@ class MatchApi {
 		this.apiPtr = module._Api_createApi(numThreads);
 	}
 
-	createSession(): Session {
+	createSession(): MatchSession {
 		const id = module._Api_createSession(this.apiPtr);
-		return new Session(id);
+		return new MatchSession(id);
 	}
 
-	deleteSession(s: Session) {
+	deleteSession(s: MatchSession) {
 		if (s.grid) {
 			module._free(s.grid.ptr);
 		}
@@ -59,7 +42,7 @@ class MatchApi {
 		return module._Api_take(this.apiPtr, sessionId, code, args);
 	}
 
-	takeCoords(s: Session) {
+	takeCoords(s: MatchSession) {
 		const ptr = this.run(s.id, ApiTakeCode.COPY_COORDS) >> 2;
 
 		const x = module.HEAP32[ptr + 0];
@@ -73,7 +56,7 @@ class MatchApi {
 	}
 
 
-	createCellGrid(s: Session) {
+	createCellGrid(s: MatchSession) {
 		if (s.grid) {
 			// free previous grid
 			module._free(s.grid.ptr);
@@ -107,7 +90,7 @@ class MatchApi {
 		return view;
 	}
 
-	updateCells(s: Session, x0: number, y0: number, width: number, height: number) {
+	updateCells(s: MatchSession, x0: number, y0: number, width: number, height: number) {
 		if (!s.grid)
 			throw new Error("Missing grid");
 
@@ -146,7 +129,7 @@ class MatchApi {
 		}
 	}
 
-	collectArea(s: Session, x: number, y: number, w: number, h: number): Uint16Array {
+	collectArea(s: MatchSession, x: number, y: number, w: number, h: number): Uint16Array {
 		if (!s.grid)
 			throw new Error("Missing grid");
 

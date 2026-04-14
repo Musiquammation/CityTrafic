@@ -1,3 +1,4 @@
+import { Session } from "inspector";
 import { Match } from "./Match";
 import { api } from "./MatchApi";
 import { generateHash } from "./generateHash"
@@ -16,7 +17,7 @@ class Shared {
 		/// TODO: implement this function
 		console.log("create");
 		const match = new Match(api.createSession());
-		console.log(api.takeCoords(match.id));
+		console.log(api.takeCoords(match.session));
 		
 		return {match, hash};
 	}

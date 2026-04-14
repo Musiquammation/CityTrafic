@@ -1,7 +1,9 @@
 import dotenv from 'dotenv';
 import { WebSocketServer } from 'ws';
 import { DataReader } from '../commons/DataReader';
-import { Session } from './Session';
+import { Client } from './Client';
+import { shared } from './shared';
+import { generateHash } from './generateHash';
 
 dotenv.config();
 
@@ -10,7 +12,7 @@ const PORT = Number(process.env.PORT) || 3000;
 const wss = new WebSocketServer({ port: PORT });
 
 wss.on('connection', (socket) => {
-	const session = new Session();
+	const session = new Client();
 
 	socket.on('message', async data => {
 		let buffer: ArrayBuffer;

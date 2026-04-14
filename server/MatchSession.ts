@@ -11,7 +11,7 @@ interface Grid {
 }
 
 
-export class Match {
+export class MatchSession {
     readonly id: number;
     grid: Grid | null = null;
     clients: Client[] = [];
@@ -20,5 +20,6 @@ export class Match {
         this.id = id;
     }
 
+    
 }
 
