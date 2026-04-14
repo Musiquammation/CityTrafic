@@ -21,6 +21,20 @@ wss.on('connection', (socket) => {
 			buffer = await data.arrayBuffer();
 		} else if (typeof data === "string") {
 			buffer = new TextEncoder().encode(data).buffer;
+		} else if (data instanceof Buffer) {
+			const array = data.buffer.slice(
+				data.byteOffset,
+				data.byteOffset + data.byteLength
+			);
+
+			if (array instanceof SharedArrayBuffer) {
+				buffer = new ArrayBuffer(array.byteLength);
+				new Uint8Array(buffer).set(new Uint8Array(array));
+				
+			} else {
+				buffer = array;
+			}
+
 		} else {
 			throw new Error("Unsupported WebSocket message type");
 		}

@@ -8,6 +8,7 @@ export enum ApiTakeCode {
 	FREE_COORDS,
 
 	TAKE_MAP_EDITS,
+	TAKE_MAP_EDITS_ALL,
 	RLSE_MAP_EDITS,
 
 	PLACE_ROAD

@@ -54,15 +54,13 @@ export class HomeState extends GameState {
 	}
 
 	createSession() {
-		alert("allo");
 		const writer = new DataWriter();
 		writer.writeUint8(SERVER_IDS.CONNECT);
-		writer.write256("00000000");
+		writer.write256("0000000000000000");
 		sendSocket(writer.toArrayBuffer());
 	}
 	
 	joinSession(code: string) {
-		alert("lola");
 		const writer = new DataWriter();
 		writer.writeUint8(SERVER_IDS.CONNECT);
 		writer.write256(code);

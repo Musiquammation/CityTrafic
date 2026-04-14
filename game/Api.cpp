@@ -164,6 +164,14 @@ void* Api::take(int id, int datacode, void* args) {
 		return buffer;
 	}
 
+	case ApiTakeCode::TAKE_MAP_EDITS_ALL:
+	{
+		auto lock = s.game.mutexPool.lockRead(MutexLabel::MAP);
+		uint32_t* buffer = s.game.map.collectEditedCells();
+		thread.buffer = buffer;
+		return buffer;
+	}
+
 	case ApiTakeCode::RLSE_MAP_EDITS:
 	{
 		free(thread.buffer);

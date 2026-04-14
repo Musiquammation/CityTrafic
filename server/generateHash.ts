@@ -1,4 +1,4 @@
-function generateHash(): string {
+export function generateHash(): string {
 	const bytes = new Uint8Array(8);
 	crypto.getRandomValues(bytes);
 	let hex = '';

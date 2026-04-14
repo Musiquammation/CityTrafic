@@ -42,7 +42,8 @@ BIN_DIR = game-bin
 # =========================
 # Emscripten output final
 # =========================
-EMCC_FINAL_FOLDER = client/api
+EMCC_FINAL_FOLDER_1 = client/api
+EMCC_FINAL_FOLDER_2 = server/api
 
 # =========================
 # Fichiers
@@ -137,8 +138,7 @@ EMFLAGS = -std=c++2b -O3 \
           -sMODULARIZE \
           -sEXPORT_ES6=1 \
           -sENVIRONMENT=web \
-          -sALLOW_MEMORY_GROWTH=1 \
-          -sGEN_DEPENDENCIES=1
+          -sALLOW_MEMORY_GROWTH=1
 
 emccTmp:
 	@mkdir -p $(BIN_DIR)
@@ -148,9 +148,12 @@ emccTmp:
 # Build final Emscripten + copy
 # =========================
 emcc: emccTmp
-	@mkdir -p $(EMCC_FINAL_FOLDER)
-	cp $(EM_TARGET) $(EMCC_FINAL_FOLDER)/api.js
-	cp $(BIN_DIR)/api.wasm $(EMCC_FINAL_FOLDER)/api.wasm
+	@mkdir -p $(EMCC_FINAL_FOLDER_1)
+	@mkdir -p $(EMCC_FINAL_FOLDER_2)
+	cp $(EM_TARGET) $(EMCC_FINAL_FOLDER_1)/api.js
+	cp $(BIN_DIR)/api.wasm $(EMCC_FINAL_FOLDER_1)/api.wasm
+	cp $(EM_TARGET) $(EMCC_FINAL_FOLDER_2)/api.js
+	cp $(BIN_DIR)/api.wasm $(EMCC_FINAL_FOLDER_2)/api.wasm
 
 # =========================
 # Build N-API

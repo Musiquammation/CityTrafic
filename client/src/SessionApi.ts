@@ -34,6 +34,8 @@ class SessionApi {
 	async init() {
 		this.module = await createModule();
 		this.apiPtr = this.module._Api_createApi(1);
+
+		api.createCellGrid();
 	}
 
 	cleanup() {
@@ -115,10 +117,10 @@ class SessionApi {
 	createCellGrid() {
 		this.chunks.clear();
 
+		const rect = this.takeCoords();
+		
 		const arg = this.module._malloc(4 * 4);
 		const view = this.module.HEAPU32.subarray(arg >> 2);
-		const rect = this.takeCoords();
-
 		view[0] = rect.x;
 		view[1] = rect.y;
 		view[2] = rect.w;
@@ -143,6 +145,9 @@ class SessionApi {
 				chunk.set(lx, ly, viewCells[y * rect.w + x]);
 			}
 		}
+
+		// Map copy is not used
+		this.module._free(ptr);
 	}
 
 	updateCells(viewX: number, viewY: number) {
@@ -245,4 +250,3 @@ class SessionApi {
 
 export const api = new SessionApi();
 api.init();
-

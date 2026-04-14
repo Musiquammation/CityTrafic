@@ -53,6 +53,7 @@ public:
      * {dx(8), dy(8), data(16)} for each element
      */
     uint32_t* collectEditedCells(int x, int y, int width, int height);
+    uint32_t* collectEditedCells();
 };
 
 

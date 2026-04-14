@@ -2,6 +2,6 @@ draft
 game-bin
 node_modules
 .env
-build
 client/api
+server/api
 .vscode

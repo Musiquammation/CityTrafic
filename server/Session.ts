@@ -22,7 +22,7 @@ export class Session {
 	private receive_connect(reader: DataReader) {
 		const matchId = reader.read256();
 
-		if (matchId === "00000000") {
+		if (matchId === "0000000000000000") {
 			const writer = new DataWriter();
 			writer.writeUint8(CLIENT_IDS.JOIN_CREATED);
 			writer.write256(shared.createMatch().hash)
