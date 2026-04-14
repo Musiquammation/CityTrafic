@@ -25,7 +25,7 @@ class MatchApi {
 
 	createMatch(): Match {
 		const id = module._Api_createSession(this.apiPtr);
-		return new Match(id);
+		return new Match(id, this.createCellGrid(id));
 	}
 
 	deleteMatch(s: Match) {
@@ -42,27 +42,21 @@ class MatchApi {
 		return module._Api_take(this.apiPtr, sessionId, code, args);
 	}
 
-	takeCoords(s: Match) {
-		const ptr = this.run(s.id, ApiTakeCode.COPY_COORDS) >> 2;
+	takeCoords(id: number) {
+		const ptr = this.run(id, ApiTakeCode.COPY_COORDS) >> 2;
 
 		const x = module.HEAP32[ptr + 0];
 		const y = module.HEAP32[ptr + 1];
 		const w = module.HEAP32[ptr + 2];
 		const h = module.HEAP32[ptr + 3];
 
-		this.run(s.id, ApiTakeCode.FREE_COORDS);
+		this.run(id, ApiTakeCode.FREE_COORDS);
 
 		return { x, y, w, h };
 	}
 
-
-	createCellGrid(s: Match) {
-		if (s.grid) {
-			// free previous grid
-			module._free(s.grid.ptr);
-		}
-
-		const rect = this.takeCoords(s);
+	private createCellGrid(id: number) {
+		const rect = this.takeCoords(id);
 		const argPtr = module._malloc(4 * 4);
 		const argView = module.HEAPU32.subarray(argPtr >> 2);
 		argView[0] = rect.x;
@@ -71,14 +65,14 @@ class MatchApi {
 		argView[3] = rect.h;
 
 
-		const ptr = this.run(s.id, ApiTakeCode.MAKE_MAP, argPtr);
+		const ptr = this.run(id, ApiTakeCode.MAKE_MAP, argPtr);
 		const view = new Uint16Array(
 			module.HEAPU16.buffer,
 			ptr,
 			rect.w * rect.h
 		);
 		
-		s.grid = {
+		return {
 			ptr,
 			view,
 			mapX: rect.x,
@@ -86,8 +80,16 @@ class MatchApi {
 			mapW: rect.w,
 			mapH: rect.h
 		};
+	}
 
-		return view;
+	appendCellGrid(s: Match) {
+		if (s.grid) {
+			// free previous grid
+			module._free(s.grid.ptr);
+		}
+
+		const grid = this.createCellGrid(s.id);
+		s.grid = grid;
 	}
 
 	updateCells(s: Match, x0: number, y0: number, width: number, height: number) {

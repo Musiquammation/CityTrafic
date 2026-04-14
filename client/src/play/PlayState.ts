@@ -108,6 +108,7 @@ export class PlayState extends GameState {
 		writer.writeUint32(Math.floor(width));
 		writer.writeUint32(Math.floor(height));
 
+
 		sendSocket(writer.toArrayBuffer());
 	}
 }

@@ -26,11 +26,13 @@ function net_joinAlive(reader: DataReader) {
 }
 
 function net_areas(reader: DataReader) {
+    reader.readUint8(); // for 16bits padding
     const areasCount = reader.readInt32();
 
     for (let count = 0; count < areasCount; count++) {
         const x0 = reader.readUint32() * REGION_SIZE;
         const y0 = reader.readUint32() * REGION_SIZE;
+        console.log(x0, y0);
 
         for (let dy = 0; dy < REGION_SIZE; dy++) {
             for (let dx = 0; dx < REGION_SIZE; dx++) {

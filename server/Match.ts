@@ -13,11 +13,12 @@ interface Grid {
 
 export class Match {
     readonly id: number;
-    grid: Grid | null = null;
+    grid: Grid;
     clients: Client[] = [];
     
-    constructor(id: number) {
+    constructor(id: number, grid: Grid) {
         this.id = id;
+        this.grid = grid;
     }
 
 }

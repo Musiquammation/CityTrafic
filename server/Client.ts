@@ -7,7 +7,15 @@ import { Match } from "./Match";
 import { api } from "./MatchApi";
 import { shared } from "./shared";
 
+function clamp(v: number, min: number, max: number) {
+	if (v <= min)
+		return min;
 
+	if (v >= max)
+		return max;
+
+	return v;
+}
 
 
 export class Client {
@@ -119,13 +127,34 @@ export class Client {
 		const h = reader.readInt32();
 
 		const writer = new DataWriter();
+		writer.writeUint8(CLIENT_IDS.AREAS);
+		writer.writeUint8(0); // for 16bits padding
 
 		// Compute region bounds
-		const rx0 = Math.floor(x / Client.MISSED_REGION_SIZE);
-		const ry0 = Math.floor(y / Client.MISSED_REGION_SIZE);
-		const rx1 = Math.floor((x + w - 1) / Client.MISSED_REGION_SIZE);
-		const ry1 = Math.floor((y + h - 1) / Client.MISSED_REGION_SIZE);
+		const rx0 = Math.floor(clamp(
+			x,
+			match.grid.mapX,
+			match.grid.mapX+match.grid.mapW-1
+		)/Client.MISSED_REGION_SIZE);
 
+		const ry0 = Math.floor(clamp(
+			x,
+			match.grid.mapY,
+			match.grid.mapY+match.grid.mapH-1
+		)/Client.MISSED_REGION_SIZE);
+		
+		const rx1 = Math.floor(clamp(
+			(x + w - 1),
+			match.grid.mapX,
+			match.grid.mapX+match.grid.mapW-1
+		)/Client.MISSED_REGION_SIZE);
+
+		const ry1 = Math.floor(clamp(
+			(y + h - 1),
+			match.grid.mapY,
+			match.grid.mapY+match.grid.mapH-1
+		)/Client.MISSED_REGION_SIZE);
+		
 		// Collect new (unvisited) regions in the view
 		const newRegions: Array<{ key: bigint, rx: number, ry: number }> = [];
 		for (let ry = ry0; ry <= ry1; ry++) {
