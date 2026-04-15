@@ -11,5 +11,9 @@ export enum ApiTakeCode {
 	TAKE_MAP_EDITS_ALL,
 	RLSE_MAP_EDITS,
 
+	TAKE_MAP_PTR,
+	RLSE_MAP_PTR,
+
+
 	PLACE_ROAD
 }

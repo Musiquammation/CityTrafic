@@ -154,6 +154,7 @@ export class Client {
 			match.grid.mapY,
 			match.grid.mapY+match.grid.mapH-1
 		)/Client.MISSED_REGION_SIZE);
+
 		
 		// Collect new (unvisited) regions in the view
 		const newRegions: Array<{ key: bigint, rx: number, ry: number }> = [];

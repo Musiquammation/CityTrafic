@@ -5,15 +5,16 @@ import { GameHandler } from "../handler/GameHandler";
 import { InputHandler } from "../handler/InputHandler";
 import { DrawStateData, GameState } from "../handler/states";
 import { Vector3 } from "../handler/Vector3";
+import { Chunk } from "../map/Chunk";
 import { sendSocket } from "../net/sendSocket";
-import { api, Chunk } from "../SessionApi";
+import { api } from "../SessionApi";
 import { drawCell } from "./drawCell";
 
 
 export class PlayState extends GameState {
 	private camX = 0;
 	private camY = 0;
-	private camZ = 20;
+	private camZ = 90;
 	private frameCount = 0;
 
 	constructor() {
@@ -35,12 +36,12 @@ export class PlayState extends GameState {
 		// Send request to load area
 		this.updateCamera(this.camX, this.camY, this.camZ);
 
+		(window as any).playState = this;
 		this.test();
 	}
 
 
 	test() {
-		console.log(this);	
 	}
 
 	frame(game: GameHandler): GameState | null {
@@ -87,6 +88,7 @@ export class PlayState extends GameState {
 	}
 
 	exit() {
+		(window as any).playState = null;
 		api.deleteSession();   
 	}
 
@@ -107,6 +109,7 @@ export class PlayState extends GameState {
 		writer.writeUint32(Math.floor(y - height/2));
 		writer.writeUint32(Math.floor(width));
 		writer.writeUint32(Math.floor(height));
+
 
 
 		sendSocket(writer.toArrayBuffer());

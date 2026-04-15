@@ -17,7 +17,7 @@ class Shared {
 		/// TODO: implement this function
 		console.log("create");
 		const match = api.createMatch();
-		console.log(api.takeCoords(match));
+		console.log("Map", api.takeCoords(match.id));
 		
 		return {match, hash};
 	}

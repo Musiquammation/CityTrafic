@@ -6,6 +6,7 @@
 #include <map>
 #include <atomic>
 #include <optional>
+#include <mutex>
 
 #include "Game.hpp"
 
@@ -25,6 +26,9 @@ enum class ApiTakeCode {
 	TAKE_MAP_EDITS_ALL,
 	RLSE_MAP_EDITS,
 
+	TAKE_MAP_PTR,
+	RLSE_MAP_PTR,
+
 	PLACE_ROAD
 };
 
@@ -39,6 +43,7 @@ struct ApiThread {
 	std::map<int, ApiGame> games;
 	std::atomic<ApiThreadState> state{ApiThreadState::ALIVE};
 	void* buffer;
+	std::optional<std::unique_lock<std::shared_mutex>> lock;
 };
 
 

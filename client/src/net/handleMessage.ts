@@ -34,12 +34,7 @@ function net_areas(reader: DataReader) {
         const y0 = reader.readUint32() * REGION_SIZE;
         console.log(x0, y0);
 
-        for (let dy = 0; dy < REGION_SIZE; dy++) {
-            for (let dx = 0; dx < REGION_SIZE; dx++) {
-                const data = reader.readUint16();
-                api.setCell(x0 + dx, y0 + dy, data);
-            }
-        }
+        api.setArea(x0, y0, REGION_SIZE, REGION_SIZE, reader);
 
     }
 

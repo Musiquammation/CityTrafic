@@ -178,6 +178,17 @@ void* Api::take(int id, int datacode, void* args) {
 		return nullptr;
 	}
 
+	case ApiTakeCode::TAKE_MAP_PTR:
+	{
+		thread.lock = s.game.mutexPool.lockWrite(MutexLabel::MAP);
+		return s.game.map.cells;
+	}
+
+	case ApiTakeCode::RLSE_MAP_PTR:
+	{
+		thread.lock.reset();
+	}
+
 	case ApiTakeCode::PLACE_ROAD:
 	{
 		auto lock = s.game.mutexPool.lockWrite(MutexLabel::MAP);

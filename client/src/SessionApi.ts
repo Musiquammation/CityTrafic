@@ -1,35 +1,19 @@
 import createModule from "../api/api.js";
 
-import { Vector } from "./tools/Vector";
 import { Rectangle } from "./tools/Rectangle";
 
-
 import { ApiTakeCode } from "../../commons/ApiTakeCode"
+import { DataReader } from "../../commons/DataReader";
+import { Chunk } from "./map/Chunk";
+import { MapHandler } from "./map/MapHandler";
 
-export class Chunk {
-	static readonly SIZE = 32;
 
-	cells: Uint16Array;
-
-	constructor() {
-		this.cells = new Uint16Array(Chunk.SIZE * Chunk.SIZE);
-	}
-
-	get(x: number, y: number): number {
-		return this.cells[y * Chunk.SIZE + x];
-	}
-
-	set(x: number, y: number, v: number) {
-		this.cells[y * Chunk.SIZE + x] = v;
-	}
-}
 
 class SessionApi {
 	private module: any = null;
 	private apiPtr: number = 0;
 	private sessionId: number | null = null;
-
-	private chunks = new Map<number, Chunk>();
+	private map = new MapHandler();
 
 	async init() {
 		this.module = await createModule();
@@ -74,31 +58,6 @@ class SessionApi {
 	}
 
 
-	private chunkKey(cx: number, cy: number): number {
-		return (cx << 16) ^ (cy & 0xffff);
-	}
-
-	private getChunk(cx: number, cy: number): Chunk {
-		const key = this.chunkKey(cx, cy);
-
-		let chunk = this.chunks.get(key);
-		if (!chunk) {
-			chunk = new Chunk();
-			this.chunks.set(key, chunk);
-		}
-
-		return chunk;
-	}
-
-	private worldToChunk(x: number, y: number) {
-		return {
-			cx: Math.floor(x / Chunk.SIZE),
-			cy: Math.floor(y / Chunk.SIZE),
-			lx: ((x % Chunk.SIZE) + Chunk.SIZE) % Chunk.SIZE,
-			ly: ((y % Chunk.SIZE) + Chunk.SIZE) % Chunk.SIZE,
-		};
-	}
-
 
 
 	takeCoords(): Rectangle {
@@ -115,7 +74,7 @@ class SessionApi {
 	}
 
 	createCellGrid() {
-		this.chunks.clear();
+		this.map.clear();
 
 		const rect = this.takeCoords();
 		
@@ -139,8 +98,7 @@ class SessionApi {
 				const wx = rect.x + x;
 				const wy = rect.y + y;
 
-				const { cx, cy, lx, ly } = this.worldToChunk(wx, wy);
-				const chunk = this.getChunk(cx, cy);
+				const {chunk, lx, ly} = this.map.getChunkAt(wx, wy);
 
 				chunk.set(lx, ly, viewCells[y * rect.w + x]);
 			}
@@ -185,8 +143,7 @@ class SessionApi {
 			const wx = bx + dx;
 			const wy = by + dy;
 
-			const { cx, cy, lx, ly } = this.worldToChunk(wx, wy);
-			const chunk = this.getChunk(cx, cy);
+			const {chunk, lx, ly} = this.map.getChunkAt(wx, wy);
 
 			chunk.set(lx, ly, data);
 		}
@@ -194,42 +151,52 @@ class SessionApi {
 		this.run(ApiTakeCode.RLSE_MAP_EDITS);
 	}
 
-	getCell(x: number, y: number) {
-		const { cx, cy, lx, ly } = this.worldToChunk(x, y);
-		const chunk = this.getChunk(cx, cy);
-		return chunk.get(lx, ly);
-	}
+	
 
-	setCell(x: number, y: number, data: number) {
-		const { cx, cy, lx, ly } = this.worldToChunk(x, y);
-		const chunk = this.getChunk(cx, cy);
-		chunk.set(lx, ly, data);
-	}
+	setArea(x0: number, y0: number, w: number, h: number, reader: DataReader) {
+		// Fill buffers
+		let buffers = new Array<Uint16Array>(h);
+		for (let y = y0, yf = y0+h; y < yf; y++) {
+			const buffer = new Uint16Array(w);
+			buffers[y-y0] = buffer;
 
-	*getChunks(viewX: number, viewY: number, rangeW: number, rangeH: number) {
-		const halfW = Math.floor(rangeW / 2);
-		const halfH = Math.floor(rangeH / 2);
+			let i = 0;
 
-		const minX = viewX - halfW;
-		const minY = viewY - halfH;
-		const maxX = viewX + halfW;
-		const maxY = viewY + halfH;
-
-		const minCX = Math.floor(minX / Chunk.SIZE) - 1;
-		const minCY = Math.floor(minY / Chunk.SIZE) - 1;
-		const maxCX = Math.floor(maxX / Chunk.SIZE) + 1;
-		const maxCY = Math.floor(maxY / Chunk.SIZE) + 1;
-
-
-		for (let cy = minCY; cy <= maxCY; cy++) {
-			for (let cx = minCX; cx <= maxCX; cx++) {
-				yield ({
-					x: cx * Chunk.SIZE,
-					y: cy * Chunk.SIZE,
-					cells: this.getChunk(cx, cy).cells,
-				});
+			for (const line of this.map.getLineBuffer(x0, y, w)) {
+				for (let j = 0; j < line.length; j++) {
+					const data = reader.readUint16();
+					line[j] = data;
+					buffer[i++] = data;
+				}
 			}
 		}
+
+		// Take coordonates
+		const rect = this.takeCoords();
+		const rx = rect.x;
+		const ry = rect.x;
+		const rw = rect.w;
+
+
+
+		// Copy buffers in C++ map
+		const mapPtr = this.run(ApiTakeCode.TAKE_MAP_PTR) >> 1;
+		const heap = this.module.HEAPU16;
+
+		for (let y = y0, yf = y0 + h; y < yf; y++) {
+			const buffer = buffers[y - y0];
+
+			const dstOffset =
+				mapPtr +
+				(y - ry) * rw +
+				(x0 - rx);
+
+			console.log(x0, y);
+			heap.set(buffer, dstOffset);
+		}
+
+
+		this.run(ApiTakeCode.RLSE_MAP_PTR);
 	}
 
 
@@ -251,6 +218,10 @@ class SessionApi {
 		const number = this.module.HEAPU32[srcPtr];
 
 		this.run(ApiTakeCode.FREE_CARS);
+	}
+
+	getChunks(viewX: number, viewY: number, rangeW: number, rangeH: number) {
+		return this.map.getChunks(viewX, viewY, rangeW, rangeH);
 	}
 }
 
