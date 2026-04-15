@@ -92,6 +92,7 @@ class Shared {
 		return { match, hash };
 	}
 
+
 	async collectArea(s: Match, x: number, y: number, w: number, h: number) {
 		const area = (await this.ask(
 			s.id,
@@ -100,6 +101,14 @@ class Shared {
 		)) as Uint16Array;
 
 		return area;
+	}
+
+	placeSingleRoad(s: Match, x: number, y: number) {
+		return this.ask(
+			s.id,
+			'placeSingleRoad',
+			[s,x,y]
+		);
 	}
 }
 

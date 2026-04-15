@@ -9,6 +9,7 @@ import { Chunk } from "../worker/Chunk";
 import { sendSocket } from "../net/sendSocket";
 import { drawCell } from "./drawCell";
 import { askWorker } from "../worker/askWorker";
+import { actionSender } from "./actionSender";
 
 
 
@@ -135,5 +136,10 @@ export class PlayState extends GameState {
 
 
 		sendSocket(writer.toArrayBuffer());
+	}
+
+
+	placeBlock(x: number, y: number) {
+		actionSender.placeBlock(x,y);
 	}
 }

@@ -3,7 +3,8 @@ import { ApiTakeCode } from "../commons/ApiTakeCode"
 import { Match } from "./Match"
 
 
-
+// const FRAME_DELAY = 16;
+const FRAME_DELAY = 1000;
 
 export class MatchApi {
 	private apiPtr: number = 0;
@@ -16,7 +17,7 @@ export class MatchApi {
 
 		this.frameInterval = setInterval(() => {
 			this.runFrames();
-		}, 16);
+		}, FRAME_DELAY);
 	}
 
 
@@ -90,13 +91,10 @@ export class MatchApi {
 	}
 
 	appendCellGrid(s: Match) {
-		if (s.grid) {
-			// free previous grid
-			this.module._free(s.grid.ptr);
-		}
+		// free previous grid
+		this.module._free(s.grid.ptr);
 
-		const grid = this.createCellGrid(s.id);
-		s.grid = grid;
+		s.grid = this.createCellGrid(s.id);
 	}
 
 	updateCells(s: Match, x0: number, y0: number, width: number, height: number) {
@@ -171,6 +169,17 @@ export class MatchApi {
 			transfered: [result.buffer],
 			result
 		};
+	}
+
+	placeSingleRoad(s: Match, x: number, y: number) {
+		const argPtr = this.module._malloc(4 * 2);
+		const argView = this.module.HEAP32.subarray(argPtr >> 2);
+
+		argView[0] = x;
+		argView[1] = y;
+		this.run(s.id, ApiTakeCode.PLACE_SINGLE_ROAD, argPtr);
+		
+		this.module._free(argPtr);
 	}
 }
 

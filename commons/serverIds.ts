@@ -15,5 +15,12 @@ export enum SERVER_IDS {
 	 */
 	LISTEN,
 
+	/**
+	 * +00: x
+	 * +04: y
+	 * +08
+	 */
+	PLACE_SINGLE_ROAD,
+
 	ERROR
 } 

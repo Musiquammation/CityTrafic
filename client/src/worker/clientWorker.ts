@@ -30,7 +30,7 @@ self.onmessage = event => {
     // @ts-ignore
 	const result = api[method as keyof ClientApi](...args);
 	
-    if (result !== undefined && requestId >= 0) {
+    if (requestId >= 0) {
 	    self.postMessage({ requestId, result });
     }
 };

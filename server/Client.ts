@@ -53,10 +53,13 @@ export class Client {
 
 		switch (action) {
 		case SERVER_IDS.CONNECT:
-			return this.receive_connect(reader);
+			return await this.receive_connect(reader);
 
 		case SERVER_IDS.LISTEN:
-			return this.receive_listen(reader);
+			return await this.receive_listen(reader);
+
+		case SERVER_IDS.PLACE_SINGLE_ROAD:
+			return await this.receive_placeSingleRoad(reader);
 
 		default:
 			throw new Error("Unknown action " + action);
@@ -212,4 +215,17 @@ export class Client {
 
 		return writer;
 	}
+
+	private async receive_placeSingleRoad(reader: DataReader) {
+		if (!this.match)
+			throw new Error("No match to listen");
+
+		const x = reader.readInt32();
+		const y = reader.readInt32();
+
+		await shared.placeSingleRoad(this.match, x, y);
+
+		return null;
+	}
+
 }

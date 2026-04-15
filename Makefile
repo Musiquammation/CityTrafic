@@ -42,8 +42,8 @@ BIN_DIR = game-bin
 # =========================
 # Emscripten output final
 # =========================
-EMCC_FINAL_FOLDER_1 = client/api
-EMCC_FINAL_FOLDER_2 = server/api
+EMCC_FINAL_FOLDER_1 = client/wasm
+EMCC_FINAL_FOLDER_2 = server/wasm
 
 # =========================
 # Fichiers

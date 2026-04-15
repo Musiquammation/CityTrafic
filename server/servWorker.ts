@@ -2,10 +2,10 @@ import { parentPort, workerData } from "worker_threads";
 import fs from 'fs'
 
 // @ts-ignore
-import createModule from "./api/api.js"
+import createModule from "./wasm/api.js"
 import { MatchApi } from "./MatchApi"
 
-const wasmBinary = fs.readFileSync("server/api/api.wasm");
+const wasmBinary = fs.readFileSync("server/wasm/api.wasm");
 
 
 const module = await createModule({
@@ -26,7 +26,10 @@ parentPort!.on("message", async (msg) => {
 
 	const result = api[method as keyof MatchApi](...args);
 	
-	if (result.transfered && result.result) {
+	if (result === undefined) {
+		parentPort!.postMessage({ requestId });	
+	
+	} else if (result.transfered && result.result) {
 		parentPort!.postMessage({
 			requestId,
 			result: result.result

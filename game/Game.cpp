@@ -11,8 +11,6 @@ void Game::test() {
 }
 
 void Game::frame() {
-	printf("frame (0,0): %d\n", this->getCell(0,0)->data);
-
 	this->test();
 
 	// Car behavior

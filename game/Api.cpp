@@ -171,7 +171,7 @@ void* Api::take(int id, int datacode, void* args) {
 		return nullptr;
 	}
 
-	case ApiTakeCode::PLACE_ROAD:
+	case ApiTakeCode::PLACE_SINGLE_ROAD:
 	{
 		auto lock = s.game.mutexPool.lockWrite(MutexLabel::MAP);
 		Cell* cell = s.game.getEditCell(intArg(0), intArg(1));

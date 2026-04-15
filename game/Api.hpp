@@ -28,7 +28,7 @@ enum class ApiTakeCode {
 	TAKE_MAP_PTR,
 	RLSE_MAP_PTR,
 
-	PLACE_ROAD
+	PLACE_SINGLE_ROAD,
 };
 
 
