@@ -1,15 +1,30 @@
 
 import { ApiTakeCode } from "../commons/ApiTakeCode"
-import { Match } from "./Match"
+import { Client } from "./Client";
+
+
+
+interface ApiMatch {
+	ptr: number;
+	
+	mapX: number;
+	mapY: number;
+	mapW: number;
+	mapH: number;
+}
+
+
+
 
 
 // const FRAME_DELAY = 16;
 const FRAME_DELAY = 1000;
 
 export class MatchApi {
+	private matchs = new Map<number, ApiMatch>();
 	private apiPtr: number = 0;
 	private frameInterval;
-	module: any;
+	private module: any;
 
 	constructor(module: any, indexStart: number, indexSpacing: number) {
 		this.module = module;
@@ -26,17 +41,24 @@ export class MatchApi {
 		this.module._Api_deleteApi(this.apiPtr);
 	}
 
-	createMatch(): Match {
+	createMatch() {
 		const id = this.module._Api_createSession(this.apiPtr);
-		return new Match(id, this.createCellGrid(id));
+		const match = this.createApiMatch(id);
+		this.matchs.set(id, match);
+		return {
+			id,
+			mapX: match.mapX,
+			mapY: match.mapY,
+			mapW: match.mapW,
+			mapH: match.mapH
+		};
 	}
 
-	deleteMatch(s: Match) {
-		if (s.grid) {
-			this.module._free(s.grid.ptr);
-		}
+	deleteMatch(id: number) {
+		const m = this.matchs.get(id)!;
+		this.module._free(m.ptr);
 
-		this.module._Api_deleteSession(this.apiPtr, s.id);
+		this.module._Api_deleteSession(this.apiPtr, id);
 	}
 
 	private runFrames() {
@@ -63,7 +85,7 @@ export class MatchApi {
 		return { x, y, w, h };
 	}
 
-	private createCellGrid(id: number) {
+	private createApiMatch(id: number): ApiMatch {
 		const rect = this.takeCoords(id);
 		const argPtr = this.module._malloc(4 * 4);
 		const argView = this.module.HEAPU32.subarray(argPtr >> 2);
@@ -74,15 +96,9 @@ export class MatchApi {
 
 
 		const ptr = this.run(id, ApiTakeCode.MAKE_MAP, argPtr);
-		const view = new Uint16Array(
-			this.module.HEAPU16.buffer,
-			ptr,
-			rect.w * rect.h
-		);
 		
 		return {
 			ptr,
-			view,
 			mapX: rect.x,
 			mapY: rect.y,
 			mapW: rect.w,
@@ -90,16 +106,19 @@ export class MatchApi {
 		};
 	}
 
-	appendCellGrid(s: Match) {
-		// free previous grid
-		this.module._free(s.grid.ptr);
+	appendCellGrid(id: number) {
+		const m = this.matchs.get(id);
+		if (m) {
+			this.module._free(m.ptr);
+		}
 
-		s.grid = this.createCellGrid(s.id);
+		const m2 = this.createApiMatch(id);
+		this.matchs.set(id, m2);
+		return m2;
 	}
 
-	updateCells(s: Match, x0: number, y0: number, width: number, height: number) {
-		if (!s.grid)
-			throw new Error("Missing grid");
+	updateCells(id: number, x0: number, y0: number, width: number, height: number) {
+		const m = this.matchs.get(id)!;
 
 		const argPtr = this.module._malloc(4 * 4);
 		const arg = this.module.HEAPU32.subarray(argPtr >> 2);
@@ -109,16 +128,16 @@ export class MatchApi {
 		arg[2] = width;
 		arg[3] = height;
 
-		const ptr = this.run(s.id, ApiTakeCode.TAKE_MAP_EDITS, argPtr) >> 2;
+		const ptr = this.run(id, ApiTakeCode.TAKE_MAP_EDITS, argPtr) >> 2;
 		this.module._free(argPtr);
 
 
 		const len = this.module.HEAPU32[ptr];
 		let cursor = ptr + 1;
-		const sx = s.grid.mapX;
-		const sy = s.grid.mapY;
-		const sw = s.grid.mapW;
-		const gridView = s.grid.view;
+		const sx = m.mapX;
+		const sy = m.mapY;
+		const sw = m.mapW;
+		const gridPtr = m.ptr >> 1;
 
 		for (let i = 0; i < len; i++) {
 			const packed = this.module.HEAPU32[cursor++];
@@ -132,15 +151,14 @@ export class MatchApi {
 
 			const idx = (y - sy) * sw + (x - sx);
 
-			gridView[idx] = data;
+			this.module.HEAPU16[gridPtr+idx] = data;
 		}
 	}
 
-	collectArea(s: Match, x: number, y: number, w: number, h: number) {
-		if (!s.grid)
-			throw new Error("Missing grid");
+	collectArea(id: number, x: number, y: number, w: number, h: number) {
+		const m = this.matchs.get(id)!;
 
-		const { view, mapX, mapY, mapW, mapH } = s.grid;
+		const { mapX, mapY, mapW, mapH } = m;
 
 		if (
 			x < mapX || y < mapY ||
@@ -149,6 +167,12 @@ export class MatchApi {
 		) {
 			throw new Error("Out of bounds");
 		}
+
+		const gridPtr = m.ptr >> 1;
+		const view = this.module.HEAPU16.subarray(
+			gridPtr,
+			gridPtr + mapW * mapH
+		);
 
 		const result = new Uint16Array(w * h);
 
@@ -171,13 +195,14 @@ export class MatchApi {
 		};
 	}
 
-	placeSingleRoad(s: Match, x: number, y: number) {
+	placeSingleRoad(id: number, x: number, y: number) {
+		const m = this.matchs.get(id)!;
 		const argPtr = this.module._malloc(4 * 2);
 		const argView = this.module.HEAP32.subarray(argPtr >> 2);
 
 		argView[0] = x;
 		argView[1] = y;
-		this.run(s.id, ApiTakeCode.PLACE_SINGLE_ROAD, argPtr);
+		this.run(id, ApiTakeCode.PLACE_SINGLE_ROAD, argPtr);
 		
 		this.module._free(argPtr);
 	}

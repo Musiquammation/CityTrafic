@@ -24,7 +24,8 @@ parentPort!.on("message", async (msg) => {
 		throw new Error("Method not found");
 	}
 
-	const result = api[method as keyof MatchApi](...args);
+
+	const result = (api as any)[method](...args);
 	
 	if (result === undefined) {
 		parentPort!.postMessage({ requestId });	

@@ -1,25 +1,23 @@
 import { Client } from "./Client";
 
-interface Grid {
-    ptr: number;
-    view: Uint16Array;
-
-    mapX: number;
-    mapY: number;
-    mapW: number;
-    mapH: number;
-}
-
-
 export class Match {
-    readonly id: number;
-    grid: Grid;
-    clients: Client[] = [];
-    
-    constructor(id: number, grid: Grid) {
-        this.id = id;
-        this.grid = grid;
-    }
+	readonly id: number;
+	clients: Client[] = [];
+	mapX: number;
+	mapY: number;
+	mapW: number;
+	mapH: number;
 
+	constructor(id: number,
+		mapX: number,
+		mapY: number,
+		mapW: number,
+		mapH: number
+	) {
+		this.id = id
+		this.mapX = mapX;
+		this.mapY = mapY;
+		this.mapW = mapW;
+		this.mapH = mapH;
+	}
 }
-

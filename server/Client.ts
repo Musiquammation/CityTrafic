@@ -105,14 +105,12 @@ export class Client {
 			throw new Error("No match to listen");
 
 		const match = this.match;
-		if (!match.grid)
-			throw new Error("Missing grid");
 
 
 		const promises: Promise<void>[] = [];
 		const sendArea = async (x: number, y: number) => {
 			const area = await shared.collectArea(
-				match,
+				match.id,
 				x * Client.MISSED_REGION_SIZE,
 				y * Client.MISSED_REGION_SIZE,
 				Client.MISSED_REGION_SIZE,
@@ -137,26 +135,26 @@ export class Client {
 		// Compute region bounds
 		const rx0 = Math.floor(clamp(
 			x,
-			match.grid.mapX,
-			match.grid.mapX+match.grid.mapW-1
+			match.mapX,
+			match.mapX+match.mapW-1
 		)/Client.MISSED_REGION_SIZE);
 
 		const ry0 = Math.floor(clamp(
 			x,
-			match.grid.mapY,
-			match.grid.mapY+match.grid.mapH-1
+			match.mapY,
+			match.mapY+match.mapH-1
 		)/Client.MISSED_REGION_SIZE);
 		
 		const rx1 = Math.floor(clamp(
 			(x + w - 1),
-			match.grid.mapX,
-			match.grid.mapX+match.grid.mapW-1
+			match.mapX,
+			match.mapX+match.mapW-1
 		)/Client.MISSED_REGION_SIZE);
 
 		const ry1 = Math.floor(clamp(
 			(y + h - 1),
-			match.grid.mapY,
-			match.grid.mapY+match.grid.mapH-1
+			match.mapY,
+			match.mapY+match.mapH-1
 		)/Client.MISSED_REGION_SIZE);
 
 		
@@ -211,7 +209,6 @@ export class Client {
 		this.viewW = w;
 		this.viewH = h;
 
-		
 
 		return writer;
 	}
@@ -220,10 +217,14 @@ export class Client {
 		if (!this.match)
 			throw new Error("No match to listen");
 
+
+		// Place block into grid
 		const x = reader.readInt32();
 		const y = reader.readInt32();
 
-		await shared.placeSingleRoad(this.match, x, y);
+		await shared.placeSingleRoad(this.match.id, x, y);
+
+
 
 		return null;
 	}

@@ -11,7 +11,7 @@ type Pending = {
 };
 
 class Shared {
-	matchs = new Map<string, any>();
+	matchs = new Map<string, Match>();
 
 	private cpus: number;
 	private workers: Worker[];
@@ -25,7 +25,7 @@ class Shared {
 		this.workers = new Array<Worker>(cpus);
 	}
 
-	private ask(workerId: number, method: string, args: any) {
+	private ask<T=any>(workerId: number, method: string, args: any) {
 		const worker = this.workers[workerId % this.cpus];
 		const requestId = this.nextRequestId++;
 		const promise = new Promise((resolve, reject) => {
@@ -35,10 +35,10 @@ class Shared {
 		worker.postMessage({
 			requestId,
 			method,
-			args
+			args,
 		});
 
-		return promise;
+		return promise as Promise<T>;
 	}
 
 
@@ -81,34 +81,44 @@ class Shared {
 		this.nextWorker = (this.nextWorker + 1) % this.cpus;
 
 
-		const match = (await this.ask(
+		const {id, mapX, mapY, mapW, mapH} = await this.ask<{
+			id: number, 
+			mapX: number, 
+			mapY: number, 
+			mapW: number, 
+			mapH: number
+		}>(
 			workerId,
 			'createMatch',
-			[]
-		)) as Match;
+			[],
+		);
+
+		const match = new Match(id, mapX, mapY, mapW, mapH);
 
 		this.matchs.set(hash, match);
 
-		return { match, hash };
+		return {match, hash};
 	}
 
 
-	async collectArea(s: Match, x: number, y: number, w: number, h: number) {
-		const area = (await this.ask(
-			s.id,
+	async collectArea(id: number, x: number, y: number, w: number, h: number) {
+		const area = await this.ask<Uint16Array>(
+			id,
 			'collectArea',
-			[s,x,y,w,h]
-		)) as Uint16Array;
+			[id, x,y,w,h],
+		);
 
 		return area;
 	}
 
-	placeSingleRoad(s: Match, x: number, y: number) {
-		return this.ask(
-			s.id,
+	async placeSingleRoad(id: number, x: number, y: number) {
+		await this.ask(
+			id,
 			'placeSingleRoad',
-			[s,x,y]
+			[id, x,y],
 		);
+
+
 	}
 }
 
