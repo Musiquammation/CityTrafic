@@ -24,9 +24,9 @@ export class ClientApi {
 				}
 				return path;
 			}
-
-
 		});
+
+
 		this.apiPtr = this.module._Api_createApi(0, 0);
 
 		this.createCellGrid();
@@ -208,7 +208,7 @@ export class ClientApi {
 		view[0] = x;
 		view[1] = y;
 
-		this.run(ApiTakeCode.PLACE_ROAD, arg);
+		this.run(ApiTakeCode.PLACE_SINGLE_ROAD, arg);
 
 		this.module._free(arg);
 	}
