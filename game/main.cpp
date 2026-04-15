@@ -9,6 +9,9 @@
 
 #include "debugFile.hpp"
 
+#define MAIN_TEST_ID 0
+
+
 
 struct RedCerr {
     template<typename T>
@@ -26,6 +29,9 @@ struct RedCerr {
 
 RedCerr rcerr;
 
+
+
+#if MAIN_TEST_ID == 0
 
 
 int main() {
@@ -108,3 +114,23 @@ int main() {
 	printf("Success!\n");
 	return 0;
 }
+
+
+
+#elif MAIN_TEST_ID == 1
+
+#include "Api.hpp"
+
+
+int main() {
+	Api* api = Api_createApi(2);
+
+	Api_deleteApi(api);
+
+	printf("Success!\n");
+	return 0;
+	
+}
+
+
+#endif

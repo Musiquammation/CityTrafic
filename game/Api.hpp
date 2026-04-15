@@ -1,6 +1,5 @@
 #pragma once
 
-#include <thread>
 #include <mutex>
 #include <vector>
 #include <map>
@@ -37,38 +36,37 @@ struct ApiGame {
 	Game game;
 };
 
-struct ApiThread {
-	std::thread thread;
-	std::mutex mutex;
-	std::map<int, ApiGame> games;
-	std::atomic<ApiThreadState> state{ApiThreadState::ALIVE};
-	void* buffer;
-	std::optional<std::unique_lock<std::shared_mutex>> lock;
-};
 
 
 
 class Api {
 public:
-	Api(int threadnum);
+	Api(int indexStart, int indexSpacing);
 	~Api();
 
-	void init();
 	int createSession();
 	void deleteSession(int id);
 	void* take(int id, int datacode, void* args);
+	void runFrames();
 
 private:
-	int threadnum;
-	int nextId{0};
-	std::vector<ApiThread> threads;
+	int nextId;
+	int indexSpacing;
+	
+	std::shared_mutex mutex;
+	std::map<int, ApiGame> games;
+	std::atomic<ApiThreadState> state{ApiThreadState::ALIVE};
+	void* buffer;
+	std::optional<std::unique_lock<std::shared_mutex>> bffLock;
+
 };
 
 
 extern "C" {
-	Api* Api_createApi(int threadnum);
+	Api* Api_createApi(int indexStart, int indexSpacing);
 	void Api_deleteApi(Api* api);
 	int Api_createSession(Api* api);
 	void Api_deleteSession(Api* api, int id);
 	void* Api_take(Api* api, int id, int datacode, void* args);
+	void Api_runFrames(Api* api);
 }

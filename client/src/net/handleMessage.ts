@@ -1,9 +1,9 @@
 import { CLIENT_IDS } from "../../../commons/clientIds";
 import { DataReader } from "../../../commons/DataReader";
 import { DataWriter } from "../../../commons/DataWriter";
-import { api } from "../SessionApi"
 import { getGameHandler } from "../gameHandler"
 import { PlayState } from "../play/PlayState";
+import { postWorker } from "../worker/askWorker";
 
 let REGION_SIZE = 1;
 
@@ -32,10 +32,12 @@ function net_areas(reader: DataReader) {
     for (let count = 0; count < areasCount; count++) {
         const x0 = reader.readUint32() * REGION_SIZE;
         const y0 = reader.readUint32() * REGION_SIZE;
-        console.log(x0, y0);
 
-        api.setArea(x0, y0, REGION_SIZE, REGION_SIZE, reader);
+        const list = new Uint16Array(REGION_SIZE * REGION_SIZE);
+        for (let i = 0; i < REGION_SIZE * REGION_SIZE; i++)
+            list[i] = reader.readUint16();
 
+        postWorker('setArea', [x0, y0, REGION_SIZE, REGION_SIZE, list], [list.buffer]);
     }
 
 

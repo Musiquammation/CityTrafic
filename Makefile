@@ -125,27 +125,49 @@ else
 	$(CXX) -shared -fPIC $(SRC) $(CXXFLAGS_NATIVE) -o $(LIB_TARGET) $(LDFLAGS_NATIVE)
 endif
 
+
+
+
+
 # =========================
 # Build Emscripten (temp)
 # =========================
-EMCC_FUNCS = Api_createApi Api_deleteApi Api_createSession Api_deleteSession Api_take malloc free
+
+EMCC_FUNCS = Api_createApi Api_deleteApi Api_createSession Api_deleteSession Api_take Api_runFrames malloc free
 
 EMCC_FUNCS_JSON = $(shell printf '"_%s",' $(EMCC_FUNCS) | sed 's/,$$//')
 
-EMCC_OPTIMIZATION = -O1
+EMCC_OPTIMIZATION = -O3
+EMCC_THREADS := 8
+
+# compilation objects emscripten
+EM_OBJ := $(patsubst $(SRC_DIR)/%.cpp,$(BIN_DIR)/emcc/%.o,$(SRC))
+EM_DEP := $(EM_OBJ:.o=.d)
 
 EMFLAGS = -std=c++2b $(EMCC_OPTIMIZATION) \
-          -sEXPORTED_FUNCTIONS='[$(EMCC_FUNCS_JSON)]' \
-          -sEXPORTED_RUNTIME_METHODS='["ccall","cwrap"]' \
-          -sMODULARIZE \
-          -sEXPORT_ES6=1 \
-          -sENVIRONMENT=web \
-		  -s LLD_REPORT_UNDEFINED \
-          -sALLOW_MEMORY_GROWTH=1
+	-sEXPORTED_FUNCTIONS='[$(EMCC_FUNCS_JSON)]' \
+	-sEXPORTED_RUNTIME_METHODS='["ccall","cwrap"]' \
+	-sMODULARIZE \
+	-sEXPORT_ES6=1 \
+	-sENVIRONMENT=web \
+	-sLLD_REPORT_UNDEFINED \
+	-sALLOW_MEMORY_GROWTH=1
 
-emccTmp:
+CXXFLAGS_EMCC = -std=c++2b -MMD -MP -c $(EMCC_OPTIMIZATION)
+	
+
+# compile .o emscripten (incremental)
+$(BIN_DIR)/emcc/%.o: $(SRC_DIR)/%.cpp
+	@mkdir -p $(dir $@)
+	$(EMXX) $(CXXFLAGS_EMCC) $< -o $@
+
+# link emscripten
+$(EM_TARGET): $(EM_OBJ)
 	@mkdir -p $(BIN_DIR)
-	$(EMXX) $(SRC) $(EMFLAGS) -o $(EM_TARGET)
+	$(EMXX) $^ $(EMFLAGS) -o $(EM_TARGET)
+
+# emccTmp = build only wasm/js
+emccTmp: $(EM_TARGET)
 
 # =========================
 # Build final Emscripten + copy
@@ -153,10 +175,21 @@ emccTmp:
 emcc: emccTmp
 	@mkdir -p $(EMCC_FINAL_FOLDER_1)
 	@mkdir -p $(EMCC_FINAL_FOLDER_2)
+
 	cp $(EM_TARGET) $(EMCC_FINAL_FOLDER_1)/api.js
 	cp $(BIN_DIR)/api.wasm $(EMCC_FINAL_FOLDER_1)/api.wasm
+
 	cp $(EM_TARGET) $(EMCC_FINAL_FOLDER_2)/api.js
 	cp $(BIN_DIR)/api.wasm $(EMCC_FINAL_FOLDER_2)/api.wasm
+
+# dependencies emcc
+-include $(EM_DEP)
+
+
+
+
+
+
 
 # =========================
 # Build N-API

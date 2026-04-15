@@ -5,10 +5,11 @@ import { GameHandler } from "../handler/GameHandler";
 import { InputHandler } from "../handler/InputHandler";
 import { DrawStateData, GameState } from "../handler/states";
 import { Vector3 } from "../handler/Vector3";
-import { Chunk } from "../map/Chunk";
+import { Chunk } from "../worker/Chunk";
 import { sendSocket } from "../net/sendSocket";
-import { api } from "../SessionApi";
 import { drawCell } from "./drawCell";
+import { askWorker } from "../worker/askWorker";
+
 
 
 export class PlayState extends GameState {
@@ -16,14 +17,21 @@ export class PlayState extends GameState {
 	private camY = 0;
 	private camZ = 90;
 	private frameCount = 0;
+	private workerId = 0;
+
+	private nextRequestId = 0;
+
 
 	constructor() {
 		super();
 	}
 
-	enter(data: any, input: InputHandler): void {
-		api.createSession();
+	
 
+
+
+
+	enter(data: any, input: InputHandler): void {
 		input.onMouseUp = e => {};
 		input.onMouseDown = e => {};
 		input.onMouseMove = e => {};
@@ -42,6 +50,7 @@ export class PlayState extends GameState {
 
 
 	test() {
+
 	}
 
 	frame(game: GameHandler): GameState | null {
@@ -51,10 +60,23 @@ export class PlayState extends GameState {
 
 
 
-	private drawGrid(ctx: CanvasRenderingContext2D) {
-		const rangeW = Math.floor(GAME_WIDTH/this.camZ);
-		const rangeH = Math.floor(GAME_HEIGHT/this.camZ);
-		for (const {x, y, cells} of api.getChunks(this.camX, this.camY, rangeW, rangeH)) {
+	private async drawGrid(ctx: CanvasRenderingContext2D) {
+		const rangeW = GAME_WIDTH/this.camZ;
+		const rangeH = GAME_HEIGHT/this.camZ;
+
+		const chunks = await askWorker<{
+			x: number,
+			y: number,
+			cells: any
+		}[]>('getChunks', [
+			Math.floor(this.camX - rangeW/2),
+			Math.floor(this.camY - rangeH/2),
+			Math.floor(rangeW),
+			Math.floor(rangeH),
+		]);
+
+
+		for (const {x, y, cells} of chunks) {
 			let j = 0;
 			for (let dy = 0; dy < Chunk.SIZE; dy++) {
 				for (let dx = 0; dx < Chunk.SIZE; dx++) {
@@ -67,7 +89,7 @@ export class PlayState extends GameState {
 		}
 	}
 
-	draw(args: DrawStateData): void {
+	async draw(args: DrawStateData) {
 		const ctx = args.ctx;
 
 		// Background
@@ -77,7 +99,7 @@ export class PlayState extends GameState {
 		}
 
 		// Update cells
-		api.updateCells(this.camX, this.camY);
+		await askWorker<void>('updateCells', [this.camX, this.camY]);
 		
 		// Draw game
 		args.followCamera();
@@ -89,7 +111,7 @@ export class PlayState extends GameState {
 
 	exit() {
 		(window as any).playState = null;
-		api.deleteSession();   
+		askWorker<void>('shutdown', []);
 	}
 
 	getCamera(): Vector3 | null {

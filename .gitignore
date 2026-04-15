@@ -2,7 +2,7 @@ draft
 game-bin
 node_modules
 .env
-client/api
+client/wasm
+client/dist
 server/api
 .vscode
-dist

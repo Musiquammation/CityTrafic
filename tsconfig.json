@@ -6,7 +6,7 @@
 		"strict": true,
 		"esModuleInterop": true,
 		"forceConsistentCasingInFileNames": true,
-		"outDir": "dist",
+		"outDir": "client/dist",
 		"types": ["node"]
 	},
 	"include": ["server", "commons"]

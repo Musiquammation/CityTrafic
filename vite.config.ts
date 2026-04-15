@@ -8,11 +8,11 @@ export default defineConfig({
 		port: 5173
 	},
 	build: {
-		outDir: "../dist",
+		outDir: "dist",
 		emptyOutDir: true,
 		minify: false,
 		rollupOptions: {
-			input: resolve(__dirname, "client/index.ts"),
+			input: resolve(__dirname, "client/src/index.ts"),
 			output: {
 				entryFileNames: "bundle.js",
 				format: "es"

@@ -1,27 +1,110 @@
-import { Session } from "inspector";
+import { Worker } from "worker_threads";
+import os from "os";
+import { generateHash } from "./generateHash";
 import { Match } from "./Match";
-import { api } from "./MatchApi";
-import { generateHash } from "./generateHash"
 
+
+
+type Pending = {
+	resolve: (value: any) => void;
+	reject: (reason?: any) => void;
+};
 
 class Shared {
-	matchs = new Map<string, Match>;
+	matchs = new Map<string, any>();
 
-	constructor() {
-		
+	private cpus: number;
+	private workers: Worker[];
+	private nextWorker = 0;
+
+	private pending = new Map<number, Pending>();
+	private nextRequestId = 0;
+
+	constructor(cpus: number) {
+		this.cpus = cpus;
+		this.workers = new Array<Worker>(cpus);
 	}
 
-	createMatch() {
+	private ask(workerId: number, method: string, args: any) {
+		const worker = this.workers[workerId % this.cpus];
+		const requestId = this.nextRequestId++;
+		const promise = new Promise((resolve, reject) => {
+			this.pending.set(requestId, { resolve, reject });
+		});
+
+		worker.postMessage({
+			requestId,
+			method,
+			args
+		});
+
+		return promise;
+	}
+
+
+	init() {
+		const workerPath = import.meta.resolve('./servWorker.js');
+		for (let i = 0; i < this.cpus; i++) {
+			const data = { workerData: { indexStart: i, indexSpacing: this.cpus } };
+
+			const imp = `import('tsx/esm/api').then(({ register }) => {
+				register(); import('${workerPath}') })`;
+
+			const worker = import.meta.filename.endsWith('.ts')
+				? new Worker(imp, { eval: true, ...data })
+				: new Worker(workerPath, data);
+
+			worker.on("message", (msg) => {
+				this.handleWorkerMessage(msg);
+			});
+
+			this.workers[i] = worker;
+		}
+	}
+
+	private handleWorkerMessage(msg: any) {
+		const { requestId, result, error } = msg;
+
+		const pending = this.pending.get(requestId);
+		if (!pending) return;
+
+		this.pending.delete(requestId);
+
+		if (error) pending.reject(error);
+		else pending.resolve(result);
+	}
+
+	async createMatch() {
 		const hash = generateHash();
 
-		/// TODO: implement this function
-		console.log("create");
-		const match = api.createMatch();
-		console.log("Map", api.takeCoords(match.id));
-		
-		return {match, hash};
+		const workerId = this.nextWorker;
+		this.nextWorker = (this.nextWorker + 1) % this.cpus;
+
+
+		const match = (await this.ask(
+			workerId,
+			'createMatch',
+			[]
+		)) as Match;
+
+		this.matchs.set(hash, match);
+
+		return { match, hash };
+	}
+
+	async collectArea(s: Match, x: number, y: number, w: number, h: number) {
+		const area = (await this.ask(
+			s.id,
+			'collectArea',
+			[s,x,y,w,h]
+		)) as Uint16Array;
+
+		return area;
 	}
 }
 
-export const shared = new Shared();
+export const shared = new Shared(
+	Math.max(1, os.cpus().length - 1)
+);
 
+shared.init();

@@ -2,8 +2,6 @@ import dotenv from 'dotenv';
 import { WebSocketServer } from 'ws';
 import { DataReader } from '../commons/DataReader';
 import { Client } from './Client';
-import { shared } from './shared';
-import { generateHash } from './generateHash';
 
 dotenv.config();
 
@@ -42,7 +40,7 @@ wss.on('connection', (socket) => {
 		}
 
 		const reader = new DataReader(buffer);
-		const writer = session.receive(reader);
+		const writer = await session.receive(reader);
 
 		if (writer) {
 			socket.send(Buffer.from(writer.toArrayBuffer()));
@@ -58,4 +56,6 @@ wss.on('connection', (socket) => {
 	});
 });
 
-console.log(`WebSocket server listening on port ${PORT}`);
+wss.on('listening', () => {
+	console.log(`WebSocket server listening on port ${PORT}`);
+});

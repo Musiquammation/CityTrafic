@@ -7,54 +7,33 @@
 
 #define intArg(i) ((uint32_t*)args)[i]
 
-Api::Api(int threadnum) : threadnum(threadnum), threads(threadnum) {}
+Api::Api(int indexStart, int indexSpacing) :
+	nextId(indexStart),
+	indexSpacing(indexSpacing) {}
 
 Api::~Api() {
-	for (auto& t : threads) t.state = ApiThreadState::DEAD;
-	for (auto& t : threads) if (t.thread.joinable()) t.thread.join();
 }
 
-void Api::init() {
-	printf("Init API with %d threads.\n", this->threadnum);
 
-	// Create threads
-	for (auto& t : threads) {
-		t.thread = std::thread([&t](){
-			using clock = std::chrono::steady_clock;
-			const auto frameTime = std::chrono::milliseconds(16);
-			while (t.state.load() == ApiThreadState::ALIVE) {
-				auto start = clock::now();
-				{
-					std::lock_guard<std::mutex> lock(t.mutex);
-					for (auto& g : t.games) g.second.game.frame();
-				}
-
-				auto elapsed = clock::now() - start;
-				if (elapsed < frameTime) {
-					std::this_thread::sleep_for(frameTime - elapsed);
-				}
-			}
-		});
-	}
-}
 
 int Api::createSession() {
-	int id = nextId++;
-	ApiThread& thread = threads[id % threadnum];
-	std::lock_guard<std::mutex> lock(thread.mutex);
-	thread.games.try_emplace(id);
+	int id = this->nextId;
+	this->nextId += this->indexSpacing;
+	
+	std::unique_lock<std::shared_mutex> lock{this->mutex};
+	this->games.try_emplace(id);
 	return id;
 }
 
 void Api::deleteSession(int id) {
-	ApiThread& thread = threads[id % threadnum];
-	std::lock_guard<std::mutex> lock(thread.mutex);
-	thread.games.erase(id);
+	std::unique_lock<std::shared_mutex> lock{this->mutex};
+	this->games.erase(id);
 }
 
 void* Api::take(int id, int datacode, void* args) {
-	ApiThread& thread = threads[id % threadnum];
-	ApiGame& s = thread.games[threadnum];
+	std::shared_lock<std::shared_mutex> lock{this->mutex};
+
+	ApiGame& s = this->games[id];
 
 	switch ((ApiTakeCode)datacode) {
 	case ApiTakeCode::MAKE_MAP:
@@ -86,7 +65,7 @@ void* Api::take(int id, int datacode, void* args) {
 			);
 		}
 
-		thread.buffer = array;
+		this->buffer = array;
 		return array;
 	}
 
@@ -122,13 +101,13 @@ void* Api::take(int id, int datacode, void* args) {
 	   			| ((uint32_t(car->state) & 0xff) << 8);
 		}
 
-		thread.buffer = buffer;
+		this->buffer = buffer;
 		return buffer;
 	}
 
 	case ApiTakeCode::FREE_CARS:
 	{
-		free(thread.buffer);
+		free(this->buffer);
 		return nullptr;
 	}
 
@@ -141,13 +120,13 @@ void* Api::take(int id, int datacode, void* args) {
 		array[2] = size.width;
 		array[3] = size.height;
 
-		thread.buffer = array;
-		return thread.buffer;
+		this->buffer = array;
+		return this->buffer;
 	}
 
 	case ApiTakeCode::FREE_COORDS:
 	{
-		free(thread.buffer);
+		free(this->buffer);
 		return nullptr;
 	}
 
@@ -162,7 +141,7 @@ void* Api::take(int id, int datacode, void* args) {
 
 		uint32_t* buffer = s.game.map.collectEditedCells(x0, y0, w, h);
 
-		thread.buffer = buffer;
+		this->buffer = buffer;
 		return buffer;
 	}
 
@@ -170,25 +149,25 @@ void* Api::take(int id, int datacode, void* args) {
 	{
 		auto lock = s.game.mutexPool.lockRead(MutexLabel::MAP);
 		uint32_t* buffer = s.game.map.collectEditedCells();
-		thread.buffer = buffer;
+		this->buffer = buffer;
 		return buffer;
 	}
 
 	case ApiTakeCode::RLSE_MAP_EDITS:
 	{
-		free(thread.buffer);
+		free(this->buffer);
 		return nullptr;
 	}
 
 	case ApiTakeCode::TAKE_MAP_PTR:
 	{
-		thread.lock = s.game.mutexPool.lockWrite(MutexLabel::MAP);
+		this->bffLock = s.game.mutexPool.lockWrite(MutexLabel::MAP);
 		return s.game.map.cells;
 	}
 
 	case ApiTakeCode::RLSE_MAP_PTR:
 	{
-		thread.lock.reset();
+		this->bffLock.reset();
 		return nullptr;
 	}
 
@@ -206,12 +185,19 @@ void* Api::take(int id, int datacode, void* args) {
 	}
 }
 
+void Api::runFrames() {
+	std::shared_lock<std::shared_mutex> lock{this->mutex};
+	
+	for (auto& [_, i]: this->games) {
+		i.game.frame();
+	}
+}
 
 
 
-Api* Api_createApi(int threadnum) {
-	Api* api = new Api(threadnum);
-	api->init();
+
+Api* Api_createApi(int indexStart, int indexSpacing) {
+	Api* api = new Api{indexStart, indexSpacing};
 	return api;
 }
 
@@ -229,4 +215,8 @@ void Api_deleteSession(Api* api, int id) {
 
 void* Api_take(Api* api, int id, int datacode, void* args) {
 	return api->take(id, datacode, args);
+}
+
+void Api_runFrames(Api* api) {
+	api->runFrames();
 }

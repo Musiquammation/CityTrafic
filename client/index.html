@@ -22,6 +22,7 @@
 			window.IMG_ROOT_PATH = "";
 			window.DEBUG = true;
 			window.SERV_ADDRESS = "ws://localhost:3704";
+			window.WASM_PATH = "../wasm/api.wasm"
 
 			import("/src/index.ts").then(m => {m.startGame()});
 			

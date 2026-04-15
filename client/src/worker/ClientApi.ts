@@ -1,34 +1,41 @@
-import createModule from "../api/api.js";
+import createModule from "../../wasm/api.js"
 
-import { Rectangle } from "./tools/Rectangle";
+import { Rectangle } from "../tools/Rectangle";
 
-import { ApiTakeCode } from "../../commons/ApiTakeCode"
-import { DataReader } from "../../commons/DataReader";
-import { Chunk } from "./map/Chunk";
-import { MapHandler } from "./map/MapHandler";
+import { ApiTakeCode } from "../../../commons/ApiTakeCode"
+import { Chunk } from "./Chunk";
+import { MapHandler } from "./MapHandler.ts"
+
+// @ts-ignore
+import { Buffer } from "buffer";
 
 
 
-class SessionApi {
+export class ClientApi {
 	private module: any = null;
 	private apiPtr: number = 0;
-	private sessionId: number | null = null;
 	private map = new MapHandler();
 
-	async init() {
-		this.module = await createModule();
-		this.apiPtr = this.module._Api_createApi(1);
+	async init(wasmPath: string) {
+		this.module = await createModule({
+			locateFile(path: string) {
+				if (path.endsWith(".wasm")) {
+					return new URL(wasmPath, import.meta.url).href;
+				}
+				return path;
+			}
 
-		api.createCellGrid();
+
+		});
+		this.apiPtr = this.module._Api_createApi(0, 0);
+
+		this.createCellGrid();
 	}
 
 	cleanup() {
 		if (!this.module || !this.apiPtr) return;
 
-		if (this.sessionId !== null) {
-			this.module._Api_deleteSession(this.apiPtr, this.sessionId);
-			this.sessionId = null;
-		}
+		this.module._Api_deleteSession(this.apiPtr, 0);
 
 		this.module._Api_deleteApi(this.apiPtr);
 
@@ -37,24 +44,15 @@ class SessionApi {
 	}
 
 	createSession() {
-		if (this.sessionId !== null) {
-			throw new Error("Session already exists");
-		}
-
-		this.sessionId = this.module._Api_createSession(this.apiPtr);
+		this.module._Api_createSession(this.apiPtr);
 	}
 
 	deleteSession() {
-		if (this.sessionId === null) {
-			throw new Error("No session to delete");
-		}
-
-		this.module._Api_deleteSession(this.apiPtr, this.sessionId);
-		this.sessionId = null;
+		this.module._Api_deleteSession(this.apiPtr, 0);
 	}
 
 	private run(code: number, args: any = 0) {
-		return this.module._Api_take(this.apiPtr, this.sessionId, code, args);
+		return this.module._Api_take(this.apiPtr, 0, code, args);
 	}
 
 
@@ -153,7 +151,10 @@ class SessionApi {
 
 	
 
-	setArea(x0: number, y0: number, w: number, h: number, reader: DataReader) {
+	setArea(x0: number, y0: number, w: number, h: number, buffer: Buffer) {
+		const reader = new Uint16Array(buffer);
+
+		let offset = 0;
 		// Fill buffers
 		let buffers = new Array<Uint16Array>(h);
 		for (let y = y0, yf = y0+h; y < yf; y++) {
@@ -164,7 +165,7 @@ class SessionApi {
 
 			for (const line of this.map.getLineBuffer(x0, y, w)) {
 				for (let j = 0; j < line.length; j++) {
-					const data = reader.readUint16();
+					const data = reader[offset++];
 					line[j] = data;
 					buffer[i++] = data;
 				}
@@ -221,9 +222,9 @@ class SessionApi {
 	}
 
 	getChunks(viewX: number, viewY: number, rangeW: number, rangeH: number) {
-		return this.map.getChunks(viewX, viewY, rangeW, rangeH);
+		return Array.from(this.map.getChunks(
+			viewX, viewY, rangeW, rangeH));
+		
 	}
 }
 
-export const api = new SessionApi();
-api.init();

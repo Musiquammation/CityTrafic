@@ -4,7 +4,7 @@
   "type": "module",
   "scripts": {
     "client": "vite",
-    "build": "vite build",
+    "build": "vite build && npx esbuild client/src/worker/clientWorker.ts --bundle --outfile=client/dist/worker.js --format=esm --platform=browser",
     "server": "tsx watch server/server.ts"
   },
   "devDependencies": {

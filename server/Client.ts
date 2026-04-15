@@ -4,7 +4,6 @@ import { DataWriter } from "../commons/DataWriter";
 import { CLIENT_IDS } from "../commons/clientIds"
 import { SERVER_IDS } from "../commons/serverIds"
 import { Match } from "./Match";
-import { api } from "./MatchApi";
 import { shared } from "./shared";
 
 function clamp(v: number, min: number, max: number) {
@@ -49,7 +48,7 @@ export class Client {
 		}
 	}
 
-	receive(reader: DataReader): DataWriter | null {
+	async receive(reader: DataReader): Promise<DataWriter | null> {
 		const action = reader.readUint8();
 
 		switch (action) {
@@ -65,11 +64,11 @@ export class Client {
 	}
 
 
-	private receive_connect(reader: DataReader) {
+	private async receive_connect(reader: DataReader) {
 		const matchHash = reader.read256();
 
 		if (matchHash === "0000000000000000") {
-			const {match, hash} = shared.createMatch();
+			const {match, hash} = await shared.createMatch();
 			this.match = match;
 			match.clients.push(this);
 
@@ -98,7 +97,7 @@ export class Client {
 		return writer;
 	}
 
-	private receive_listen(reader: DataReader) {
+	private async receive_listen(reader: DataReader) {
 		if (!this.match)
 			throw new Error("No match to listen");
 
@@ -106,8 +105,10 @@ export class Client {
 		if (!match.grid)
 			throw new Error("Missing grid");
 
-		const sendArea = (x: number, y: number) => {
-			const area = api.collectArea(
+
+		const promises: Promise<void>[] = [];
+		const sendArea = async (x: number, y: number) => {
+			const area = await shared.collectArea(
 				match,
 				x * Client.MISSED_REGION_SIZE,
 				y * Client.MISSED_REGION_SIZE,
@@ -181,13 +182,13 @@ export class Client {
 
 		// Send new (unvisited) regions
 		for (const { key, rx, ry } of newRegions) {
-			sendArea(rx, ry);
+			promises.push(sendArea(rx, ry));
 			this.visitedRegions.add(key);
 		}
 
 		// Send missed regions (and remove them from the set)
 		for (const { key, rx, ry } of missedInView) {
-			sendArea(rx, ry);
+			promises.push(sendArea(rx, ry));
 			this.missedRegions.delete(key);
 		}
 
@@ -198,6 +199,8 @@ export class Client {
 				this.visitedRegions.add(key);
 			}
 		}
+
+		await Promise.all(promises); // wait for promises
 
 		// Update view
 		this.viewX = x;

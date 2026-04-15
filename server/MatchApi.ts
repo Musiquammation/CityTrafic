@@ -1,54 +1,61 @@
-import os from 'os'
-import fs from 'fs'
 
 import { ApiTakeCode } from "../commons/ApiTakeCode"
-
-// @ts-ignore
-import createModule from "./api/api";
-import { Match } from './Match';
-
-const wasmBinary = fs.readFileSync("server/api/api.wasm");
-
-const module = await createModule({
-	wasmBinary,
-});
+import { Match } from "./Match"
 
 
 
-class MatchApi {
+
+export class MatchApi {
 	private apiPtr: number = 0;
+	private frameInterval;
+	module: any;
 
-	constructor() {
-		const numThreads = Math.max(1, os.cpus().length - 1);
-		this.apiPtr = module._Api_createApi(numThreads);
+	constructor(module: any, indexStart: number, indexSpacing: number) {
+		this.module = module;
+		this.apiPtr = this.module._Api_createApi(indexStart, indexSpacing);
+
+		this.frameInterval = setInterval(() => {
+			this.runFrames();
+		}, 16);
+	}
+
+
+	delete() {
+		clearInterval(this.frameInterval);
+		this.module._Api_deleteApi(this.apiPtr);
 	}
 
 	createMatch(): Match {
-		const id = module._Api_createSession(this.apiPtr);
+		const id = this.module._Api_createSession(this.apiPtr);
 		return new Match(id, this.createCellGrid(id));
 	}
 
 	deleteMatch(s: Match) {
 		if (s.grid) {
-			module._free(s.grid.ptr);
+			this.module._free(s.grid.ptr);
 		}
 
-		module._Api_deleteSession(this.apiPtr, s.id);
+		this.module._Api_deleteSession(this.apiPtr, s.id);
 	}
+
+	private runFrames() {
+		this.module._Api_runFrames(this.apiPtr);
+	}
+
 
 
 		
 	private run(sessionId: number, code: number, args: any = 0) {
-		return module._Api_take(this.apiPtr, sessionId, code, args);
+		return this.module._Api_take(this.apiPtr, sessionId, code, args);
 	}
 
 	takeCoords(id: number) {
 		const ptr = this.run(id, ApiTakeCode.COPY_COORDS) >> 2;
 
-		const x = module.HEAP32[ptr + 0];
-		const y = module.HEAP32[ptr + 1];
-		const w = module.HEAP32[ptr + 2];
-		const h = module.HEAP32[ptr + 3];
+		const x = this.module.HEAP32[ptr + 0];
+		const y = this.module.HEAP32[ptr + 1];
+		const w = this.module.HEAP32[ptr + 2];
+		const h = this.module.HEAP32[ptr + 3];
 
 		this.run(id, ApiTakeCode.FREE_COORDS);
 
@@ -57,8 +64,8 @@ class MatchApi {
 
 	private createCellGrid(id: number) {
 		const rect = this.takeCoords(id);
-		const argPtr = module._malloc(4 * 4);
-		const argView = module.HEAPU32.subarray(argPtr >> 2);
+		const argPtr = this.module._malloc(4 * 4);
+		const argView = this.module.HEAPU32.subarray(argPtr >> 2);
 		argView[0] = rect.x;
 		argView[1] = rect.y;
 		argView[2] = rect.w;
@@ -67,7 +74,7 @@ class MatchApi {
 
 		const ptr = this.run(id, ApiTakeCode.MAKE_MAP, argPtr);
 		const view = new Uint16Array(
-			module.HEAPU16.buffer,
+			this.module.HEAPU16.buffer,
 			ptr,
 			rect.w * rect.h
 		);
@@ -85,7 +92,7 @@ class MatchApi {
 	appendCellGrid(s: Match) {
 		if (s.grid) {
 			// free previous grid
-			module._free(s.grid.ptr);
+			this.module._free(s.grid.ptr);
 		}
 
 		const grid = this.createCellGrid(s.id);
@@ -96,8 +103,8 @@ class MatchApi {
 		if (!s.grid)
 			throw new Error("Missing grid");
 
-		const argPtr = module._malloc(4 * 4);
-		const arg = module.HEAPU32.subarray(argPtr >> 2);
+		const argPtr = this.module._malloc(4 * 4);
+		const arg = this.module.HEAPU32.subarray(argPtr >> 2);
 
 		arg[0] = x0;
 		arg[1] = y0;
@@ -105,10 +112,10 @@ class MatchApi {
 		arg[3] = height;
 
 		const ptr = this.run(s.id, ApiTakeCode.TAKE_MAP_EDITS, argPtr) >> 2;
-		module._free(argPtr);
+		this.module._free(argPtr);
 
 
-		const len = module.HEAPU32[ptr];
+		const len = this.module.HEAPU32[ptr];
 		let cursor = ptr + 1;
 		const sx = s.grid.mapX;
 		const sy = s.grid.mapY;
@@ -116,7 +123,7 @@ class MatchApi {
 		const gridView = s.grid.view;
 
 		for (let i = 0; i < len; i++) {
-			const packed = module.HEAPU32[cursor++];
+			const packed = this.module.HEAPU32[cursor++];
 
 			const dx = (packed >> 24) & 0xff;
 			const dy = (packed >> 16) & 0xff;
@@ -131,7 +138,7 @@ class MatchApi {
 		}
 	}
 
-	collectArea(s: Match, x: number, y: number, w: number, h: number): Uint16Array {
+	collectArea(s: Match, x: number, y: number, w: number, h: number) {
 		if (!s.grid)
 			throw new Error("Missing grid");
 
@@ -160,10 +167,12 @@ class MatchApi {
 			);
 		}
 
-		return result;
+		return {
+			transfered: [result.buffer],
+			result
+		};
 	}
 }
 
 
-export const api = new MatchApi();
 
