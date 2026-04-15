@@ -15,6 +15,8 @@ Api::~Api() {
 }
 
 void Api::init() {
+	printf("Init API with %d threads.\n", this->threadnum);
+
 	// Create threads
 	for (auto& t : threads) {
 		t.thread = std::thread([&t](){
@@ -187,6 +189,7 @@ void* Api::take(int id, int datacode, void* args) {
 	case ApiTakeCode::RLSE_MAP_PTR:
 	{
 		thread.lock.reset();
+		return nullptr;
 	}
 
 	case ApiTakeCode::PLACE_ROAD:
@@ -207,7 +210,9 @@ void* Api::take(int id, int datacode, void* args) {
 
 
 Api* Api_createApi(int threadnum) {
-	return new Api(threadnum);
+	Api* api = new Api(threadnum);
+	api->init();
+	return api;
 }
 
 void Api_deleteApi(Api* api) {

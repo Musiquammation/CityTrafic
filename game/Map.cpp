@@ -130,7 +130,7 @@ uint32_t* Map::collectEditedCells(int x, int y, int width, int height) {
 
 uint32_t* Map::collectEditedCells() {
 	// Count how many edited cells are inside the requested region
-	uint32_t count = this->editedCells.size();
+	uint32_t count = (uint32_t)this->editedCells.size();
 
 	// Allocate buffer: 1 for count + N packed cells
 	uint32_t* buffer = (uint32_t*)malloc(sizeof(uint32_t) * (1 + count));

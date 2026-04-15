@@ -128,16 +128,19 @@ endif
 # =========================
 # Build Emscripten (temp)
 # =========================
-EMCC_FUNCS = Api_createApi Api_deleteApi Api_createSession Api_deleteSession Api_take malloc free memcpy
+EMCC_FUNCS = Api_createApi Api_deleteApi Api_createSession Api_deleteSession Api_take malloc free
 
 EMCC_FUNCS_JSON = $(shell printf '"_%s",' $(EMCC_FUNCS) | sed 's/,$$//')
 
-EMFLAGS = -std=c++2b -O3 \
+EMCC_OPTIMIZATION = -O1
+
+EMFLAGS = -std=c++2b $(EMCC_OPTIMIZATION) \
           -sEXPORTED_FUNCTIONS='[$(EMCC_FUNCS_JSON)]' \
           -sEXPORTED_RUNTIME_METHODS='["ccall","cwrap"]' \
           -sMODULARIZE \
           -sEXPORT_ES6=1 \
           -sENVIRONMENT=web \
+		  -s LLD_REPORT_UNDEFINED \
           -sALLOW_MEMORY_GROWTH=1
 
 emccTmp:

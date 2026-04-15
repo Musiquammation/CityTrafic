@@ -76,3 +76,10 @@ void PathHandler<freeArray>::next() {
 
 
 template PathHandler<false>::PathHandler(const PathHandler<true>&);
+template Vector<int> PathHandler<false>::seek();
+template Direction PathHandler<false>::seekDirection();
+template void PathHandler<false>::next();
+
+template Vector<int> PathHandler<true>::seek();
+template Direction PathHandler<true>::seekDirection();
+template void PathHandler<true>::next();
