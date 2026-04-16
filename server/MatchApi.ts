@@ -201,6 +201,14 @@ export class MatchApi {
 		this.module._free(argPtr);
 
 	}
+
+	performGameCommand(id: number, data: Uint8Array) {
+		const argPtr = this.module._malloc(data.length);
+		this.module.HEAPU8.set(data, argPtr);
+
+		this.run(id, ApiTakeCode.GAME_COMMAND, argPtr);
+		this.module._free(argPtr);
+	}
 }
 
 

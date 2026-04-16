@@ -22,5 +22,11 @@ export enum SERVER_IDS {
 	 */
 	PLACE_SINGLE_ROAD,
 
+	/**
+	 * data only
+	 */
+	GAME_COMMAND,
+
+	
 	ERROR
 } 

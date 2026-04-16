@@ -1,4 +1,4 @@
-import { Worker } from "worker_threads";
+import { Transferable, Worker } from "worker_threads";
 import os from "os";
 import { generateHash } from "./generateHash";
 import { Match } from "./Match";
@@ -25,7 +25,12 @@ class Shared {
 		this.workers = new Array<Worker>(cpus);
 	}
 
-	private ask<T=any>(workerId: number, method: string, args: any) {
+	private ask<T=any>(
+		workerId: number,
+		method: string,
+		args: any,
+		transfered: readonly Transferable[] = []
+	) {
 		const worker = this.workers[workerId % this.cpus];
 		const requestId = this.nextRequestId++;
 		const promise = new Promise((resolve, reject) => {
@@ -36,7 +41,7 @@ class Shared {
 			requestId,
 			method,
 			args,
-		});
+		}, transfered);
 
 		return promise as Promise<T>;
 	}
@@ -129,6 +134,16 @@ class Shared {
 			id,
 			'takeMapEdits',
 			[id, x,y,w,h,layer],
+		);
+	}
+
+
+	async performGameCommand(id: number, data: Uint8Array) {
+		return await this.ask(
+			id,
+			'performGameCommand',
+			[id, data],
+			[data.buffer as ArrayBuffer]
 		);
 	}
 

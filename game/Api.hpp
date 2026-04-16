@@ -27,7 +27,9 @@ enum class ApiTakeCode {
 
 	PLACE_SINGLE_ROAD,
 
-	APPLY_EDITS
+	APPLY_EDITS,
+
+	GAME_COMMAND
 };
 
 

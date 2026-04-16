@@ -63,6 +63,11 @@ export class Client {
 		case SERVER_IDS.LISTEN:
 			return await this.receive_listen(reader);
 
+		case SERVER_IDS.GAME_COMMAND:
+			this.receive_command(reader);
+			return null;
+			
+
 		case SERVER_IDS.PLACE_SINGLE_ROAD:
 			return await this.receive_placeSingleRoad(reader);
 
@@ -220,6 +225,17 @@ export class Client {
 
 		return writer;
 	}
+
+	private async receive_command(reader: DataReader) {
+		if (!this.match)
+			throw new Error("No match to listen");
+
+		shared.performGameCommand(
+			this.match.id,
+			reader.readUint8Array(reader.getLength()-1)
+		);
+	}
+
 
 	private async receive_placeSingleRoad(reader: DataReader) {
 		if (!this.match)

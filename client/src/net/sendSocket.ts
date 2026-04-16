@@ -16,6 +16,7 @@ export function sendSocket(data: ArrayBuffer) {
 }
 
 
+
 gameSocket.addEventListener("open", () => {
     console.log("Socket open");
 });

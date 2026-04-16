@@ -1,5 +1,7 @@
 #include "Api.hpp"
+
 #include "Car.hpp"
+#include "runGameCommand.hpp"
 
 #include <stdint.h>
 #include <string.h>
@@ -190,6 +192,13 @@ void* Api::take(int id, int datacode, void* args) {
 			ApiGame& s = this->games[id];
 			s.game.map.applyEdits((uint32_t*)args);
 			return nullptr;
+		}
+
+		case ApiTakeCode::GAME_COMMAND:
+		{
+			ApiGame& s = this->games[id];
+
+			return runGameCommand(s.game, args);
 		}
 	
 	

@@ -7,9 +7,11 @@ import { DrawStateData, GameState } from "../handler/states";
 import { Vector3 } from "../handler/Vector3";
 import { Chunk } from "../worker/Chunk";
 import { sendSocket } from "../net/sendSocket";
+import { sendCommand } from "../net/sendCommand";
 import { drawCell } from "./drawCell";
 import { askWorker } from "../worker/askWorker";
 import { actionSender } from "./actionSender";
+import { CommandCode } from "../../../commons/CommandCode";
 
 
 
@@ -45,13 +47,17 @@ export class PlayState extends GameState {
 		this.updateCamera(this.camX, this.camY, this.camZ);
 
 		(window as any).playState = this;
-		this.test();
 
 	}
 
 
 	test() {
-
+		sendCommand(CommandCode.TEST, writer => {
+			writer.writeInt32(18);
+			writer.writeInt32(32);
+			writer.writeInt32(44);
+			writer.writeInt32(-1098);
+		});
 	}
 
 	frame(game: GameHandler): GameState | null {
