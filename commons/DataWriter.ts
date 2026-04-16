@@ -178,6 +178,17 @@ export class DataWriter {
 		this.offset += byteLength;
 	}
 
+	addUint32Array(array: Uint32Array) {
+		const length = array.length;
+		if (length === 0) return;
+
+		const byteLength = length * 4;
+
+		this.checkSize(byteLength);
+		new Uint32Array(this.buffer, this.offset, length).set(array);
+		this.offset += byteLength;
+	}
+
 	toArrayBuffer(): ArrayBuffer {
 		return this.buffer.slice(0, this.offset);
 	}

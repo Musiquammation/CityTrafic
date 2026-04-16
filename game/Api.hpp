@@ -13,22 +13,26 @@ enum class ApiThreadState { ALIVE, FINISHING, DEAD };
 
 
 enum class ApiTakeCode {
+	FREE_BUFFER,
+
 	MAKE_MAP,
 
 	COPY_CARS,
-	FREE_CARS,
 
 	COPY_COORDS,
-	FREE_COORDS,
 
-	TAKE_MAP_EDITS,
-	TAKE_MAP_EDITS_ALL,
-	RLSE_MAP_EDITS,
+	MAKE_MAP_EDITS,
+	MAKE_MAP_EDITS_ALL,
 
 	TAKE_MAP_PTR,
 	RLSE_MAP_PTR,
 
+	PUSH_LAYER,
+	POP_LAYER,
+
 	PLACE_SINGLE_ROAD,
+
+	APPLY_EDITS
 };
 
 
@@ -56,7 +60,7 @@ private:
 	std::shared_mutex mutex;
 	std::map<int, ApiGame> games;
 	std::atomic<ApiThreadState> state{ApiThreadState::ALIVE};
-	void* buffer;
+	void* buffer = nullptr;
 	std::optional<std::unique_lock<std::shared_mutex>> bffLock;
 
 };

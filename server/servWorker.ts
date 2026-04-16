@@ -26,6 +26,8 @@ parentPort!.on("message", async (msg) => {
 
 
 	const result = (api as any)[method](...args);
+	api.freeBuffer();
+
 	
 	if (result === undefined) {
 		parentPort!.postMessage({ requestId });	
@@ -38,6 +40,7 @@ parentPort!.on("message", async (msg) => {
 	} else {
 		parentPort!.postMessage({ requestId, result });	
 	}
+
 
 });
 

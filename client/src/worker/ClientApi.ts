@@ -43,6 +43,10 @@ export class ClientApi {
 		this.module = null;
 	}
 
+	freeBuffer() {
+		this.run(-1, ApiTakeCode.FREE_BUFFER);
+	}
+
 	createSession() {
 		this.module._Api_createSession(this.apiPtr);
 	}
@@ -65,8 +69,6 @@ export class ClientApi {
 		const y = this.module.HEAP32[ptr + 1];
 		const w = this.module.HEAP32[ptr + 2];
 		const h = this.module.HEAP32[ptr + 3];
-
-		this.run(ApiTakeCode.FREE_COORDS);
 
 		return { x, y, w, h };
 	}
@@ -116,15 +118,16 @@ export class ClientApi {
 		const bw = 3 * Chunk.SIZE;
 		const bh = 3 * Chunk.SIZE;
 
-		const argPtr = this.module._malloc(4 * 4);
+		const argPtr = this.module._malloc(4 * 5);
 		const arg = this.module.HEAPU32.subarray(argPtr >> 2);
 
 		arg[0] = bx;
 		arg[1] = by;
 		arg[2] = bw;
 		arg[3] = bh;
+		arg[4] = 0;
 
-		const ptr = this.run(ApiTakeCode.TAKE_MAP_EDITS, argPtr) >> 2;
+		const ptr = this.run(ApiTakeCode.MAKE_MAP_EDITS, argPtr) >> 2;
 		this.module._free(argPtr);
 
 
@@ -145,8 +148,6 @@ export class ClientApi {
 
 			chunk.set(lx, ly, data);
 		}
-
-		this.run(ApiTakeCode.RLSE_MAP_EDITS);
 	}
 
 	
@@ -192,7 +193,6 @@ export class ClientApi {
 				(y - ry) * rw +
 				(x0 - rx);
 
-			console.log(x0, y);
 			heap.set(buffer, dstOffset);
 		}
 
@@ -218,13 +218,32 @@ export class ClientApi {
 
 		const number = this.module.HEAPU32[srcPtr];
 
-		this.run(ApiTakeCode.FREE_CARS);
+		/// TODO: complete
 	}
 
 	getChunks(viewX: number, viewY: number, rangeW: number, rangeH: number) {
 		return Array.from(this.map.getChunks(
 			viewX, viewY, rangeW, rangeH));
 		
+	}
+
+	applyEdits(array: Uint32Array) {
+		// Copy array
+		const argPtr = this.module._malloc(array.length * 4);
+		this.module.HEAPU32.set(array, argPtr >> 2);
+		
+		const ptr = this.run(ApiTakeCode.APPLY_EDITS, argPtr);
+
+		this.module._free(argPtr);
+
+		// Copy map edits
+		const result = new Uint32Array(length);
+		result.set(new Uint32Array(this.module.HEAPU32.buffer, ptr, length));
+
+		return {
+			transfered: [result.buffer],
+			result
+		};
 	}
 }
 

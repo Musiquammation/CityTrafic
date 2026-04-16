@@ -33,6 +33,9 @@ export class MatchApi {
 		}, FRAME_DELAY);
 	}
 
+	freeBuffer() {
+		this.run(-1, ApiTakeCode.FREE_BUFFER);
+	}
 
 	delete() {
 		clearInterval(this.frameInterval);
@@ -74,8 +77,6 @@ export class MatchApi {
 		const y = this.module.HEAP32[ptr + 1];
 		const w = this.module.HEAP32[ptr + 2];
 		const h = this.module.HEAP32[ptr + 3];
-
-		this.run(id, ApiTakeCode.FREE_COORDS);
 
 		return { x, y, w, h };
 	}
@@ -146,8 +147,23 @@ export class MatchApi {
 		};
 	}
 
+	takeMapEdits(id: number, x: number, y: number, w: number, h: number) {
+		const ptr = this.run(id, ApiTakeCode.MAKE_MAP_EDITS);
+		
+		const length = this.module.HEAPU32[ptr>>2];
+
+		// Copy map edits
+		const array = new Uint32Array(this.module.HEAPU32.buffer, ptr, length);
+		const result = new Uint32Array(length);
+		result.set(array);
+
+		return {
+			transfered: [result.buffer],
+			result
+		};
+	}
+
 	placeSingleRoad(id: number, x: number, y: number) {
-		const m = this.matchs.get(id)!;
 		const argPtr = this.module._malloc(4 * 2);
 		const argView = this.module.HEAP32.subarray(argPtr >> 2);
 
@@ -156,6 +172,21 @@ export class MatchApi {
 		this.run(id, ApiTakeCode.PLACE_SINGLE_ROAD, argPtr);
 		
 		this.module._free(argPtr);
+	}
+
+	pushLayer(id: number) {
+		this.run(id, ApiTakeCode.PUSH_LAYER);
+	}
+
+	popLayer(id: number, idx: number) {
+		const argPtr = this.module._malloc(4 * 2);
+		const argView = this.module.HEAP32.subarray(argPtr >> 2);
+
+		argView[0] = idx;
+
+		this.run(id, ApiTakeCode.POP_LAYER, argPtr);
+		this.module._free(argPtr);
+
 	}
 }
 

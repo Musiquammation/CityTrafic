@@ -120,6 +120,22 @@ class Shared {
 
 
 	}
+
+	async takeMapEdits(id: number, x: number, y: number, w: number, h: number) {
+		return await this.ask<Uint32Array>(
+			id,
+			'takeMapEdits',
+			[id, x,y,w,h],
+		);
+	}
+
+	pushClient(id: number) {
+		this.ask(id, 'pushLayer', [id]);
+	}
+
+	popClient(id: number, idx: number) {
+		this.ask(id, 'popLayer', [id, idx]);
+	}
 }
 
 export const shared = new Shared(

@@ -1,3 +1,4 @@
+import { WebSocket } from "ws";
 import { DataReader } from "../commons/DataReader";
 import { DataWriter } from "../commons/DataWriter";
 
@@ -5,6 +6,7 @@ import { CLIENT_IDS } from "../commons/clientIds"
 import { SERVER_IDS } from "../commons/serverIds"
 import { Match } from "./Match";
 import { shared } from "./shared";
+
 
 function clamp(v: number, min: number, max: number) {
 	if (v <= min)
@@ -20,33 +22,36 @@ function clamp(v: number, min: number, max: number) {
 export class Client {
 	static readonly MISSED_REGION_SIZE = 8;
 
-	viewX = 0;
-	viewY = 0;
-	viewW = 0;
-	viewH = 0;
-	missedRegions = new Set<bigint>();
-	visitedRegions = new Set<bigint>();
-	match: Match | null = null;
+	private socket: WebSocket;
+	private viewX = 0;
+	private viewY = 0;
+	private viewW = 0;
+	private viewH = 0;
+	private visitedRegions = new Set<bigint>();
+	private match: Match | null = null;
 
-	addMissedRegion(x: number, y: number) {
-		const x0 = Math.floor(x/Client.MISSED_REGION_SIZE);
-		const y0 = Math.floor(y/Client.MISSED_REGION_SIZE);
-
-		const key = (BigInt(x0) << 32n) | BigInt(y0);
-		if (!this.visitedRegions.has(key))
-			return;
-
-
-		const inside =
-			x >= this.viewX &&
-			x < this.viewX + this.viewW &&
-			y >= this.viewY &&
-			y < this.viewY + this.viewH;
-
-		if (!inside) {
-			this.missedRegions.add(key);
-		}
+	constructor(socket: WebSocket) {
+		this.socket = socket;
 	}
+
+
+	async sendUpdatedBlocks() {
+		const match = this.match;
+		if (!match)
+			throw new Error("No match to listen");
+
+		const edits = await shared.takeMapEdits(match.id,
+			this.viewX, this.viewY, this.viewW, this.viewH);
+
+		const writer = new DataWriter();
+		writer.writeUint8(CLIENT_IDS.EDITS);
+		writer.writeUint8(0); // for 16bits padding
+		writer.writeUint16(0); // for 32bits padding
+		writer.addUint32Array(edits);
+
+		this.socket.send(writer.toArrayBuffer());
+	}
+
 
 	async receive(reader: DataReader): Promise<DataWriter | null> {
 		const action = reader.readUint8();
@@ -73,7 +78,8 @@ export class Client {
 		if (matchHash === "0000000000000000") {
 			const {match, hash} = await shared.createMatch();
 			this.match = match;
-			match.clients.push(this);
+			// match.clients.push(this);
+			match.pushClient(this);
 
 			const writer = new DataWriter();
 			writer.writeUint8(CLIENT_IDS.JOIN_CREATED);
@@ -90,7 +96,7 @@ export class Client {
 			return writer;
 		}
 
-		match.clients.push(this);
+		match.pushClient(this);
 		this.match = match;
 
 		const writer = new DataWriter();
@@ -106,6 +112,9 @@ export class Client {
 
 		const match = this.match;
 
+
+		/// TODO: fill missedRegions
+		const missedRegions = new Array<bigint>();
 
 		const promises: Promise<void>[] = [];
 		const sendArea = async (x: number, y: number) => {
@@ -171,7 +180,7 @@ export class Client {
 
 		// Collect missed regions that fall inside the new view
 		const missedInView: Array<{ key: bigint, rx: number, ry: number }> = [];
-		for (const key of this.missedRegions) {
+		for (const key of missedRegions) {
 			const rx = Number(key >> 32n);
 			const ry = Number(key & 0xFFFFFFFFn);
 			missedInView.push({ key, rx, ry });
@@ -190,7 +199,6 @@ export class Client {
 		// Send missed regions (and remove them from the set)
 		for (const { key, rx, ry } of missedInView) {
 			promises.push(sendArea(rx, ry));
-			this.missedRegions.delete(key);
 		}
 
 		// Expand visited regions to cover the full new view
@@ -224,7 +232,7 @@ export class Client {
 
 		await shared.placeSingleRoad(this.match.id, x, y);
 
-
+		this.match.sendUpdatedBlocks();
 
 		return null;
 	}

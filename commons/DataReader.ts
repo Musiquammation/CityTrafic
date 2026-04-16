@@ -73,6 +73,12 @@ export class DataReader {
 		return new Uint8Array(array);
 	}
 
+	readUint32Array(length: number) {
+		const array = new Uint32Array(this.view.buffer, this.offset, length);
+		this.offset += length*4;
+		return new Uint32Array(array);
+	}
+
 	getLength() {
 		return this.view.byteLength;
 	}

@@ -5,7 +5,7 @@
 #include "Vector.hpp"
 #include "Cell.hpp"
 
-
+#include <vector>
 #include <stdint.h>
 #include <unordered_set>
 
@@ -18,6 +18,7 @@ struct std::hash<Vector<int>> {
     }
 };
 
+
 typedef struct {
     int x;
     int y;
@@ -26,8 +27,9 @@ typedef struct {
 } MapSize;
 
 class Map {
-    Cell* cells;    
-    std::unordered_set<Vector<int>> editedCells{};
+    Cell* cells;
+
+    std::vector<std::unordered_set<Vector<int>>> editedCells{};
     int x;
     int y;
     int width;
@@ -52,8 +54,14 @@ public:
      * then format is:
      * {dx(8), dy(8), data(16)} for each element
      */
-    uint32_t* collectEditedCells(int x, int y, int width, int height);
-    uint32_t* collectEditedCells();
+    uint32_t* collectEditedCells(int x, int y,
+        int width, int height, int layer);
+    uint32_t* collectEditedCells(int layer);
+
+    void applyEdits(const uint32_t* edits);
+
+    int addEditedCellsLayer();
+    void removeEditedCellsLayer(int layer);
 };
 
 

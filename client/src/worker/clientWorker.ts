@@ -27,6 +27,8 @@ self.onmessage = event => {
 		throw new Error("Method not found");
 	}
 
+    api.freeBuffer();
+
     // @ts-ignore
 	const result = api[method as keyof ClientApi](...args);
 	

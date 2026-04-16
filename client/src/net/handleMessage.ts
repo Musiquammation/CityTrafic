@@ -44,6 +44,15 @@ function net_areas(reader: DataReader) {
     return null;
 }
 
+function net_edits(reader: DataReader) {
+    reader.readUint8(); // for 16bits padding
+    reader.readUint16(); // for 32bits padding
+    const length = reader.readUint32();
+    const array = reader.readUint32Array(length-1);
+    postWorker('applyEdits', [array], [array.buffer]);
+
+    return null;
+}
 
 
 export function handleMessage(reader: DataReader): DataWriter | null {
@@ -59,6 +68,8 @@ export function handleMessage(reader: DataReader): DataWriter | null {
     case CLIENT_IDS.AREAS:
         return net_areas(reader);
 
+    case CLIENT_IDS.EDITS:
+        return net_edits(reader);
         
     default:
         throw new Error("Unknown action " + action);

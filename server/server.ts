@@ -10,7 +10,7 @@ const PORT = Number(process.env.PORT) || 3000;
 const wss = new WebSocketServer({ port: PORT });
 
 wss.on('connection', (socket) => {
-	const session = new Client();
+	const session = new Client(socket);
 
 	socket.on('message', async data => {
 		let buffer: ArrayBuffer;
