@@ -121,11 +121,14 @@ class Shared {
 
 	}
 
-	async takeMapEdits(id: number, x: number, y: number, w: number, h: number) {
+	async takeMapEdits(
+		id: number, x: number,
+		y: number, w: number, h: number, layer: number
+	) {
 		return await this.ask<Uint32Array>(
 			id,
 			'takeMapEdits',
-			[id, x,y,w,h],
+			[id, x,y,w,h,layer],
 		);
 	}
 

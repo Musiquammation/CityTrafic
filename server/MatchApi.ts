@@ -148,13 +148,17 @@ export class MatchApi {
 		};
 	}
 
-	takeMapEdits(id: number, x: number, y: number, w: number, h: number) {
+	takeMapEdits(
+		id: number, x: number, y: number, 
+		w: number, h: number, layer: number
+	) {
 		const argPtr = this.module._malloc(4 * 4);
 		const argView = this.module.HEAP32.subarray(argPtr >> 2);
 		argView[0] = x;
 		argView[1] = y;
 		argView[2] = w;
 		argView[3] = h;
+		argView[4] = layer;
 
 		const ptr = this.run(id, ApiTakeCode.MAKE_MAP_EDITS, argPtr);
 		

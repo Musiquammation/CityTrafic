@@ -40,8 +40,8 @@ export class Client {
 		if (!match)
 			throw new Error("No match to listen");
 
-		const edits = await shared.takeMapEdits(match.id,
-			this.viewX, this.viewY, this.viewW, this.viewH);
+		const edits = await shared.takeMapEdits(match.id, this.viewX,
+			this.viewY, this.viewW, this.viewH, match.layer);
 
 		const writer = new DataWriter();
 		writer.writeUint8(CLIENT_IDS.EDITS);
