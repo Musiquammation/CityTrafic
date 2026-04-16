@@ -103,7 +103,6 @@ uint32_t* Map::collectEditedCells(
 			pos.y >= y && pos.y < y + height))
 			continue;
 
-		printf("edit %3d %3d\n", pos.x, pos.y);
 		// Origin
 		int32_t rx = pos.x & ~0xFF;
 		int32_t ry = pos.y & ~0xFF;
@@ -248,7 +247,7 @@ void Map::removeEditedCellsLayer(int layer) {
 
 
 
-bool Map::checkRegion(int x, int y, int width, int height) const {
+bool Map::checkBounds(int x, int y, int width, int height) const {
 	return (x >= this->x && x + width <= this->x + this->width &&
 		y >= this->y && y + height <= this->y + this->height);
 }

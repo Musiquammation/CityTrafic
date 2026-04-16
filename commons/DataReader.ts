@@ -83,4 +83,13 @@ export class DataReader {
 		return this.view.byteLength;
 	}
 
+
+	getOffset() {
+		return this.offset;
+	}
+
+	setOffset(offset: number) {
+		this.offset = offset;
+	}
+
 }

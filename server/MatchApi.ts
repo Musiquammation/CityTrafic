@@ -167,7 +167,6 @@ export class MatchApi {
 		const array = new Uint32Array(this.module.HEAPU32.buffer, ptr, length);
 		const result = new Uint32Array(length);
 		result.set(array);
-		console.log("takeMapEdits",array);
 
 
 		return {
@@ -202,9 +201,9 @@ export class MatchApi {
 
 	}
 
-	performGameCommand(id: number, data: Uint8Array) {
+	performGameCommand(id: number, data: Uint32Array) {
 		const argPtr = this.module._malloc(data.length);
-		this.module.HEAPU8.set(data, argPtr);
+		this.module.HEAPU32.set(data, argPtr>>2);
 
 		this.run(id, ApiTakeCode.GAME_COMMAND, argPtr);
 		this.module._free(argPtr);

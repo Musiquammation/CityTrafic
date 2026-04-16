@@ -33,6 +33,12 @@ canvas {
 
 
 
+/* temporary */
+#home-createSession {
+	font-size: 400px;
+}
+
+
 
 .hidden {
 	display: none !important; 

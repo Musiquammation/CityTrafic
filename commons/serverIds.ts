@@ -25,7 +25,7 @@ export enum SERVER_IDS {
 	/**
 	 * data only
 	 */
-	GAME_COMMAND,
+	GAME_COMMANDS,
 
 	
 	ERROR

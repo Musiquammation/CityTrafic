@@ -155,7 +155,6 @@ export class ClientApi {
 
 				
 				const {chunk, lx, ly} = this.map.getChunkAt(wx, wy);
-				console.log("update", wx, wy, chunk, lx, ly);
 				
 				chunk.set(lx, ly, data);
 			}
@@ -207,9 +206,6 @@ export class ClientApi {
 
 			heap.set(buffer, dstOffset);
 		}
-
-
-		this.run(ApiTakeCode.RLSE_MAP_PTR);
 	}
 
 
@@ -264,6 +260,15 @@ export class ClientApi {
 		this.run(ApiTakeCode.APPLY_EDITS, argPtr);
 
 		// Free argPtr
+		this.module._free(argPtr);
+	}
+
+	performGameCommand(data: ArrayBuffer) {
+		const argPtr = this.module._malloc(data.byteLength);
+
+		this.module.HEAPU32.set(new Uint32Array(data), argPtr>>2);
+
+		this.run(ApiTakeCode.GAME_COMMAND, argPtr);
 		this.module._free(argPtr);
 	}
 }

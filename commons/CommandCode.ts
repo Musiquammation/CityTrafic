@@ -1,3 +1,5 @@
 export enum CommandCode {
-    TEST
+    TEST,
+
+    PLACE_SINGLE_ROAD
 };

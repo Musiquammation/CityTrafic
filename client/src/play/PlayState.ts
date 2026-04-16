@@ -4,43 +4,43 @@ import { GAME_HEIGHT, GAME_WIDTH } from "../handler/dimensions";
 import { GameHandler } from "../handler/GameHandler";
 import { InputHandler } from "../handler/InputHandler";
 import { DrawStateData, GameState } from "../handler/states";
-import { Vector3 } from "../handler/Vector3";
 import { Chunk } from "../worker/Chunk";
 import { sendSocket } from "../net/sendSocket";
 import { sendCommand } from "../net/sendCommand";
 import { drawCell } from "./drawCell";
+import { MouseHandler } from "./MouseHandler";
 import { askWorker } from "../worker/askWorker";
-import { actionSender } from "./actionSender";
 import { CommandCode } from "../../../commons/CommandCode";
+import { ActionHandler } from "../action/ActionHandler";
 
 
 
 export class PlayState extends GameState {
 	private camX = 0;
 	private camY = 0;
-	private camZ = 90;
+	private camZ = 50;
 	private frameCount = 0;
+	private cameraTimeout = -1;
+	private mouseHandler = new MouseHandler(this);
+	actionHandler = new ActionHandler(this);
 
 
 	constructor() {
 		super();
 	}
 
-	
-
-
 
 
 	enter(data: any, input: InputHandler): void {
 		document.getElementById("gameView")?.classList.remove("hidden");
 
-		input.onMouseUp = e => {};
-		input.onMouseDown = e => {};
-		input.onMouseMove = e => {};
-		input.onScroll = e => {};
-		input.onTouchStart = e => {};
-		input.onTouchEnd = e => {};
-		input.onTouchMove = e => {};
+		input.onMouseUp = e => this.mouseHandler.onMouseUp(e);
+		input.onMouseDown = e => this.mouseHandler.onMouseDown(e);
+		input.onMouseMove = e => this.mouseHandler.onMouseMove(e);
+		input.onScroll = e => this.mouseHandler.onScroll(e);
+		input.onTouchStart = e => this.mouseHandler.onTouchStart(e);
+		input.onTouchEnd = e => this.mouseHandler.onTouchEnd(e);
+		input.onTouchMove = e => this.mouseHandler.onTouchMove(e);
 
 
 		// Send request to load area
@@ -60,7 +60,14 @@ export class PlayState extends GameState {
 		});
 	}
 
+
+	handleInputs(input: InputHandler) {
+		
+	}
+
 	frame(game: GameHandler): GameState | null {
+		this.handleInputs(game.inputHandler);
+
 		this.frameCount++;
 		return null;
 	}
@@ -125,35 +132,55 @@ export class PlayState extends GameState {
 	exit() {
 		document.getElementById("gameView")?.classList.add("hidden");
 
+		if (this.cameraTimeout >= 0)
+			clearTimeout(this.cameraTimeout);
+
 		(window as any).playState = null;
 		askWorker<void>('shutdown', []);
 	}
 
-	getCamera(): Vector3 | null {
-		return {x: this.camX, y: this.camY, z: this.camZ};
-	}
 
 
-	updateCamera(x: number, y: number, z: number) {
-		const EXPAND = 1.5;
+	sendCameraUpdate() {
+		const EXPAND = 1.1;
 		const writer = new DataWriter();
 		writer.writeUint8(SERVER_IDS.LISTEN);
 
-		const width = EXPAND*GAME_WIDTH/z;
-		const height = EXPAND*GAME_HEIGHT/z;
+		const width = EXPAND*GAME_WIDTH/this.camZ;
+		const height = EXPAND*GAME_HEIGHT/this.camZ;
 		
-		writer.writeUint32(Math.floor(x - width/2));
-		writer.writeUint32(Math.floor(y - height/2));
+		writer.writeUint32(Math.floor(this.camX - width/2));
+		writer.writeUint32(Math.floor(this.camY - height/2));
 		writer.writeUint32(Math.floor(width));
 		writer.writeUint32(Math.floor(height));
-
-
 
 		sendSocket(writer.toArrayBuffer());
 	}
 
+	updateCamera(x: number, y: number, z: number) {
+		this.camX = x;
+		this.camY = y;
+		this.camZ = z;
+
+		if (this.cameraTimeout < 0) {
+			this.cameraTimeout = setTimeout(() => {
+				this.sendCameraUpdate();
+				this.cameraTimeout = -1;
+			}, 1000);
+		}
+	}
+
+	getCamera() {
+		return {x: this.camX, y: this.camY, z: this.camZ};
+	}
+
+
 
 	placeBlock(x: number, y: number) {
-		actionSender.placeBlock(x,y);
+		const buffer = new DataWriter();
+        buffer.writeUint8(SERVER_IDS.PLACE_SINGLE_ROAD);
+        buffer.writeInt32(x);
+        buffer.writeInt32(y);
+        sendSocket(buffer.toArrayBuffer());
 	}
 }

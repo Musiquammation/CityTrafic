@@ -138,7 +138,7 @@ class Shared {
 	}
 
 
-	async performGameCommand(id: number, data: Uint8Array) {
+	async performGameCommand(id: number, data: Uint32Array) {
 		return await this.ask(
 			id,
 			'performGameCommand',

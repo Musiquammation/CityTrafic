@@ -1,9 +1,7 @@
-import { GameState, states } from "./states";
+import { GameState } from "./states";
 import {GAME_WIDTH, GAME_HEIGHT} from "./dimensions";
-import { PauseElement } from "./PauseElement";
 import {InputHandler} from "./InputHandler";
 import { ImageLoader } from "./ImageLoader";
-import { GAME_COLORS } from "./GAME_COLORS";
 import { HomeState } from "../states/HomeState";
 import { TestState } from "../states/TestState";
 

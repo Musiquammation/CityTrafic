@@ -6,6 +6,7 @@ import { CLIENT_IDS } from "../commons/clientIds"
 import { SERVER_IDS } from "../commons/serverIds"
 import { Match } from "./Match";
 import { shared } from "./shared";
+import { getCommandLength } from "./getCommandLength";
 
 
 function clamp(v: number, min: number, max: number) {
@@ -63,8 +64,8 @@ export class Client {
 		case SERVER_IDS.LISTEN:
 			return await this.receive_listen(reader);
 
-		case SERVER_IDS.GAME_COMMAND:
-			this.receive_command(reader);
+		case SERVER_IDS.GAME_COMMANDS:
+			this.receive_commands(reader);
 			return null;
 			
 
@@ -226,14 +227,33 @@ export class Client {
 		return writer;
 	}
 
-	private async receive_command(reader: DataReader) {
+	private async receive_commands(reader: DataReader) {
 		if (!this.match)
 			throw new Error("No match to listen");
 
-		shared.performGameCommand(
-			this.match.id,
-			reader.readUint8Array(reader.getLength()-1)
-		);
+		let notFirst = false;
+		for (let cmdCount = reader.readUint8(); cmdCount; cmdCount--) {
+			const offset = reader.getOffset();
+			if (notFirst) {reader.readUint16();} // skip 0 area
+			
+			const code = reader.readUint16();
+			const size = getCommandLength(code, reader);
+
+			if (notFirst) {
+				reader.setOffset(offset);
+			} else {
+				reader.setOffset(offset-2);
+				notFirst = true;
+			}
+
+			shared.performGameCommand(
+				this.match.id,
+				reader.readUint32Array(size+1)
+			);
+		}
+
+
+		this.match.sendUpdatedBlocks();
 	}
 
 

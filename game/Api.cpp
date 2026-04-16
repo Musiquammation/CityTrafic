@@ -37,8 +37,10 @@ void* Api::take(int id, int datacode, void* args) {
 
 		switch ((ApiTakeCode)datacode) {
 		case ApiTakeCode::FREE_BUFFER:
-			if (this->buffer)
+			if (this->buffer) {
 				free(this->buffer);
+				this->buffer = nullptr;
+			}
 			
 			return nullptr;
 	
@@ -163,7 +165,7 @@ void* Api::take(int id, int datacode, void* args) {
 			int x = (int)intArg(0);
 			int y = (int)intArg(1);
 
-			if (!s.game.checkRegion(x,y,1,1))
+			if (!s.game.checkBounds(x,y,1,1))
 				return nullptr;
 				
 			Cell* cell = s.game.getEditCell(x, y);

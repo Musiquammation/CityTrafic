@@ -7,7 +7,7 @@
 
 
 void Game::test() {
-	printf("origin %d\n", this->getCell(-1,0)->data);
+	
 }
 
 void Game::frame() {
@@ -56,6 +56,6 @@ int Game::getFrame() const {
 }
 
 
-bool Game::checkRegion(int x, int y, int width, int height) const {
-	return this->map.checkRegion(x,y,width,height);
+bool Game::checkBounds(int x, int y, int width, int height) const {
+	return this->map.checkBounds(x,y,width,height);
 }
