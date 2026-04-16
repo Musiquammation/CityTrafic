@@ -62,6 +62,8 @@ public:
 
     int addEditedCellsLayer();
     void removeEditedCellsLayer(int layer);
+
+    bool checkRegion(int x, int y, int width, int height) const;
 };
 
 

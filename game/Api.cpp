@@ -175,7 +175,13 @@ void* Api::take(int id, int datacode, void* args) {
 		{
 			ApiGame& s = this->games[id];
 			auto lock = s.game.mutexPool.lockWrite(MutexLabel::MAP);
-			Cell* cell = s.game.getEditCell(intArg(0), intArg(1));
+			int x = (int)intArg(0);
+			int y = (int)intArg(1);
+
+			if (!s.game.checkRegion(x,y,1,1))
+				return nullptr;
+				
+			Cell* cell = s.game.getEditCell(x, y);
 			cell->setType(CellType::ROAD);
 			return nullptr;
 		}

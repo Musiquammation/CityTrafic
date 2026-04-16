@@ -74,3 +74,8 @@ Car* Game::getCar(int x, int y) {
 int Game::getFrame() const {
 	return this->frameCount;
 }
+
+
+bool Game::checkRegion(int x, int y, int width, int height) const {
+	return this->map.checkRegion(x,y,width,height);
+}

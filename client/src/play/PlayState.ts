@@ -18,9 +18,6 @@ export class PlayState extends GameState {
 	private camY = 0;
 	private camZ = 90;
 	private frameCount = 0;
-	private workerId = 0;
-
-	private nextRequestId = 0;
 
 
 	constructor() {

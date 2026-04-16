@@ -245,3 +245,11 @@ void Map::removeEditedCellsLayer(int layer) {
 		this->editedCells.erase(this->editedCells.begin() + layer);
 	}
 }
+
+
+
+bool Map::checkRegion(int x, int y, int width, int height) const {
+	return (x >= this->x && x + width <= this->x + this->width &&
+		y >= this->y && y + height <= this->y + this->height);
+}
+

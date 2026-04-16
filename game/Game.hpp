@@ -26,5 +26,6 @@ public:
     Car* getCar(int x, int y);
 
     int getFrame() const;
+    bool checkRegion(int x, int y, int width, int height) const;
 
 };
