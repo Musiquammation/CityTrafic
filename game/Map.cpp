@@ -47,8 +47,6 @@ void Map::expand(int x, int y, int right, int bottom) {
 }
 
 Cell* Map::getEditCell(int x, int y) {
-	printf("editors %ld\n", this->editedCells.size());
-
 	#if TESTING
 	if (x < this->x || x >= this->x + this->width || y < this->y || y >= this->y + this->height) {
 		throw std::range_error{"Cell coordinates out of range"};
@@ -93,12 +91,6 @@ uint32_t* Map::collectEditedCells(
 	};
 
 	auto& edited = this->editedCells[layer];
-	if (edited.size()) {
-		printf("edited(%ld) in [%d %d %d %d]:\n", edited.size(), x, y, width, height);
-		for (auto& vec: edited)
-			printf("\tx=%02d y=%02d data=%d\n", vec.x, vec.y, this->getCell(vec.x, vec.y)->data);
-	}
-
 	// Group in regions
 	std::unordered_map<uint64_t, Region> regions;
 
@@ -107,32 +99,33 @@ uint32_t* Map::collectEditedCells(
 	};
 
 	for (const auto& pos : edited) {
-		if (pos.x >= x && pos.x < x + width &&
-			pos.y >= y && pos.y < y + height) {
+		if (!(pos.x >= x && pos.x < x + width &&
+			pos.y >= y && pos.y < y + height))
+			continue;
 
-			// Origin
-			int32_t rx = pos.x & ~0xFF;
-			int32_t ry = pos.y & ~0xFF;
+		printf("edit %3d %3d\n", pos.x, pos.y);
+		// Origin
+		int32_t rx = pos.x & ~0xFF;
+		int32_t ry = pos.y & ~0xFF;
 
-			uint64_t key = makeKey(rx, ry);
-			auto& region = regions[key];
+		uint64_t key = makeKey(rx, ry);
+		auto& region = regions[key];
 
-			region.x = rx;
-			region.y = ry;
+		region.x = rx;
+		region.y = ry;
 
-			uint8_t dx = static_cast<uint8_t>(pos.x - rx);
-			uint8_t dy = static_cast<uint8_t>(pos.y - ry);
+		uint8_t dx = static_cast<uint8_t>(pos.x - rx);
+		uint8_t dy = static_cast<uint8_t>(pos.y - ry);
 
-			const Cell* cell = getCell(pos.x, pos.y);
-			uint16_t data = cell->data;
+		const Cell* cell = getCell(pos.x, pos.y);
+		uint16_t data = cell->data;
 
-			uint32_t packed =
-				(uint32_t(dx) << 24) |
-				(uint32_t(dy) << 16) |
-				uint32_t(data);
+		uint32_t packed =
+			(uint32_t(dx) << 24) |
+			(uint32_t(dy) << 16) |
+			uint32_t(data);
 
-			region.cells.push_back(packed);
-		}
+		region.cells.push_back(packed);
 	}
 
 	// Get size

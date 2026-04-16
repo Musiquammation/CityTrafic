@@ -153,7 +153,7 @@ EMFLAGS = -std=c++2b $(EMCC_OPTIMIZATION) \
 	-sLLD_REPORT_UNDEFINED \
 	-sALLOW_MEMORY_GROWTH=1
 
-CXXFLAGS_EMCC = -std=c++2b -MMD -MP -c $(EMCC_OPTIMIZATION)
+CXXFLAGS_EMCC = -std=c++2b -MMD -MP -c $(EMCC_OPTIMIZATION) -DTESTING=$(TESTING_MACRO)
 	
 
 # compile .o emscripten (incremental)

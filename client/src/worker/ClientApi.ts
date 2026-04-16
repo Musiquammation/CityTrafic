@@ -138,11 +138,13 @@ export class ClientApi {
 		let cursor = ptr+1;
 
 		for (let rangeCount = this.module.HEAPU32[cursor++]; rangeCount; rangeCount--) {
-			const x0 = this.module.HEAPU32[cursor++];
-			const y0 = this.module.HEAPU32[cursor++];
+			const x0 = this.module.HEAP32[cursor++];
+			const y0 = this.module.HEAP32[cursor++];
+
 
 			for (let count = this.module.HEAPU32[cursor++]; count; count--) {
 				const packed = this.module.HEAPU32[cursor++];
+
 	
 				const dx = (packed >> 24) & 0xff;
 				const dy = (packed >> 16) & 0xff;
@@ -150,8 +152,10 @@ export class ClientApi {
 	
 				const wx = x0 + dx;
 				const wy = y0 + dy;
-	
+
+				
 				const {chunk, lx, ly} = this.map.getChunkAt(wx, wy);
+				console.log("update", wx, wy, chunk, lx, ly);
 				
 				chunk.set(lx, ly, data);
 			}
