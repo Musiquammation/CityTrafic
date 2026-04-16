@@ -20,12 +20,15 @@ canvas {
 	color: green;
 	background-color: #000a;
 	font-family: 'Courier New', Courier, monospace;
+	z-index: 999;
 }
 
 .view {
 	position: absolute;
 	left: 0px;
 	top: 0px;
+	width: 100vw;
+	height: 100vh;
 }
 
 

@@ -4,7 +4,7 @@ import { InputHandler } from "./InputHandler";
 import { Vector3 } from "./Vector3";
 
 export interface DrawStateData {
-	ctx: CanvasRenderingContext2D;
+	ctx: OffscreenCanvasRenderingContext2D;
 	imageLoader: ImageLoader;
 	followCamera: (()=>void);
 	unfollowCamera: (()=>void);
@@ -13,7 +13,7 @@ export interface DrawStateData {
 export abstract class GameState {
 	abstract enter(data: any, input: InputHandler): void;
 	abstract frame(game: GameHandler): GameState | null;
-	abstract draw(args: DrawStateData): void;
+	abstract draw(args: DrawStateData): Promise<void>;
 	abstract exit(): any;
 	abstract getCamera(): Vector3 | null;
 }
@@ -35,7 +35,7 @@ export namespace states {
 			return null;
 		}
 		
-		draw(args: DrawStateData): void {
+		async draw(args: DrawStateData) {
 			
 		}
 	

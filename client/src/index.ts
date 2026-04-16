@@ -78,6 +78,8 @@ export function startGame() {
 	}
 
 	
+	const offscreen = new OffscreenCanvas(canvas.width, canvas.height);
+	const offCtx = offscreen.getContext("2d")!;
 	const canvasContext = canvas.getContext("2d")!;
 	const game = new GameHandler(
 		realKeyboardMode,
@@ -87,19 +89,20 @@ export function startGame() {
 
 	setGameHandler(game);
 
-
-	function runGameLoop() {
+	async function runGameLoop() {
 		game.gameLogic();
-		game.gameDraw(
-			canvasContext,
+		await game.gameDraw(
+			offCtx,
 			canvas.width,
 			canvas.height,
 			(
-				ctx: CanvasRenderingContext2D,
+				ctx: OffscreenCanvasRenderingContext2D,
 				followCamera: () => void,
 				unfollowCamera: () => void
-			) => {game.drawMethod(ctx, followCamera, unfollowCamera);}
+			) => game.drawMethod(ctx, followCamera, unfollowCamera)
 		);
+
+		canvasContext.drawImage(offscreen, 0, 0);
 		
 		if (window.running) {
 			if (window.useRequestAnimationFrame) {

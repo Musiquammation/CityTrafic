@@ -41,7 +41,7 @@ export class HomeState extends GameState {
 		return null;
 	}
 
-	draw(args: DrawStateData): void {
+	async draw(args: DrawStateData) {
 		
 	}
 

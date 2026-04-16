@@ -93,9 +93,11 @@ uint32_t* Map::collectEditedCells(
 	};
 
 	auto& edited = this->editedCells[layer];
-	printf("edited(%ld) in [%d %d %d %d]:\n", edited.size(), x, y, width, height);
-	for (auto& vec: edited)
-		printf("\tx=%02d y=%02d data=%d\n", vec.x, vec.y, this->getCell(vec.x, vec.y)->data);
+	if (edited.size()) {
+		printf("edited(%ld) in [%d %d %d %d]:\n", edited.size(), x, y, width, height);
+		for (auto& vec: edited)
+			printf("\tx=%02d y=%02d data=%d\n", vec.x, vec.y, this->getCell(vec.x, vec.y)->data);
+	}
 
 	// Group in regions
 	std::unordered_map<uint64_t, Region> regions;

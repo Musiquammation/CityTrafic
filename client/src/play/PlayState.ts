@@ -33,6 +33,8 @@ export class PlayState extends GameState {
 
 
 	enter(data: any, input: InputHandler): void {
+		document.getElementById("gameView")?.classList.remove("hidden");
+
 		input.onMouseUp = e => {};
 		input.onMouseDown = e => {};
 		input.onMouseMove = e => {};
@@ -47,6 +49,7 @@ export class PlayState extends GameState {
 
 		(window as any).playState = this;
 		this.test();
+
 	}
 
 
@@ -61,14 +64,14 @@ export class PlayState extends GameState {
 
 
 
-	private async drawGrid(ctx: CanvasRenderingContext2D) {
+	private async drawGrid(ctx: OffscreenCanvasRenderingContext2D) {
 		const rangeW = GAME_WIDTH/this.camZ;
 		const rangeH = GAME_HEIGHT/this.camZ;
 
 		const chunks = await askWorker<{
 			x: number,
 			y: number,
-			cells: any
+			cells: Uint16Array
 		}[]>('getChunks', [
 			Math.floor(this.camX - rangeW/2),
 			Math.floor(this.camY - rangeH/2),
@@ -83,7 +86,7 @@ export class PlayState extends GameState {
 				for (let dx = 0; dx < Chunk.SIZE; dx++) {
 					const cell = cells[j++]
 					if (cell === 0)
-						return;
+						continue;
 
 					ctx.save();
 					ctx.translate(x+dx, y+dy);
@@ -108,13 +111,17 @@ export class PlayState extends GameState {
 		
 		// Draw game
 		args.followCamera();
-		this.drawGrid(args.ctx);
+		await this.drawGrid(args.ctx);
 		args.unfollowCamera();
+		
+
 		
 		
 	}
 
 	exit() {
+		document.getElementById("gameView")?.classList.add("hidden");
+
 		(window as any).playState = null;
 		askWorker<void>('shutdown', []);
 	}

@@ -1,4 +1,4 @@
-export function drawCell(data: number, ctx: CanvasRenderingContext2D) {
+export function drawCell(data: number, ctx: OffscreenCanvasRenderingContext2D) {
     switch (data & 0xf) {
     case 0: // nothing
         break;

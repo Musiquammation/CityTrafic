@@ -87,8 +87,8 @@ export class GameHandler {
 		}
 	}
 
-	gameDraw(ctx: CanvasRenderingContext2D, canvasWidth: number, canvasHeight: number, drawMethod: 
-		(ctx: CanvasRenderingContext2D, followCamera: (()=>void), unfollowCamera: (()=>void)) => void
+	async gameDraw(ctx: OffscreenCanvasRenderingContext2D, canvasWidth: number, canvasHeight: number,
+		drawMethod: (ctx: OffscreenCanvasRenderingContext2D, followCamera: (()=>void), unfollowCamera: (()=>void)) => Promise<void>
 	) {
 		const scaleX = canvasWidth / GAME_WIDTH;
 		const scaleY = canvasHeight / GAME_HEIGHT;
@@ -119,7 +119,7 @@ export class GameHandler {
 			ctx.restore();
 		}
 		
-		drawMethod(ctx, followCamera, unfollowCamera);
+		await drawMethod(ctx, followCamera, unfollowCamera);
 		
 		
 		ctx.restore();
@@ -134,8 +134,8 @@ export class GameHandler {
 		if (offsetX > 0) ctx.fillRect(canvasWidth - offsetX, 0, offsetX, canvasHeight);
 	}
 	
-	drawMethod(ctx: CanvasRenderingContext2D, followCamera: (()=>void), unfollowCamera: (()=>void)) {
-		this.state.draw({ctx, imageLoader: this.imgLoader, followCamera, unfollowCamera});
+	drawMethod(ctx: OffscreenCanvasRenderingContext2D, followCamera: (()=>void), unfollowCamera: (()=>void)) {
+		return this.state.draw({ctx, imageLoader: this.imgLoader, followCamera, unfollowCamera});
 	}
 }
 

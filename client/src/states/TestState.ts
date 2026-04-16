@@ -30,7 +30,7 @@ export class TestState extends GameState {
 		return new PlayState();
 	}
 
-	draw(args: DrawStateData): void {
+	async draw(args: DrawStateData) {
 	}
 
 	exit() {

@@ -130,28 +130,31 @@ export class ClientApi {
 		arg[1] = by;
 		arg[2] = bw;
 		arg[3] = bh;
-		arg[4] = 0; // layer 0
+		arg[4] = 0; // layer=0
 
 		const ptr = this.run(ApiTakeCode.MAKE_MAP_EDITS, argPtr) >> 2;
 		this.module._free(argPtr);
 
+		let cursor = ptr+1;
 
-		const len = this.module.HEAPU32[ptr];
-		let cursor = ptr + 1;
+		for (let rangeCount = this.module.HEAPU32[cursor++]; rangeCount; rangeCount--) {
+			const x0 = this.module.HEAPU32[cursor++];
+			const y0 = this.module.HEAPU32[cursor++];
 
-		for (let i = 0; i < len; i++) {
-			const packed = this.module.HEAPU32[cursor++];
-
-			const dx = (packed >> 24) & 0xff;
-			const dy = (packed >> 16) & 0xff;
-			const data = packed & 0xffff;
-
-			const wx = bx + dx;
-			const wy = by + dy;
-
-			const {chunk, lx, ly} = this.map.getChunkAt(wx, wy);
-
-			chunk.set(lx, ly, data);
+			for (let count = this.module.HEAPU32[cursor++]; count; count--) {
+				const packed = this.module.HEAPU32[cursor++];
+	
+				const dx = (packed >> 24) & 0xff;
+				const dy = (packed >> 16) & 0xff;
+				const data = packed & 0xffff;
+	
+				const wx = x0 + dx;
+				const wy = y0 + dy;
+	
+				const {chunk, lx, ly} = this.map.getChunkAt(wx, wy);
+				
+				chunk.set(lx, ly, data);
+			}
 		}
 	}
 
@@ -227,30 +230,37 @@ export class ClientApi {
 	}
 
 	getChunks(viewX: number, viewY: number, rangeW: number, rangeH: number) {
-		return Array.from(this.map.getChunks(
-			viewX, viewY, rangeW, rangeH));
-		
+		const chunks = [];
+		const transfered: Transferable[] = [];
+
+		for (const chunk of this.map.getChunks(viewX, viewY, rangeW, rangeH)) {
+			const cells = new Uint16Array(chunk.cells);
+
+			chunks.push({
+				x: chunk.x,
+				y: chunk.y,
+				cells
+			});
+
+			transfered.push(cells.buffer);
+		}
+
+		return {
+			result: chunks,
+			transfered
+		}
 	}
 
 	applyEdits(array: Uint32Array) {
-		const length = array.length;
-
 		// Copy array
 		const argPtr = this.module._malloc(array.length * 4);
 		this.module.HEAPU32.set(array, argPtr >> 2);
 		
-		const ptr = this.run(ApiTakeCode.APPLY_EDITS, argPtr);
+		// Apply edits
+		this.run(ApiTakeCode.APPLY_EDITS, argPtr);
 
+		// Free argPtr
 		this.module._free(argPtr);
-
-		// Copy map edits
-		const result = new Uint32Array(length);
-		result.set(new Uint32Array(this.module.HEAPU32.buffer, ptr, length));
-
-		return {
-			transfered: [result.buffer],
-			result
-		};
 	}
 }
 

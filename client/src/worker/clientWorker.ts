@@ -23,17 +23,22 @@ self.onmessage = event => {
     }
 
 
-	if (typeof api[method as keyof ClientApi] !== "function") {
-		throw new Error("Method not found");
-	}
+
+    // @ts-ignore
+	const result = (api as any)[method](...args);
 
     api.freeBuffer();
 
-    // @ts-ignore
-	const result = api[method as keyof ClientApi](...args);
+    if (result === undefined) {
+		self.postMessage({ requestId });	
 	
-    if (requestId >= 0) {
-	    self.postMessage({ requestId, result });
-    }
+	} else if (result.transfered && result.result) {
+		self.postMessage({
+			requestId,
+			result: result.result
+		}, result.transfered);
+	} else {
+		self.postMessage({ requestId, result });	
+	}
 };
 
