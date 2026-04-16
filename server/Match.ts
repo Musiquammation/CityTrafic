@@ -3,6 +3,7 @@ import { shared } from "./shared";
 
 export class Match {
 	readonly id: number;
+	layer = -1;
 	clients: Client[] = [];
 	mapX: number;
 	mapY: number;
@@ -27,14 +28,16 @@ export class Match {
 			client => client.sendUpdatedBlocks()));
 	}
 
-	pushClient(client: Client) {
+	async pushClient(client: Client) {
 		this.clients.push(client);
-		shared.pushClient(this.id);
+		const layer = await shared.pushClient(this.id);
+		this.layer = layer;
+		return layer;
 	} 
 
 	popClient(client: Client) {
 		const idx = this.clients.indexOf(client);
 		this.clients.splice(idx, 1);
-		shared.popClient(this.id, idx);
+		shared.popClient(this.id, this.layer);
 	}
 }

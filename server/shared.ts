@@ -130,7 +130,7 @@ class Shared {
 	}
 
 	pushClient(id: number) {
-		this.ask(id, 'pushLayer', [id]);
+		return this.ask<number>(id, 'pushLayer', [id]);
 	}
 
 	popClient(id: number, idx: number) {

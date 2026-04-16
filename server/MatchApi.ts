@@ -90,6 +90,7 @@ export class MatchApi {
 		argView[2] = rect.w;
 		argView[3] = rect.h;
 
+		this.module._free(argPtr);
 		
 		return {
 			mapX: rect.x,
@@ -148,14 +149,25 @@ export class MatchApi {
 	}
 
 	takeMapEdits(id: number, x: number, y: number, w: number, h: number) {
-		const ptr = this.run(id, ApiTakeCode.MAKE_MAP_EDITS);
+		const argPtr = this.module._malloc(4 * 4);
+		const argView = this.module.HEAP32.subarray(argPtr >> 2);
+		argView[0] = x;
+		argView[1] = y;
+		argView[2] = w;
+		argView[3] = h;
+
+		const ptr = this.run(id, ApiTakeCode.MAKE_MAP_EDITS, argPtr);
 		
+		this.module._free(argPtr);
+
 		const length = this.module.HEAPU32[ptr>>2];
 
 		// Copy map edits
 		const array = new Uint32Array(this.module.HEAPU32.buffer, ptr, length);
 		const result = new Uint32Array(length);
 		result.set(array);
+		console.log("takeMapEdits",array);
+
 
 		return {
 			transfered: [result.buffer],

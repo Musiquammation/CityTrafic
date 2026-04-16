@@ -7,7 +7,7 @@
 
 
 void Game::test() {
-	
+	printf("origin %d\n", this->getCell(0,0)->data);
 }
 
 void Game::frame() {

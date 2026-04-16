@@ -3,6 +3,7 @@
 #include <cstdlib>
 #include <cstring>
 
+#include <stdio.h>
 #include "utils/mfor.hpp"
 
 #include <unordered_map>
@@ -46,6 +47,8 @@ void Map::expand(int x, int y, int right, int bottom) {
 }
 
 Cell* Map::getEditCell(int x, int y) {
+	printf("editors %ld\n", this->editedCells.size());
+
 	#if TESTING
 	if (x < this->x || x >= this->x + this->width || y < this->y || y >= this->y + this->height) {
 		throw std::range_error{"Cell coordinates out of range"};
@@ -90,8 +93,10 @@ uint32_t* Map::collectEditedCells(
 	};
 
 	auto& edited = this->editedCells[layer];
+	printf("edited(%ld) in [%d %d %d %d]:\n", edited.size(), x, y, width, height);
+	for (auto& vec: edited)
+		printf("\tx=%02d y=%02d data=%d\n", vec.x, vec.y, this->getCell(vec.x, vec.y)->data);
 
-	
 	// Group in regions
 	std::unordered_map<uint64_t, Region> regions;
 

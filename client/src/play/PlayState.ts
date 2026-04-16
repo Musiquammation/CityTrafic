@@ -81,9 +81,13 @@ export class PlayState extends GameState {
 			let j = 0;
 			for (let dy = 0; dy < Chunk.SIZE; dy++) {
 				for (let dx = 0; dx < Chunk.SIZE; dx++) {
+					const cell = cells[j++]
+					if (cell === 0)
+						return;
+
 					ctx.save();
 					ctx.translate(x+dx, y+dy);
-					drawCell(cells[j++], ctx);
+					drawCell(cell, ctx);
 					ctx.restore();
 				}
 			}

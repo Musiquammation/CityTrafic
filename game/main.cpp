@@ -9,7 +9,7 @@
 
 #include "debugFile.hpp"
 
-#define MAIN_TEST_ID 0
+#define MAIN_TEST_ID 1
 
 
 
@@ -119,15 +119,22 @@ int main() {
 
 #elif MAIN_TEST_ID == 1
 
-#include "Api.hpp"
+
+#include <unordered_map>
+#include "Vector.hpp"
+
 
 
 int main() {
-	Api* api = Api_createApi(2);
+	std::unordered_set<Vector<int>> set;
 
-	Api_deleteApi(api);
 
-	printf("Success!\n");
+	set.insert(Vector<int>{10, 20});
+	set.insert(Vector<int>{10, 20});
+	set.insert(Vector<int>{10, 20});
+
+	printf("%ld\n", set.size());
+
 	return 0;
 	
 }

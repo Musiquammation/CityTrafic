@@ -29,6 +29,11 @@ export class ClientApi {
 
 		this.apiPtr = this.module._Api_createApi(0, 0);
 
+
+		// Create layer (at 0)
+		this.run(ApiTakeCode.PUSH_LAYER);
+
+
 		this.createCellGrid();
 	}
 
@@ -125,7 +130,7 @@ export class ClientApi {
 		arg[1] = by;
 		arg[2] = bw;
 		arg[3] = bh;
-		arg[4] = 0;
+		arg[4] = 0; // layer 0
 
 		const ptr = this.run(ApiTakeCode.MAKE_MAP_EDITS, argPtr) >> 2;
 		this.module._free(argPtr);
@@ -228,6 +233,8 @@ export class ClientApi {
 	}
 
 	applyEdits(array: Uint32Array) {
+		const length = array.length;
+
 		// Copy array
 		const argPtr = this.module._malloc(array.length * 4);
 		this.module.HEAPU32.set(array, argPtr >> 2);

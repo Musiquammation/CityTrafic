@@ -178,6 +178,22 @@ void* Api::take(int id, int datacode, void* args) {
 		return nullptr;
 	}
 
+	case ApiTakeCode::PUSH_LAYER:
+	{
+		ApiGame& s = this->games[id];
+		int* ret = (int*)malloc(sizeof(int));
+		*ret = s.game.map.addEditedCellsLayer();
+		this->buffer = ret;
+		return ret;
+	}
+
+	case ApiTakeCode::POP_LAYER:
+	{
+		ApiGame& s = this->games[id];
+		s.game.map.removeEditedCellsLayer(intArg(0));
+		return nullptr;
+	}
+
 	case ApiTakeCode::APPLY_EDITS:
 	{
 		ApiGame& s = this->games[id];
