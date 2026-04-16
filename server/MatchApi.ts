@@ -1,6 +1,5 @@
 
 import { ApiTakeCode } from "../commons/ApiTakeCode"
-import { Client } from "./Client";
 
 
 
@@ -139,8 +138,6 @@ export class MatchApi {
 				dstOffset
 			);
 		}
-
-		this.run(id, ApiTakeCode.RLSE_MAP_PTR);
 
 		return {
 			transfered: [result.buffer],

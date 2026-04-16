@@ -5,6 +5,8 @@
 #include <string.h>
 #include <bit>
 
+#include <stdio.h>
+
 #define intArg(i) ((uint32_t*)args)[i]
 
 Api::Api(int indexStart, int indexSpacing) :
@@ -20,19 +22,15 @@ int Api::createSession() {
 	int id = this->nextId;
 	this->nextId += this->indexSpacing;
 	
-	std::unique_lock<std::shared_mutex> lock{this->mutex};
 	this->games.try_emplace(id);
 	return id;
 }
 
 void Api::deleteSession(int id) {
-	std::unique_lock<std::shared_mutex> lock{this->mutex};
 	this->games.erase(id);
 }
 
 void* Api::take(int id, int datacode, void* args) {
-	std::shared_lock<std::shared_mutex> lock{this->mutex};
-
 	try {
 
 		switch ((ApiTakeCode)datacode) {
@@ -60,8 +58,6 @@ void* Api::take(int id, int datacode, void* args) {
 			int dy = y0 - s.game.map.y;
 	
 	
-			auto lock = s.game.mutexPool.lockRead(MutexLabel::MAP);
-			
 			/// TODO: test this portion
 			for (int y = 0; y < h; y++) {
 				int pos = (dy+y) * gridWidth + dx;
@@ -81,8 +77,6 @@ void* Api::take(int id, int datacode, void* args) {
 		case ApiTakeCode::COPY_CARS:
 		{
 			ApiGame& s = this->games[id];
-			auto lockStructure = s.game.mutexPool.lockRead(MutexLabel::CARS_STRUCTURE);
-	
 			uint32_t carSize = (uint32_t)s.game.carHandler.cars.size();
 			/**
 			 * 1st element for length
@@ -96,8 +90,6 @@ void* Api::take(int id, int datacode, void* args) {
 			uint32_t* const buffer = (uint32_t*)malloc(sizeof(uint32_t) +
 				(4*sizeof(uint32_t)) * carSize);
 	
-	
-			auto lockPositions = s.game.mutexPool.lockRead(MutexLabel::CARS_POSITIONS);
 	
 			uint32_t* ptr = buffer;
 			*ptr++ = (uint32_t)carSize;
@@ -132,7 +124,6 @@ void* Api::take(int id, int datacode, void* args) {
 		case ApiTakeCode::MAKE_MAP_EDITS:
 		{
 			ApiGame& s = this->games[id];
-			auto lock = s.game.mutexPool.lockRead(MutexLabel::MAP);
 	
 			int x0 = intArg(0);
 			int y0 = intArg(1);
@@ -151,7 +142,6 @@ void* Api::take(int id, int datacode, void* args) {
 		{
 			ApiGame& s = this->games[id];
 			int layer = intArg(0);
-			auto lock = s.game.mutexPool.lockRead(MutexLabel::MAP);
 			uint32_t* buffer = s.game.map.collectEditedCells(layer);
 			this->buffer = buffer;
 			return buffer;
@@ -161,20 +151,13 @@ void* Api::take(int id, int datacode, void* args) {
 		case ApiTakeCode::TAKE_MAP_PTR:
 		{
 			ApiGame& s = this->games[id];
-			this->bffLock = s.game.mutexPool.lockWrite(MutexLabel::MAP);
 			return s.game.map.cells;
 		}
 	
-		case ApiTakeCode::RLSE_MAP_PTR:
-		{
-			this->bffLock.reset();
-			return nullptr;
-		}
 	
 		case ApiTakeCode::PLACE_SINGLE_ROAD:
 		{
 			ApiGame& s = this->games[id];
-			auto lock = s.game.mutexPool.lockWrite(MutexLabel::MAP);
 			int x = (int)intArg(0);
 			int y = (int)intArg(1);
 
@@ -205,7 +188,6 @@ void* Api::take(int id, int datacode, void* args) {
 		case ApiTakeCode::APPLY_EDITS:
 		{
 			ApiGame& s = this->games[id];
-			auto lock = s.game.mutexPool.lockRead(MutexLabel::MAP);
 			s.game.map.applyEdits((uint32_t*)args);
 			return nullptr;
 		}
@@ -222,8 +204,6 @@ void* Api::take(int id, int datacode, void* args) {
 }
 
 void Api::runFrames() {
-	std::shared_lock<std::shared_mutex> lock{this->mutex};
-	
 	for (auto& [_, i]: this->games) {
 		i.game.frame();
 	}

@@ -11,7 +11,6 @@ export enum ApiTakeCode {
 	MAKE_MAP_EDITS_ALL,
 
 	TAKE_MAP_PTR,
-	RLSE_MAP_PTR,
 
 	PUSH_LAYER,
 	POP_LAYER,

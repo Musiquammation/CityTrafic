@@ -13,36 +13,16 @@ void Game::test() {
 void Game::frame() {
 	this->test();
 
-	// Car behavior
-	{
-		// needs to read map for getDanger
-		auto lockPositions = this->mutexPool.lockWrite(MutexLabel::CARS_STRUCTURE);
-		auto lockMap = this->mutexPool.lockRead(MutexLabel::MAP);
-		this->carHandler.updateCars(this);
+	// Car logic
+	this->carHandler.updateCars(this);
+	this->carHandler.moveCars();
+
+	// Update grid
+	this->map.resetCarMarks();
+	for (auto& [pos, car] : this->carHandler) {
+		auto cell = this->map.getEditCell(car->x, car->y);
+		cell->setCarOn();
 	}
-
-	// Move cars
-	{
-		auto lockPositions = this->mutexPool.lockWrite(MutexLabel::CARS_POSITIONS);
-		this->carHandler.moveCars();
-	}
-	
-	// Update car positions
-	{
-		auto lockMap = this->mutexPool.lockWrite(MutexLabel::MAP);
-		auto lockStructure = this->mutexPool.lockWrite(MutexLabel::CARS_STRUCTURE);
-		
-		this->map.resetCarMarks();
-
-		for (auto& [pos, car] : this->carHandler) {
-			auto cell = this->map.getEditCell(car->x, car->y);
-			cell->setCarOn();
-		}
-
-
-	}
-	
-
 
 	this->frameCount++;
 }

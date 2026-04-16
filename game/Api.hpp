@@ -1,11 +1,7 @@
 #pragma once
 
-#include <mutex>
 #include <vector>
 #include <map>
-#include <atomic>
-#include <optional>
-#include <mutex>
 
 #include "Game.hpp"
 
@@ -25,7 +21,6 @@ enum class ApiTakeCode {
 	MAKE_MAP_EDITS_ALL,
 
 	TAKE_MAP_PTR,
-	RLSE_MAP_PTR,
 
 	PUSH_LAYER,
 	POP_LAYER,
@@ -57,11 +52,8 @@ private:
 	int nextId;
 	int indexSpacing;
 	
-	std::shared_mutex mutex;
 	std::map<int, ApiGame> games;
-	std::atomic<ApiThreadState> state{ApiThreadState::ALIVE};
 	void* buffer = nullptr;
-	std::optional<std::unique_lock<std::shared_mutex>> bffLock;
 
 };
 

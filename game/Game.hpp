@@ -3,13 +3,11 @@
 #include "Map.hpp"
 #include "CarHandler.hpp"
 #include "declarations.hpp"
-#include "MutexPool.hpp"
 
 class Game {
 private:
     Map map{32,32};
     CarHandler carHandler{};
-    MutexPool mutexPool{};
     int frameCount = 0;
     void test();
 
