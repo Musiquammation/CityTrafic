@@ -1,6 +1,7 @@
 #include "Api.hpp"
 
 #include "Car.hpp"
+#include "Character.hpp"
 #include "runGameCommand.hpp"
 
 #include <stdint.h>
@@ -10,6 +11,82 @@
 #include <stdio.h>
 
 #define intArg(i) ((uint32_t*)args)[i]
+
+void* Api::makeEntities(
+	Game& game,
+	int x, int y, int w, int h
+) {
+	float fx0 = (float)x;
+	float fy0 = (float)y;
+	float fx1 = (float)(x+w);
+	float fy1 = (float)(y+h);
+
+
+	uint32_t carsCount = 0;
+	uint32_t charactersCount = 0;
+
+	for (auto [_, car]: game.carHandler) {
+		if (car->x >= x && car->x < x+w
+			&& car->y >= y && car->y < y+h
+		) {
+			carsCount++;
+		}
+	}
+
+	for (auto character: game.characterHandler.characters) {
+		if (character->state == CharacterState::WALK
+			&& character->x >= fx0 && character->x < fx1
+			&& character->y >= fy0 && character->y < fy1
+		) {
+			charactersCount++;
+		}
+	}
+
+
+	uint32_t fullSize = sizeof(uint32_t) *
+		(carsCount*4 + charactersCount*2 + 3);
+
+	uint32_t* const buffer = (uint32_t*)malloc(fullSize);
+
+	uint32_t* ptr = buffer;
+	
+	*ptr = fullSize;
+
+	// Send cars
+	*ptr++ = carsCount;
+
+	for (auto [_, car]: game.carHandler) {
+		if (car->x >= x && car->x < x+w
+			&& car->y >= y && car->y < y+h
+		) {
+			float speed = car->getSpeed();
+			*ptr++ = car->x;
+			*ptr++ = car->y;
+			*ptr++ = *(uint32_t*)&car->step;
+			*ptr++ = *(uint32_t*)&speed;
+		}
+	}
+
+	// Send characters
+	*ptr++ = charactersCount;
+	for (auto character: game.characterHandler.characters) {
+		if (character->state == CharacterState::WALK
+			&& character->x >= fx0 && character->x < fx1
+			&& character->y >= fy0 && character->y < fy1
+		) {
+			*ptr++ = *(uint32_t*)&character->x;
+			*ptr++ = *(uint32_t*)&character->y;
+		}
+	}
+
+
+	return buffer;
+}
+
+
+
+
+
 
 Api::Api(int indexStart, int indexSpacing) :
 	nextId(indexStart),
@@ -201,6 +278,16 @@ void* Api::take(int id, int datacode, void* args) {
 			ApiGame& s = this->games[id];
 
 			return runGameCommand(s.game, args);
+		}
+
+		case ApiTakeCode::MAKE_ENTITIES:
+		{
+			ApiGame& s = this->games[id];
+			void* buffer = Api::makeEntities(s.game,
+				intArg(0), intArg(1), intArg(2), intArg(3));
+
+			this->buffer = buffer;
+			return buffer;
 		}
 	
 	

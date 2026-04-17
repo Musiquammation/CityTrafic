@@ -147,6 +147,17 @@ class Shared {
 		);
 	}
 
+	async getEntities(
+		id: number,
+		x: number, y: number, w: number, h: number
+	) {
+		return await this.ask<Uint32Array>(
+			id,
+			'getEntities',
+			[id, x,y,w,h]
+		);
+	}
+
 	pushClient(id: number) {
 		return this.ask<number>(id, 'pushLayer', [id]);
 	}

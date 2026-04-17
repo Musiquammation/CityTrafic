@@ -19,5 +19,7 @@ export enum ApiTakeCode {
 
 	APPLY_EDITS,
 
-	GAME_COMMAND
+	GAME_COMMAND,
+
+	MAKE_ENTITIES,
 };

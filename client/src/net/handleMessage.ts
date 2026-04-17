@@ -54,6 +54,11 @@ function net_edits(reader: DataReader) {
     return null;
 }
 
+function net_getEntities(reader: DataReader) {
+    /// TODO: read entities
+}
+
+
 
 export function handleMessage(reader: DataReader): DataWriter | null {
     const action = reader.readUint8();
@@ -70,6 +75,9 @@ export function handleMessage(reader: DataReader): DataWriter | null {
 
     case CLIENT_IDS.EDITS:
         return net_edits(reader);
+
+    case CLIENT_IDS.GET_ENTITIES:
+        return net_getEntities(reader);
         
     default:
         throw new Error("Unknown action " + action);

@@ -68,6 +68,8 @@ export class Client {
 			this.receive_commands(reader);
 			return null;
 			
+		case SERVER_IDS.GET_ENTITIES:
+			return await this.receive_getEntities(reader);
 
 		case SERVER_IDS.PLACE_SINGLE_ROAD:
 			return await this.receive_placeSingleRoad(reader);
@@ -254,6 +256,25 @@ export class Client {
 
 
 		this.match.sendUpdatedBlocks();
+	}
+
+	private async receive_getEntities(reader: DataReader) {
+		if (!this.match)
+			throw new Error("No match to listen");
+
+		const x = reader.readInt32();
+		const y = reader.readInt32();
+		const w = reader.readInt32();
+		const h = reader.readInt32();
+
+		const array = await shared.getEntities(this.match.id, x, y, w, h);
+
+		const writer = new DataWriter();
+		writer.writeUint8(CLIENT_IDS.GET_ENTITIES);
+		writer.writeUint8(0); // i32 padding
+		writer.writeUint16(0); // i32 padding
+		writer.addUint32Array(array);
+		return writer;
 	}
 
 

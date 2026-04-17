@@ -9,7 +9,7 @@ enum class CharacterState {
 
 class Character {
 public:
-	int x;
-	int y;
+	float x;
+	float y;
 	CharacterState state;
 };

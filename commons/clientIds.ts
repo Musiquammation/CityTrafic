@@ -3,5 +3,6 @@ export enum CLIENT_IDS {
 	JOIN_ALIVE,
 	AREAS,
 	EDITS,
+	GET_ENTITIES,
 	ERROR
 }

@@ -29,7 +29,9 @@ enum class ApiTakeCode {
 
 	APPLY_EDITS,
 
-	GAME_COMMAND
+	GAME_COMMAND,
+
+	MAKE_ENTITIES,
 };
 
 
@@ -41,6 +43,17 @@ struct ApiGame {
 
 
 class Api {
+	int nextId;
+	int indexSpacing;
+	
+	std::map<int, ApiGame> games;
+	void* buffer = nullptr;
+
+
+	static void* makeEntities(Game& game,
+		int x, int y, int w, int h);
+
+
 public:
 	Api(int indexStart, int indexSpacing);
 	~Api();
@@ -49,14 +62,6 @@ public:
 	void deleteSession(int id);
 	void* take(int id, int datacode, void* args);
 	void runFrames();
-
-private:
-	int nextId;
-	int indexSpacing;
-	
-	std::map<int, ApiGame> games;
-	void* buffer = nullptr;
-
 };
 
 

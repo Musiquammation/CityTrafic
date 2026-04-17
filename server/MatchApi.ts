@@ -149,7 +149,7 @@ export class MatchApi {
 		id: number, x: number, y: number, 
 		w: number, h: number, layer: number
 	) {
-		const argPtr = this.module._malloc(4 * 4);
+		const argPtr = this.module._malloc(5 * 4);
 		const argView = this.module.HEAP32.subarray(argPtr >> 2);
 		argView[0] = x;
 		argView[1] = y;
@@ -207,6 +207,36 @@ export class MatchApi {
 
 		this.run(id, ApiTakeCode.GAME_COMMAND, argPtr);
 		this.module._free(argPtr);
+	}
+
+
+	makeEntities(
+		id: number, x: number, y: number, 
+		w: number, h: number
+	) {
+		const argPtr = this.module._malloc(4 * 4);
+		const argView = this.module.HEAP32.subarray(argPtr >> 2);
+		argView[0] = x;
+		argView[1] = y;
+		argView[2] = w;
+		argView[3] = h;
+
+		const ptr = this.run(id, ApiTakeCode.MAKE_ENTITIES, argPtr);
+		
+		this.module._free(argPtr);
+
+		const length = this.module.HEAPU32[ptr>>2];
+
+		// Copy result
+		const array = new Uint32Array(this.module.HEAPU32.buffer, ptr, length);
+		const result = new Uint32Array(length);
+		result.set(array);
+
+
+		return {
+			transfered: [result.buffer],
+			result
+		};
 	}
 }
 
