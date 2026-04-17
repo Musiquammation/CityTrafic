@@ -1,13 +1,5 @@
-#include "Game.hpp"
-#include "Cell.hpp"
-#include "Car.hpp"
-
-#include <array>
-#include <stdio.h>
 #include <iostream>
-#include <stdexcept>
 
-#include "debugFile.hpp"
 
 #define MAIN_TEST_ID 1
 
@@ -33,6 +25,15 @@ RedCerr rcerr;
 
 #if MAIN_TEST_ID == 0
 
+#include "Game.hpp"
+#include "Cell.hpp"
+#include "Car.hpp"
+
+#include <array>
+#include <stdio.h>
+#include <stdexcept>
+
+#include "debugFile.hpp"
 
 int main() {
 	Game game{};
@@ -120,21 +121,26 @@ int main() {
 #elif MAIN_TEST_ID == 1
 
 
-#include <unordered_map>
-#include "Vector.hpp"
-
-
+#include "ActionExecutor.hpp"
+#include "actions/action_test.hpp"
+#include "Game.hpp"
+#include "Character.hpp"
 
 int main() {
-	std::unordered_set<Vector<int>> set;
+	Game game;
+	Character character;
 
+	actionNodes::Test test{10, 5};
+	ActionNodeExecutor executor{actionNodes::Test::init(), &test, nullptr};
+	
+	while (1) {
+		printf("[[run]]\n");
+		if (executor.run(game, &character))
+			break;
+	}
 
-	set.insert(Vector<int>{10, 20});
-	set.insert(Vector<int>{10, 20});
-	set.insert(Vector<int>{10, 20});
-
-	printf("%ld\n", set.size());
-
+	
+	printf("Success!\n");
 	return 0;
 	
 }

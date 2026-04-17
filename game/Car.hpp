@@ -23,6 +23,7 @@ private:
 	float publicAcceleration = 0;
 	float realSpeed = 0;
 	float publicSpeed = 0;
+	Character* driver = nullptr;
 
 
 public:
@@ -53,4 +54,7 @@ public:
 	float getAcceleration() const;
 	float getSpeed() const;
 	Vector<int> getTargetPoint() const;
+
+	bool appendDriver(Character* driver);
+	Character* removeDriver();
 };

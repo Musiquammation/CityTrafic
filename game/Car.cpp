@@ -1,5 +1,6 @@
 #include "Car.hpp"
 
+#include "Character.hpp"
 #include "getDanger.hpp"
 #include "Game.hpp"
 #include "Cell.hpp"
@@ -131,4 +132,28 @@ float Car::getAcceleration() const {
 
 Vector<int> Car::getTargetPoint() const {
 	return this->publicTargetPoint;
+}
+
+
+bool Car::appendDriver(Character* driver) {
+	if (this->driver)
+		return false;
+
+	this->driver = driver;
+
+	
+
+	/// TODO: find path according to driver
+
+
+	return true;
+}
+
+Character* Car::removeDriver() {
+	if (!this->driver)
+		return nullptr;
+
+	Character* driver = this->driver;
+	this->driver = nullptr;
+	return driver;
 }
