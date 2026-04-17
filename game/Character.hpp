@@ -2,13 +2,14 @@
 
 
 enum class CharacterState {
-    WALK,
-    WORK,
-    HOME
+	WALK,
+	BUILDING,
+	DRIVE
 };
 
 class Character {
 public:
-    int x;
-    int y;
+	int x;
+	int y;
+	CharacterState state;
 };

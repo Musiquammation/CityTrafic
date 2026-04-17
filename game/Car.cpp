@@ -141,9 +141,9 @@ bool Car::appendDriver(Character* driver) {
 
 	this->driver = driver;
 
-	
+	driver->state = CharacterState::DRIVE;
 
-	/// TODO: find path according to driver
+	/// TODO: find path according to driver aim
 
 
 	return true;
@@ -155,5 +155,7 @@ Character* Car::removeDriver() {
 
 	Character* driver = this->driver;
 	this->driver = nullptr;
+
+	driver->state = CharacterState::WALK;
 	return driver;
 }

@@ -2,12 +2,15 @@
 
 #include "Map.hpp"
 #include "CarHandler.hpp"
+#include "CharacterHandler.hpp"
+
 #include "declarations.hpp"
 
 class Game {
 private:
     Map map{32,32};
     CarHandler carHandler{};
+    CharacterHandler characterHandler{};
     int frameCount = 0;
     void test();
 
