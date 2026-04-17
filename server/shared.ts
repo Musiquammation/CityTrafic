@@ -153,7 +153,7 @@ class Shared {
 	) {
 		return await this.ask<Uint32Array>(
 			id,
-			'getEntities',
+			'makeEntities',
 			[id, x,y,w,h]
 		);
 	}
