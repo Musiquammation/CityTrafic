@@ -12,6 +12,8 @@ import { MouseHandler } from "./MouseHandler";
 import { askWorker } from "../worker/askWorker";
 import { CommandCode } from "../../../commons/CommandCode";
 import { ActionHandler } from "../action/ActionHandler";
+import { Car } from "./Car";
+import { Character } from "./Character";
 
 
 
@@ -23,7 +25,8 @@ export class PlayState extends GameState {
 	private cameraTimeout = -1;
 	private mouseHandler = new MouseHandler(this);
 	actionHandler = new ActionHandler(this);
-
+	cars: Car[] = [];
+	characters: Character[] = [];
 
 	constructor() {
 		super();

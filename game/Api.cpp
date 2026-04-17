@@ -44,7 +44,7 @@ void* Api::makeEntities(
 
 
 	uint32_t fullSize = sizeof(uint32_t) *
-		(carsCount*4 + charactersCount*2 + 3);
+		(carsCount*5 + charactersCount*2 + 3);
 
 	uint32_t* const buffer = (uint32_t*)malloc(fullSize);
 
@@ -60,10 +60,14 @@ void* Api::makeEntities(
 			&& car->y >= y && car->y < y+h
 		) {
 			float speed = car->getSpeed();
+			uint32_t flag = (uint32_t)car->state |
+				((uint32_t)car->direction << 8);
+
 			*ptr++ = car->x;
 			*ptr++ = car->y;
 			*ptr++ = *(uint32_t*)&car->step;
 			*ptr++ = *(uint32_t*)&speed;
+			*ptr++ = flag;
 		}
 	}
 
