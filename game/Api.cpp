@@ -282,7 +282,7 @@ void* Api::take(int id, int datacode, void* args) {
 				return nullptr;
 				
 			Cell* cell = s.game.getEditCell(x, y);
-			cell->setType(CellType::ROAD);
+			cell->setType(CellType::ROAD, s.game);
 			return nullptr;
 		}
 	

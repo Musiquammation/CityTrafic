@@ -1,4 +1,5 @@
 #include "Cell.hpp"
+#include "Game.hpp"
 
 void Cell::setCarOn() {
 	this->data |= 1 << 15;
@@ -24,6 +25,25 @@ CellType Cell::getType() const {
 	return (CellType)type;
 }
 
-void Cell::setType(CellType type) {
-	this->data = (this->data & 0xf0) | ((int)type & 0x0f);
+
+void Cell::setType(CellType type, Game& game, cell_t arg) {
+	cell_t current = this->data;
+	cell_t result;
+
+	switch ((CellType)(current & 0x0f)) {
+	case CellType::NONE:
+		result = 0;
+		break;
+
+	case CellType::ROAD:
+		result = 0;
+		break;
+
+	default:
+		result = 0;
+		break;
+	}
+
+	this->data = result | ((int)type & 0x0f);
 }
+

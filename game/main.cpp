@@ -41,10 +41,10 @@ int main() {
 	int crossX = 19;
 	int crossY = 6;
 	for (int i = 0; i < 31; i++)
-		game.getEditCell(i, crossY)->setType(CellType::ROAD);
+		game.getEditCell(i, crossY)->setType(CellType::ROAD, game);
 
 	for (int i = 0; i < 31; i++)
-		game.getEditCell(crossX, i)->setType(CellType::ROAD);
+		game.getEditCell(crossX, i)->setType(CellType::ROAD, game);
 
 
 	Car* cars[] = {

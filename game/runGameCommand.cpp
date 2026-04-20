@@ -33,7 +33,7 @@ void run_placeSingleRoad(Game& game, const void* args) {
 		return;
 
 	Cell* cell = game.getEditCell(x,y);
-	cell->setType(CellType::ROAD);
+	cell->setType(CellType::ROAD, game);
 }
 
 
