@@ -11,10 +11,30 @@ import { Buffer } from "buffer";
 
 
 
+function getChunkBounds(
+	x: number, y: number,
+	w: number, h: number
+) {
+	const bx = Math.floor(x / Chunk.SIZE)*Chunk.SIZE;
+	const by = Math.floor(y / Chunk.SIZE)*Chunk.SIZE;
+	const lx = Math.floor((x+w + (Chunk.SIZE-1)) / Chunk.SIZE);
+	const ly = Math.floor((y+h + (Chunk.SIZE-1)) / Chunk.SIZE);
+
+
+	return {
+		x: bx,
+		y: by,
+		w: lx*Chunk.SIZE - bx,
+		h: ly*Chunk.SIZE - by,
+	};
+
+}
+
 export class ClientApi {
 	private module: any = null;
 	private apiPtr: number = 0;
 	private map = new MapHandler();
+	private cameraTimeout = -1;
 
 	async init(wasmPath: string) {
 		this.module = await createModule({
@@ -46,6 +66,10 @@ export class ClientApi {
 
 		this.apiPtr = 0;
 		this.module = null;
+
+		if (this.cameraTimeout >= 0)
+			clearTimeout(this.cameraTimeout);
+
 	}
 
 	freeBuffer() {
@@ -113,23 +137,18 @@ export class ClientApi {
 		this.module._free(ptr);
 	}
 
-	updateCells(viewX: number, viewY: number) {
-		const baseCX = Math.floor(viewX / Chunk.SIZE);
-		const baseCY = Math.floor(viewY / Chunk.SIZE);
-
-		// 3x3 chunk area
-		const bx = (baseCX - 1) * Chunk.SIZE;
-		const by = (baseCY - 1) * Chunk.SIZE;
-		const bw = 3 * Chunk.SIZE;
-		const bh = 3 * Chunk.SIZE;
+	updateCells(viewX: number, viewY: number, viewW: number, viewH: number) {
+		const bounds = getChunkBounds(
+			viewX, viewY, viewW, viewH
+		);
 
 		const argPtr = this.module._malloc(4 * 5);
 		const arg = this.module.HEAPU32.subarray(argPtr >> 2);
 
-		arg[0] = bx;
-		arg[1] = by;
-		arg[2] = bw;
-		arg[3] = bh;
+		arg[0] = bounds.x;
+		arg[1] = bounds.y;
+		arg[2] = bounds.w;
+		arg[3] = bounds.h;
 		arg[4] = 0; // layer=0
 
 		const ptr = this.run(ApiTakeCode.MAKE_MAP_EDITS, argPtr) >> 2;

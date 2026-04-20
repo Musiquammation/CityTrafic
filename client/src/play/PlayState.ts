@@ -24,6 +24,12 @@ export class PlayState extends GameState {
 	private frameCount = 0;
 	private cameraTimeout = -1;
 	private mouseHandler = new MouseHandler(this);
+	private viewBox_x = 0;
+	private viewBox_y = 0;
+	private viewBox_w = 1;
+	private viewBox_h = 1;
+
+
 	actionHandler = new ActionHandler(this);
 	cars: Car[] = [];
 	characters: Character[] = [];
@@ -122,7 +128,12 @@ export class PlayState extends GameState {
 		}
 
 		// Update cells
-		await askWorker<void>('updateCells', [this.camX, this.camY]);
+		await askWorker<void>('updateCells', [
+			this.viewBox_x,
+			this.viewBox_y,
+			this.viewBox_w,
+			this.viewBox_h
+		]);
 		
 		// Draw game
 		args.followCamera();
@@ -147,17 +158,14 @@ export class PlayState extends GameState {
 
 
 	sendCameraUpdate() {
-		const EXPAND = 1.1;
 		const writer = new DataWriter();
 		writer.writeUint8(SERVER_IDS.LISTEN);
 
-		const width = EXPAND*GAME_WIDTH/this.camZ;
-		const height = EXPAND*GAME_HEIGHT/this.camZ;
-		
-		writer.writeUint32(Math.floor(this.camX - width/2));
-		writer.writeUint32(Math.floor(this.camY - height/2));
-		writer.writeUint32(Math.floor(width));
-		writer.writeUint32(Math.floor(height));
+		writer.writeInt32(this.viewBox_x);
+		writer.writeInt32(this.viewBox_y);
+		writer.writeInt32(this.viewBox_w);
+		writer.writeInt32(this.viewBox_h);
+
 
 		sendSocket(writer.toArrayBuffer());
 	}
@@ -166,6 +174,19 @@ export class PlayState extends GameState {
 		this.camX = x;
 		this.camY = y;
 		this.camZ = z;
+
+
+		const EXPAND = 1.1;
+
+
+		const width = EXPAND*GAME_WIDTH/this.camZ;
+		const height = EXPAND*GAME_HEIGHT/this.camZ;
+
+		this.viewBox_x = Math.floor(this.camX - width/2);
+		this.viewBox_y = Math.floor(this.camY - height/2);
+		this.viewBox_w = Math.floor(width);
+		this.viewBox_h = Math.floor(height);
+
 
 		if (this.cameraTimeout < 0) {
 			this.cameraTimeout = setTimeout(() => {

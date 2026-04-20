@@ -57,7 +57,6 @@ export function sendCommand(
 	command: CommandCode,
 	fill: (writer: DataWriter) => void
 ) {
-	console.log(command);
 	const writer = new DataWriter();
 	writer.writeUint16(0); // 32bit padding
 	writer.writeUint16(command);

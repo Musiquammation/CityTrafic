@@ -6,6 +6,7 @@
 #include <stdio.h>
 #include "utils/mfor.hpp"
 
+#include <set>
 #include <unordered_map>
 
 const Cell _outCellBuffer = {.data = 0};
@@ -87,7 +88,7 @@ uint32_t* Map::collectEditedCells(
 	struct Region {
 		int32_t x;
 		int32_t y;
-		std::vector<uint32_t> cells;
+		std::set<uint32_t> cells;
 	};
 
 	auto& edited = this->editedCells[layer];
@@ -99,8 +100,7 @@ uint32_t* Map::collectEditedCells(
 	};
 
 	for (const auto& pos : edited) {
-		if (!(pos.x >= x && pos.x < x + width &&
-			pos.y >= y && pos.y < y + height))
+		if (pos.x < x || pos.y < y || pos.x > x+width || pos.y > y+height)
 			continue;
 
 		// Origin
@@ -124,7 +124,7 @@ uint32_t* Map::collectEditedCells(
 			(uint32_t(dy) << 16) |
 			uint32_t(data);
 
-		region.cells.push_back(packed);
+		region.cells.insert(packed);
 	}
 
 	// Get size
