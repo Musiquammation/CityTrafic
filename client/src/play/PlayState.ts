@@ -14,6 +14,8 @@ import { CommandCode } from "../../../commons/CommandCode";
 import { ActionHandler } from "../action/ActionHandler";
 import { Car } from "./Car";
 import { Character } from "./Character";
+import { drawCar } from "./drawCar";
+import { drawCharacter } from "./drawCharacter";
 
 
 
@@ -118,6 +120,25 @@ export class PlayState extends GameState {
 		}
 	}
 
+	private drawCars(ctx: OffscreenCanvasRenderingContext2D) {
+		for (const car of this.cars) {
+			ctx.save();
+			ctx.translate(car.x, car.y);
+			drawCar(car, ctx);
+			ctx.restore();
+		}
+	}
+
+	private drawCharacters(ctx: OffscreenCanvasRenderingContext2D) {
+		for (const character of this.characters) {
+			ctx.save();
+			ctx.translate(character.x, character.y);
+			drawCharacter(character, ctx);
+			ctx.restore();
+		}
+	}
+
+
 	async draw(args: DrawStateData) {
 		const ctx = args.ctx;
 
@@ -135,9 +156,12 @@ export class PlayState extends GameState {
 			this.viewBox_h
 		]);
 		
+
 		// Draw game
 		args.followCamera();
 		await this.drawGrid(args.ctx);
+		this.drawCharacters(args.ctx);
+		this.drawCars(args.ctx);
 		args.unfollowCamera();
 		
 
