@@ -1,7 +1,7 @@
 #include <iostream>
 
 
-#define MAIN_TEST_ID 1
+#define MAIN_TEST_ID 0
 
 
 
@@ -39,7 +39,7 @@ int main() {
 	Game game{};
 
 	int crossX = 19;
-	int crossY = 5;
+	int crossY = 6;
 	for (int i = 0; i < 31; i++)
 		game.getEditCell(i, crossY)->setType(CellType::ROAD);
 
@@ -48,19 +48,17 @@ int main() {
 
 
 	Car* cars[] = {
-		// game.spawnCar(0, crossY, Direction::RIGHT),
-		// game.spawnCar(1, crossY, Direction::RIGHT),
-		// game.spawnCar(2, crossY, Direction::RIGHT),
+		game.spawnCar(1, crossY, Direction::RIGHT),
 
+
+		game.spawnCar(crossX, 20, Direction::UP),
+		game.spawnCar(crossX, 21, Direction::UP),
+		game.spawnCar(crossX, 22, Direction::UP),
 		game.spawnCar(crossX, 23, Direction::UP),
 		game.spawnCar(crossX, 24, Direction::UP),
 		game.spawnCar(crossX, 25, Direction::UP),
 		game.spawnCar(crossX, 26, Direction::UP),
-		game.spawnCar(crossX, 27, Direction::UP),
-		game.spawnCar(crossX, 28, Direction::UP),
-		game.spawnCar(crossX, 29, Direction::UP),
-		game.spawnCar(crossX, 30, Direction::UP),
-		
+		game.spawnCar(crossX, 27, Direction::UP)
 	};
 
 	for (int i = 0; i < (int)(sizeof(cars) / sizeof(cars[0])); i++) {
@@ -97,6 +95,12 @@ int main() {
 
 		fprintf(debugFile, "FRAME:LOGS(%d)\n", frame);
 		
+		for (int i  = 0; i < (int)(sizeof(cars) / sizeof(cars[0])); i++) {
+			Car* car = cars[i];
+			debugLog("data [%d] y: %.2f, v: %.2f, a: %.3f\n", i,
+			(float)car->y + car->step, car->getSpeed(), car->getAcceleration());
+		}
+
 		try {
 			game.frame();
 		} catch (const std::exception& error) {

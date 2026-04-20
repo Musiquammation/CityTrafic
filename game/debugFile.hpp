@@ -4,6 +4,6 @@
 extern FILE* debugFile;
 
 
-// #define debugLog(fmt, ...) fprintf(debugFile, fmt, ##__VA_ARGS__)
+#define debugLog(fmt, ...) fprintf(debugFile, fmt, ##__VA_ARGS__)
 // #define debugLog(fmt, ...) printf(fmt, ##__VA_ARGS__)
-#define debugLog(fmt, ...) {};
+// #define debugLog(fmt, ...) {};

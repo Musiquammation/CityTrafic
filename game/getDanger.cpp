@@ -18,12 +18,22 @@
 
 static constexpr float INFINITY_F = std::numeric_limits<float>::infinity();
 
+/**
+ * @param inf Value returned if acceleration is not at stake
+ */
 float computeAcceleration(
 	float vx0, float vy0,
 	float a_y,
 	float vx_max, float vy_max,
-	float X, float Y
+	float X, float Y, float inf
 ) {
+	// Handle already inside cases
+	if (X<0 && Y<0)
+		return -inf; // stop
+
+	if (X<0)
+		return inf; // accelerate
+
 	// Helper: compute y(t) saturation parameters
 	float t_star;
 	float Vysat;
@@ -56,41 +66,57 @@ float computeAcceleration(
 		}
 
 	} else if (a_y == 0.0f) {
-		if (vy0 <= 0.0f) return INFINITY_F;
+		if (vy0 <= 0.0f) return inf;
 		T = Y / vy0;
 
 	} else { // a_y < 0
-		float discriminant = vy0 * vy0 - 2.0f * a_y * Y;
-		if (discriminant < 0.0f) return INFINITY_F;
+		float discriminant = vy0 * vy0 + 2.0f * a_y * Y;
+		if (discriminant < 0.0f) return inf;
 
-		float T_before = (-vy0 - std::sqrt(discriminant)) / a_y;
+		float T_before = (-vy0 + std::sqrt(discriminant)) / a_y;
 
 		if (T_before <= t_star) {
 			T = T_before;
 		} else {
 			float y_max = vy0 * t_star + 0.5f * a_y * t_star * t_star;
-			if (Y > y_max) return INFINITY_F;
+			if (Y > y_max) return inf;
 			T = t_star;
 		}
 	}
 
 	// Avoid division by zero
-	if (T <= 0.0f) return INFINITY_F;
+	if (T <= 0.0f) return inf;
+
 
 	// Compute candidate a_x without x saturation
-	float a_x_no_sat = 2.0f * (X - vx0 * T) / (T * T);
+	float a_x_noSat = 2.0f * (X - vx0 * T) / (T * T);
+	debugLog("axNoSat %.3f\n", a_x_noSat);
 
-	if (a_x_no_sat > 0.0f) {
-		if (vx0 + a_x_no_sat * T > vx_max) {
-			return 0.5f * vx_max * vx_max - vx0 * vx0 / X;
+
+	if (a_x_noSat > 0.0f) {
+		
+		// Fix saturation
+		if (vx0 + a_x_noSat * T > vx_max) {
+			float maxDist = vx_max*T - X;
+
+			// Check if even instantly at maxSpeed,
+			// we can't pass at time (car too slow)
+			if (maxDist <= 0) {
+				return +INFINITY_F;
+			}
+
+			float n = vx_max - vx0;
+			return 0.5f * n*n / maxDist;
 		}
-	} else if (a_x_no_sat < 0.0f) {
-		if (vx0 + a_x_no_sat * T < 0.0f) {
-			return -0.5f * vx0 * vx0 / X;
+
+	} else if (a_x_noSat < 0.0f) {
+		// Fix saturation
+		if (vx0 + a_x_noSat * T < 0.0f) {
+			return -vx0/T;
 		}
 	}
 
-	return a_x_no_sat;
+	return a_x_noSat;
 }
 
 struct Spy {
@@ -232,92 +258,81 @@ int fillGraph(
 }
 
 
-float getNodeAcc(
+typedef struct {
+	float slow;
+	float fast;
+} NodeAcc;
+
+NodeAcc getNodeAcc(
 	const Car* car,
 	float maxAcceleration,
 	std::vector<PriorityNode>& priorities,
 	PriorityNode* node
 ) {
+	const Car* other = node->car;
 	float carEntryDist = (float)node->frontDist - car->step +
-		(1.0f + (1.0f-Car::HEIGHT)/2 - Car::WIDTH/2);
+		(1 - Car::WIDTH/2);
 
-	float carExitDist = carEntryDist + Car::HEIGHT;
+	float carExitDist = (float)node->frontDist - car->step + 2 + (Car::WIDTH/2);
 
-	float sideEntryDist = (float)node->sideDist +
-		(Car::HEIGHT + Car::WIDTH)/2 - car->step;
+	float sideEntryDist = (float)node->sideDist - other->step +
+		(1 - Car::WIDTH/2);
 
-	float sideExitDist = sideEntryDist + 1 + (Car::WIDTH - Car::HEIGHT)/2;
+	float sideExitDist = (float)node->sideDist - other->step + 2 + Car::WIDTH/2;
 
+
+	debugLog("carEntryDist=%.3f ; carExitDist=%.3f sideEntryDist=%.3f sideExitDist=%.3f\n",
+		carEntryDist, carExitDist, sideEntryDist, sideExitDist);
+
+
+	debugLog("fastAcc:\n");
 	float fastAcc = computeAcceleration(
-		car->getSpeed(), node->car->getSpeed(),
-		node->car->getAcceleration(),
-		car->speedLimit, node->car->speedLimit,
-		carExitDist, sideEntryDist
+		car->getSpeed(), other->getSpeed(),
+		other->getAcceleration(),
+		car->speedLimit, other->speedLimit,
+		carExitDist, sideEntryDist, -INFINITY_F
 	);
-
-	if (fastAcc == INFINITY_F)
-		fastAcc = -INFINITY_F;
+	
+	
 
 	
+	debugLog("slowAcc:\n");
 	// Needs to wait the car with the priority
 	float slowAcc = computeAcceleration(
-		car->getSpeed(), node->car->getSpeed(),
-		node->car->getAcceleration(),
-		car->speedLimit, node->car->speedLimit,
-		carEntryDist, sideExitDist
-	);
-
-	debugLog("%.3f %.3f ; %.3f %.3f ; %.3f %.3f\n",
-		slowAcc, fastAcc,
-		car->getAcceleration(), node->car->getAcceleration(),
-		carEntryDist, sideExitDist
+		car->getSpeed(), other->getSpeed(),
+		other->getAcceleration(),
+		car->speedLimit, other->speedLimit,
+		carEntryDist, sideExitDist, INFINITY_F
 	);
 
 
-	// if (slowAcc == INFINITY_F) // is this case even possible?
-		// slowAcc = maxAcceleration;
 
-
-	// Pass BEFORE the car (so try to use fastAcc)
-	if (fastAcc <= maxAcceleration) {
-		float min = maxAcceleration;
-		for(int* cptr = node->children; true; cptr++) {
-			int c = *cptr;
-			if (c < 0)
-				break;
-
-			float acc = getNodeAcc(car, maxAcceleration,
-				priorities, &priorities[c]);
-
-			if (acc < min)
-				min = acc;
-		}
-
-		if (min < fastAcc) {
-			// Needs to wait a car, so acceleration is reduced
-			// Let's make shure our slowAcc is verified
-			if (min > slowAcc)
-				min = slowAcc;
-		}
-
-		return min;
-	}
+	if (slowAcc == INFINITY_F) // is this case even possible?
+		slowAcc = maxAcceleration;
 	
-	// Wait for the car and its children
-	
-	float min = slowAcc;
+
+	// Check for the car and its children
+	NodeAcc bounds = {.slow = slowAcc, .fast = fastAcc};
 	for(int* cptr = node->children; true; cptr++) {
 		int c = *cptr;
 		if (c < 0)
 			break;
-		float acc = getNodeAcc(car, maxAcceleration,
+
+		NodeAcc acc = getNodeAcc(car, maxAcceleration,
 			priorities, &priorities[c]);
 
-		if (acc < min)
-			min = acc;
+
+		if (acc.slow < bounds.slow)
+			bounds.slow = acc.slow;
+
+		if (acc.fast > bounds.fast)
+			bounds.fast = acc.fast;
 	}
 
-	return slowAcc;
+
+	
+	debugLog("bounds %.3f %.3f\n", bounds.slow, bounds.fast);
+	return bounds;
 }
 
 
@@ -342,9 +357,8 @@ getDanger_t getDanger(
 
 	const auto appendStopDist = [
 		carSpeed, carSpeed2, &targetPoint,
-		speedLimit, &maxAcceleration
+		speedLimit, &maxAcceleration, car
 	](float dist, float deceleration, Vector<int> targetPt) {
-
 		#define stopDist ((.5f/deceleration) * carSpeed2)
 		// Slow down
 		if (dist <= 0) {
@@ -428,10 +442,12 @@ getDanger_t getDanger(
 				stopDist = (float)dist + shrinkedStep - car->step - Car::WIDTH/2;
 
 			} else if (otherDirection == spyOpposedDir) {
+				throw std::runtime_error{"TODO: otherDirection == spyOpposedDir"};
+				stopDist = 10e6f;
+
+			} else { // Side direction
 				stopDist = (float)dist - car->step + (
 					(1-Car::HEIGHT)/2 - Car::WIDTH/2);
-			} else { // Side direction
-				stopDist = 10e6f;
 				
 			}
 
@@ -530,11 +546,19 @@ getDanger_t getDanger(
 
 	finishUpdate:
 
+	float finalAcc;
+
 	// Get priority acceleration
 	if (firstNodeIdx >= 0) {
-		maxAcceleration = getNodeAcc(car, maxAcceleration,
+		NodeAcc bounds = getNodeAcc(car, maxAcceleration,
 			priorities, &priorities[firstNodeIdx]);
 
+		finalAcc = bounds.fast > maxAcceleration ?
+			bounds.slow :
+			maxAcceleration;
+
+	} else {
+		finalAcc = maxAcceleration;
 	}
 
 
@@ -545,7 +569,7 @@ getDanger_t getDanger(
 	priorities.clear();
 
 	return {
-		maxAcceleration,
+		finalAcc,
 		targetPoint
 	};
 }

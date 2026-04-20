@@ -27,7 +27,6 @@ private:
 
 
 public:
-	static constexpr float MAX_DECELERATION = .03f;
 	static constexpr float SOFT_DECELERATION = .002f;
 	static constexpr float FRONT_DECELERATION = .009f;
 	static constexpr float MAX_ACCELERATION = .02f;

@@ -1,5 +1,6 @@
 #include "Car.hpp"
 
+
 #include "Character.hpp"
 #include "getDanger.hpp"
 #include "Game.hpp"
@@ -17,6 +18,7 @@ Car::Car(int x, int y, Direction direction)
 
 void Car::update(Game* game, std::vector<PriorityNode>& prioritiesBuffer) {
 	auto danger = getDanger(this, game, prioritiesBuffer);
+
 
 	this->realTargetPoint = danger.targetPoint;
 
@@ -37,8 +39,7 @@ void Car::update(Game* game, std::vector<PriorityNode>& prioritiesBuffer) {
 
 void Car::move() {
 	// Make members public
-	this->publicAcceleration = this->realSpeed -
-		this->publicSpeed; // newSpeed - oldSpeed
+	this->publicAcceleration = this->realSpeed - this->publicSpeed; // newSpeed - oldSpeed
 	this->publicSpeed = this->realSpeed;
 	this->publicTargetPoint = this->realTargetPoint;
 	
@@ -64,9 +65,6 @@ void Car::move() {
 		this->x += Direction_getVector(this->direction).x;
 		this->y += Direction_getVector(this->direction).y;
 	}
-
-	debugLog("[%p] y: %.2f, v: %.2f\n", this,
-		 (float)this->y + this->step, this->realSpeed);
 }
 
 Vector<float> Car::calcPosition() const {
