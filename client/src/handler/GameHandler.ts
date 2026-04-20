@@ -59,6 +59,10 @@ export class GameHandler {
 		this.nextState = state;
 	}
 
+	getState() {
+		return this.state;
+	}
+
 	gameLogic() {
 		this.inputHandler.update();
 

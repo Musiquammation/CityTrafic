@@ -32,6 +32,7 @@ enum class ApiTakeCode {
 	GAME_COMMAND,
 
 	MAKE_ENTITIES,
+	READ_ENTITIES
 };
 
 
@@ -52,6 +53,8 @@ class Api {
 
 	static void* makeEntities(Game& game,
 		int x, int y, int w, int h);
+
+	static void readEntities(Game& game, void* args);
 
 
 public:

@@ -262,12 +262,14 @@ export class Client {
 		if (!this.match)
 			throw new Error("No match to listen");
 
-		const x = reader.readInt32();
-		const y = reader.readInt32();
-		const w = reader.readInt32();
-		const h = reader.readInt32();
 
-		const array = await shared.getEntities(this.match.id, x, y, w, h);
+		const array = await shared.getEntities(
+			this.match.id,
+			this.viewX,
+			this.viewY,
+			this.viewW,
+			this.viewH	
+		);
 
 		const writer = new DataWriter();
 		writer.writeUint8(CLIENT_IDS.GET_ENTITIES);

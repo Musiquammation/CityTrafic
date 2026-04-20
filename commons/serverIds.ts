@@ -28,11 +28,7 @@ export enum SERVER_IDS {
 	GAME_COMMANDS,
 
 	/**
-	 * +00: x
-	 * +04: y
-	 * +08: w
-	 * +12: h
-	 * +16
+	 * No args
 	 */
 	GET_ENTITIES,
 

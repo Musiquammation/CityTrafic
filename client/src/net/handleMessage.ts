@@ -1,11 +1,13 @@
 import { CLIENT_IDS } from "../../../commons/clientIds";
 import { DataReader } from "../../../commons/DataReader";
 import { DataWriter } from "../../../commons/DataWriter";
+import { SERVER_IDS } from "../../../commons/serverIds";
 import { getGameHandler } from "../gameHandler"
 import { Car } from "../play/Car";
 import { Character } from "../play/Character";
 import { PlayState } from "../play/PlayState";
-import { postWorker } from "../worker/askWorker";
+import { askWorker, postWorker } from "../worker/askWorker";
+import { sendSocket } from "./sendSocket";
 
 let REGION_SIZE = 1;
 
@@ -58,15 +60,22 @@ function net_edits(reader: DataReader) {
 
 
 let lastEntityAsk = -Infinity;
-const ENTITY_ASK_COULDOWN = 20;
+const ENTITY_ASK_COULDOWN = 1000;
 
-function sendAskEntities() {
 
-}
+async function net_getEntities(reader: DataReader) {
+	reader.readUint8();  //  i8 padding
+	reader.readUint16(); // i32 padding
 
-function net_getEntities(reader: DataReader) {
 	/// TODO: read entities
-	reader.readUint32(); // msg size (skipped)
+	const msgSize = reader.readUint32(); // msg size
+
+	const prevOffset = reader.getOffset();
+	const buffer = reader.readUint8Array(msgSize);
+
+	await askWorker('readEntities', [buffer], [buffer.buffer]);
+
+	reader.setOffset(prevOffset);
 
 	// Read cars
 	const carsCount = reader.readUint32();
@@ -93,16 +102,32 @@ function net_getEntities(reader: DataReader) {
 		characters[i] = {x,y};
 	}
 
+
+	const state = getGameHandler().getState();
+	if (!(state instanceof PlayState))
+		return;
+
+
+	state.cars = cars;
+	state.characters = characters;
+
 	const now = Date.now();
 	const delta = now - lastEntityAsk;
 
-	if (delta < ENTITY_ASK_COULDOWN) {
-		sendAskEntities();
+	if (delta >= ENTITY_ASK_COULDOWN) {
+		lastEntityAsk = now;
+		state.sendAskEntities();
 	} else {
-		setTimeout(sendAskEntities, ENTITY_ASK_COULDOWN-delta);
+		const couldown = isFinite(lastEntityAsk) ?
+			ENTITY_ASK_COULDOWN-delta:
+			ENTITY_ASK_COULDOWN;
+
+		setTimeout(() => {
+			lastEntityAsk = Date.now();
+			state.sendAskEntities();
+		}, couldown);
 	}
 
-	return null;
 }
 
 
@@ -124,7 +149,8 @@ export function handleMessage(reader: DataReader): DataWriter | null {
 		return net_edits(reader);
 
 	case CLIENT_IDS.GET_ENTITIES:
-		return net_getEntities(reader);
+		net_getEntities(reader);
+		return null;
 		
 	default:
 		throw new Error("Unknown action " + action);

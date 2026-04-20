@@ -263,12 +263,25 @@ export class ClientApi {
 		this.module._free(argPtr);
 	}
 
+
 	performGameCommand(data: ArrayBuffer) {
 		const argPtr = this.module._malloc(data.byteLength);
 
 		this.module.HEAPU32.set(new Uint32Array(data), argPtr>>2);
 
 		this.run(ApiTakeCode.GAME_COMMAND, argPtr);
+		this.module._free(argPtr);
+	}
+
+	readEntities(array: Uint8Array) {
+		// Copy array
+		const argPtr = this.module._malloc(array.length);
+		this.module.HEAPU8.set(array, argPtr);
+		
+		// Apply edits
+		this.run(ApiTakeCode.READ_ENTITIES, argPtr);
+
+		// Free argPtr
 		this.module._free(argPtr);
 	}
 }

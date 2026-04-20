@@ -22,4 +22,5 @@ export enum ApiTakeCode {
 	GAME_COMMAND,
 
 	MAKE_ENTITIES,
+	READ_ENTITIES
 };

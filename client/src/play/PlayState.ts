@@ -34,6 +34,7 @@ export class PlayState extends GameState {
 
 
 
+	
 	enter(data: any, input: InputHandler): void {
 		document.getElementById("gameView")?.classList.remove("hidden");
 
@@ -48,6 +49,7 @@ export class PlayState extends GameState {
 
 		// Send request to load area
 		this.updateCamera(this.camX, this.camY, this.camZ);
+		this.sendAskEntities();
 
 		(window as any).playState = this;
 
@@ -185,5 +187,11 @@ export class PlayState extends GameState {
         buffer.writeInt32(x);
         buffer.writeInt32(y);
         sendSocket(buffer.toArrayBuffer());
+	}
+
+	sendAskEntities() {
+		const writer = new DataWriter();
+		writer.writeUint8(SERVER_IDS.GET_ENTITIES);
+		sendSocket(writer.toArrayBuffer());
 	}
 }

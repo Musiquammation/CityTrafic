@@ -50,7 +50,7 @@ void* Api::makeEntities(
 
 	uint32_t* ptr = buffer;
 	
-	*ptr = fullSize;
+	*ptr++ = fullSize;
 
 	// Send cars
 	*ptr++ = carsCount;
@@ -88,7 +88,39 @@ void* Api::makeEntities(
 }
 
 
+void Api::readEntities(Game& game, void* args) {
+	uint32_t* ptr = (uint32_t*)args;
 
+	game.map.resetCarMarks();
+	game.carHandler.cars.clear();
+
+	uint32_t carsCount = *ptr++;
+
+	for (uint32_t i = 0; i < carsCount; i++) {
+		int x = (int)(*ptr++);
+		int y = (int)(*ptr++);
+		float step = *(float*)(ptr++);
+		float speed = *(float*)(ptr++);
+		uint32_t flag = *ptr++;
+		Direction direction = (Direction)(flag >> 8);
+		CarState state = (CarState)(flag & 0xff);
+
+		Car* car = game.spawnCar(x, y, direction);
+		car->step = step;
+		car->state = state;
+		car->realSpeed = speed;
+		car->publicSpeed = speed;
+	}
+
+	uint32_t charactersCount = *ptr++;
+	for (uint32_t i = 0; i < charactersCount; i++) {
+		float x = *(float*)(ptr++);
+		float y = *(float*)(ptr++);
+
+		Character* character = new Character{x, y, CharacterState::WALK};
+		game.characterHandler.characters.push_back(character);
+	}
+}
 
 
 
@@ -292,6 +324,13 @@ void* Api::take(int id, int datacode, void* args) {
 
 			this->buffer = buffer;
 			return buffer;
+		}
+
+		case ApiTakeCode::READ_ENTITIES:
+		{
+			ApiGame& s = this->games[id];
+			Api::readEntities(s.game, args);
+			return nullptr;
 		}
 	
 	

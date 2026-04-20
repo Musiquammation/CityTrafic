@@ -25,6 +25,7 @@ private:
 	float publicSpeed = 0;
 	Character* driver = nullptr;
 
+	friend class Api;
 
 public:
 	static constexpr float SOFT_DECELERATION = .002f;
