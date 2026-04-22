@@ -2,6 +2,7 @@
 
 #include "Car.hpp"
 #include "Cell.hpp"
+#include "Map.hpp"
 
 #include <stdio.h>
 

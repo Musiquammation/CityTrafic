@@ -1,22 +1,23 @@
 #include <iostream>
 
+#ifndef COMPILE_SERVER
 
 #define MAIN_TEST_ID 0
 
 
 
 struct RedCerr {
-    template<typename T>
-    RedCerr& operator<<(const T& value) {
-        std::cerr << "\033[31m" << value << "\033[0m";
-        return *this;
-    }
+	template<typename T>
+	RedCerr& operator<<(const T& value) {
+		std::cerr << "\033[31m" << value << "\033[0m";
+		return *this;
+	}
 
-    // Pour std::endl et manipulators
-    RedCerr& operator<<(std::ostream& (*manip)(std::ostream&)) {
-        std::cerr << manip;
-        return *this;
-    }
+	// Pour std::endl et manipulators
+	RedCerr& operator<<(std::ostream& (*manip)(std::ostream&)) {
+		std::cerr << manip;
+		return *this;
+	}
 };
 
 RedCerr rcerr;
@@ -150,4 +151,5 @@ int main() {
 }
 
 
+#endif
 #endif

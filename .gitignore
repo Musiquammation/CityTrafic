@@ -1,8 +1,9 @@
 draft
-game-bin
+bin
 node_modules
-.env
 client/dist
 client/wasm
 server/wasm
 .vscode
+uWebSockets
+ts-server

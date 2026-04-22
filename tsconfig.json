@@ -9,5 +9,5 @@
 		"outDir": "client/dist",
 		"types": ["node"]
 	},
-	"include": ["server", "commons"]
+	"include": ["ts-server", "commons"]
 }

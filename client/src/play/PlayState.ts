@@ -184,6 +184,7 @@ export class PlayState extends GameState {
 	sendCameraUpdate() {
 		const writer = new DataWriter();
 		writer.writeUint8(SERVER_IDS.LISTEN);
+		writer.skip(3);
 
 		writer.writeInt32(this.viewBox_x);
 		writer.writeInt32(this.viewBox_y);

@@ -6,6 +6,10 @@ export class DataReader {
 		this.view = new DataView(buffer);
 	}
 
+	skip(n: number) {
+		this.offset += n;
+	}
+
 	readInt8(): number {
 		const val = this.view.getInt8(this.offset);
 		this.offset += 1;

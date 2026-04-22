@@ -252,3 +252,14 @@ bool Map::checkBounds(int x, int y, int width, int height) const {
 		y >= this->y && y + height <= this->y + this->height);
 }
 
+
+
+void Map::copyCells(Cell* dst, int x, int y, int w, int h) const {
+	for (int i  = 0; i < h; i++) {
+		std::memcpy(
+			dst + i * w,
+			this->cells + (y + i - this->y) * this->width + (x - this->x),
+			sizeof(Cell) * w
+		);
+	}
+}

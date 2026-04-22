@@ -56,6 +56,7 @@ export class HomeState extends GameState {
 	createSession() {
 		const writer = new DataWriter();
 		writer.writeUint8(SERVER_IDS.CONNECT);
+		writer.skip(7);
 		writer.write256("0000000000000000");
 		sendSocket(writer.toArrayBuffer());
 	}
@@ -63,6 +64,7 @@ export class HomeState extends GameState {
 	joinSession(code: string) {
 		const writer = new DataWriter();
 		writer.writeUint8(SERVER_IDS.CONNECT);
+		writer.skip(7);
 		writer.write256(code);
 		sendSocket(writer.toArrayBuffer());
 	}

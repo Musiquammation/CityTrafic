@@ -1,18 +1,18 @@
 import { CLIENT_IDS } from "../../../commons/clientIds";
 import { DataReader } from "../../../commons/DataReader";
 import { DataWriter } from "../../../commons/DataWriter";
-import { SERVER_IDS } from "../../../commons/serverIds";
 import { getGameHandler } from "../gameHandler"
 import { Car } from "../play/Car";
 import { Character } from "../play/Character";
 import { PlayState } from "../play/PlayState";
 import { askWorker, postWorker } from "../worker/askWorker";
-import { sendSocket } from "./sendSocket";
 
 let REGION_SIZE = 1;
 
 function net_joinCreated(reader: DataReader) {
+	reader.skip(3);
 	REGION_SIZE = reader.readUint32();
+	reader.skip(4);
 	const hash = reader.read256();
 	console.log(hash);
 
@@ -21,7 +21,9 @@ function net_joinCreated(reader: DataReader) {
 }
 
 function net_joinAlive(reader: DataReader) {
+	reader.skip(3);
 	REGION_SIZE = reader.readUint32();
+	reader.skip(4);
 	const hash = reader.read256();
 	console.log(hash);
 
@@ -30,7 +32,7 @@ function net_joinAlive(reader: DataReader) {
 }
 
 function net_areas(reader: DataReader) {
-	reader.readUint8(); // for 16bits padding
+	reader.skip(3);
 	const areasCount = reader.readInt32();
 
 	for (let count = 0; count < areasCount; count++) {
@@ -64,8 +66,7 @@ const ENTITY_ASK_COULDOWN = 1000;
 
 
 async function net_getEntities(reader: DataReader) {
-	reader.readUint8();  //  i8 padding
-	reader.readUint16(); // i32 padding
+	reader.skip(3);
 
 	/// TODO: read entities
 	const msgSize = reader.readUint32(); // msg size

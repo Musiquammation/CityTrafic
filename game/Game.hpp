@@ -16,6 +16,7 @@ private:
 
 public:
     friend class Api;
+    friend class Server;
     friend int main();
 
 

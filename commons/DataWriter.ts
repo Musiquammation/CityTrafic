@@ -8,6 +8,10 @@ export class DataWriter {
 		this.view = new DataView(this.buffer);
 	}
 
+	skip(n: number) {
+		this.offset += n;
+	}
+
 	checkSize(required: number) {
 		const needed = this.offset + required;
 

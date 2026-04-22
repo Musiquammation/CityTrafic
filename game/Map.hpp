@@ -64,6 +64,8 @@ public:
     void removeEditedCellsLayer(int layer);
 
     bool checkBounds(int x, int y, int width, int height) const;
+
+    void copyCells(Cell* dst, int x, int y, int w, int h) const;
 };
 
 
