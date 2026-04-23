@@ -2,7 +2,7 @@ import createModule from "../../wasm/api.js"
 
 import { Rectangle } from "../tools/Rectangle";
 
-import { ApiTakeCode } from "../../../commons/ApiTakeCode"
+import { ApiTakeCode } from "../shared/ApiTakeCode.ts"
 import { Chunk } from "./Chunk";
 import { MapHandler } from "./MapHandler.ts"
 
@@ -286,7 +286,7 @@ export class ClientApi {
 	performGameCommand(data: ArrayBuffer) {
 		const argPtr = this.module._malloc(data.byteLength);
 
-		this.module.HEAPU32.set(new Uint32Array(data), argPtr>>2);
+		this.module.HEAPU16.set(new Uint16Array(data), argPtr>>1);
 
 		this.run(ApiTakeCode.GAME_COMMAND, argPtr);
 		this.module._free(argPtr);

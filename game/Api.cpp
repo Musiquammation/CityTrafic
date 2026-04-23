@@ -312,8 +312,8 @@ void* Api::take(int id, int datacode, void* args) {
 		case ApiTakeCode::GAME_COMMAND:
 		{
 			ApiGame& s = this->games[id];
-
-			return runGameCommand(s.game, args);
+			runGameCommand(s.game, args);
+			return nullptr;
 		}
 
 		case ApiTakeCode::MAKE_ENTITIES:

@@ -1,11 +1,11 @@
-import { CommandCode } from "../shared/CommandCode";
+import { COMMAND_CODES } from "../shared/CommandCode";
 import { DataWriter } from "../shared/DataWriter";
 import { SERVER_IDS } from "../shared/ServerId";
 import { askWorker, postWorker } from "../worker/askWorker";
 import { sendSocket } from "./sendSocket";
 
 type QueuedCommand = {
-	command: CommandCode;
+	command: COMMAND_CODES;
 	fill: (writer: DataWriter) => void;
 };
 
@@ -34,8 +34,8 @@ function flushQueue() {
 	writer.writeUint8(batchSize);
 
 	for (let i = 0; i < batchSize; i++) {
-		if (i > 0) {
-			writer.writeUint16(0); // for 32bit padding
+		if (i >= 1) {
+			writer.writeUint16(0);
 		}
 
 		const cmd = queue[i];
@@ -54,11 +54,10 @@ function flushQueue() {
 
 
 export function sendCommand(
-	command: CommandCode,
+	command: COMMAND_CODES,
 	fill: (writer: DataWriter) => void
 ) {
 	const writer = new DataWriter();
-	writer.writeUint16(0); // 32bit padding
 	writer.writeUint16(command);
 	fill(writer);
 

@@ -199,7 +199,15 @@ uint8_t* Server::listen(Client* client, const uint8_t* ptr) {
 
 uint8_t* Server::runCommand(Client* client, const uint8_t* ptr) {
 	Match* match = client->match;
-	runGameCommand(*match->game, ptr);
+	Game& game = *match->game;
+
+	auto count = take(uint8_t);
+	ptr = (uint8_t*)runGameCommand(game, ptr);
+	
+	for (uint8_t i = 1; i < count; i++) {
+		align(ptr,2);
+		ptr = (uint8_t*)runGameCommand(game, ptr);
+	}
 
 	return nullptr;
 }

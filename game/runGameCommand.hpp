@@ -2,4 +2,4 @@
 
 #include "declarations.hpp"
 
-void* runGameCommand(Game& game, const void* args);
+const void* runGameCommand(Game& game, const void* args);
