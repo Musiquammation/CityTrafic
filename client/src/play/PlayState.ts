@@ -1,5 +1,5 @@
-import { DataWriter } from "../../../commons/DataWriter";
-import { SERVER_IDS } from "../../../commons/serverIds";
+import { DataWriter } from "../shared/DataWriter";
+import { SERVER_IDS } from "../../serverIds";
 import { GAME_HEIGHT, GAME_WIDTH } from "../handler/dimensions";
 import { GameHandler } from "../handler/GameHandler";
 import { InputHandler } from "../handler/InputHandler";
@@ -10,7 +10,7 @@ import { sendCommand } from "../net/sendCommand";
 import { drawCell } from "./drawCell";
 import { MouseHandler } from "./MouseHandler";
 import { askWorker } from "../worker/askWorker";
-import { CommandCode } from "../../../commons/CommandCode";
+import { CommandCode } from "../shared/CommandCode";
 import { ActionHandler } from "../action/ActionHandler";
 import { Car } from "./Car";
 import { Character } from "./Character";

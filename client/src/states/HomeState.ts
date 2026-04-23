@@ -3,10 +3,10 @@ import { InputHandler } from "../handler/InputHandler";
 import { DrawStateData, GameState } from "../handler/states";
 import { Vector3 } from "../handler/Vector3";
 import { sendSocket } from "../net/sendSocket";
-import { DataWriter } from "../../../commons/DataWriter"
-import { DataReader } from "../../../commons/DataReader"
-import { SERVER_IDS } from "../../../commons/serverIds"
-import { CLIENT_IDS } from "../../../commons/clientIds"
+import { DataWriter } from "../shared/DataWriter"
+import { DataReader } from "../shared/DataReader"
+import { SERVER_IDS } from "../../serverIds"
+import { CLIENT_IDS } from "../shared/clientIds"
 
 
 export class HomeState extends GameState {

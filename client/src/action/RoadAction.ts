@@ -1,4 +1,4 @@
-import { CommandCode } from "../../../commons/CommandCode";
+import { CommandCode } from "../shared/CommandCode";
 import { sendCommand } from "../net/sendCommand";
 import { Action } from "./Action";
 import { ActionConstructor } from "./ActionConstructor";

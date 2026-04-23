@@ -1,8 +1,6 @@
 // Auto-generated file
-#pragma once
 
-
-enum class CommandCode {
+export enum CommandCodes {
 	TEST,
 	PLACE_SINGLE_ROAD,
-};
+}

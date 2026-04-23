@@ -1,6 +1,6 @@
-import { CLIENT_IDS } from "../../../commons/clientIds";
-import { DataReader } from "../../../commons/DataReader";
-import { DataWriter } from "../../../commons/DataWriter";
+import { CLIENT_IDS } from "../shared/clientIds";
+import { DataReader } from "../shared/DataReader";
+import { DataWriter } from "../shared/DataWriter";
 import { getGameHandler } from "../gameHandler"
 import { Car } from "../play/Car";
 import { Character } from "../play/Character";
@@ -51,8 +51,7 @@ function net_areas(reader: DataReader) {
 }
 
 function net_edits(reader: DataReader) {
-	reader.readUint8(); // for 16bits padding
-	reader.readUint16(); // for 32bits padding
+	reader.skip(3);
 	const length = reader.readUint32();
 	const array = reader.readUint32Array(length-1);
 	postWorker('applyEdits', [array], [array.buffer]);

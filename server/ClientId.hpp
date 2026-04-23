@@ -1,4 +1,6 @@
+// Auto-generated file
 #pragma once
+
 
 enum class ClientId {
 	JOIN_CREATED,
@@ -6,5 +8,5 @@ enum class ClientId {
 	AREAS,
 	EDITS,
 	GET_ENTITIES,
-	ERROR
+	ERROR,
 };

@@ -172,6 +172,18 @@ compile_lib:
 	@mkdir -p $(GAME_BIN_DIR)
 	$(CXX) -shared -fPIC $(GAME_SRC) $(CXXFLAGS_NATIVE) -o $(GAME_BIN_DIR)/api.$(LIB_EXT) $(LDFLAGS_NATIVE)
 
+
+
+# =========================
+# SYNC DEFINITIONS
+# =========================
+
+.PHONY: watchDef
+
+watchDef:
+	python3 scripts/syncDef.py
+
+
 # =========================
 # CLEAN
 # =========================

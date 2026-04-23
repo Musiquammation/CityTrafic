@@ -9,5 +9,5 @@
 		"outDir": "client/dist",
 		"types": ["node"]
 	},
-	"include": ["ts-server", "commons"]
+	"include": ["ts-server", "commons", "client/src/shared/DataReader.ts", "client/src/shared/DataWriter.ts", "client/src/shared/clientIds.ts", "client/serverIds.ts", "client/src/shared/ApiTakeCode.ts", "client/src/shared/CommandCode.ts"]
 }
