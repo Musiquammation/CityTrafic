@@ -1,9 +1,8 @@
 // Auto-generated file
 
-export enum ServerIds {
+export enum SERVER_IDS {
 	CONNECT,
 	LISTEN,
-	PLACE_SINGLE_ROAD,
 	GAME_COMMANDS,
 	GET_ENTITIES,
 	ERROR,

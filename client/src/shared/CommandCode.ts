@@ -1,6 +1,6 @@
 // Auto-generated file
 
-export enum CommandCodes {
+export enum COMMAND_CODES {
 	TEST,
 	PLACE_SINGLE_ROAD,
 }

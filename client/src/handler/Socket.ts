@@ -1,5 +1,5 @@
-// import { CLIENT_IDS } from "../../../netids/clientIds"
-// import { SERVER_IDS } from "../../../netids/serverIds"
+// import { CLIENT_IDS } from "../../../netids/ClientId"
+// import { SERVER_IDS } from "../../../netids/ServerId"
 
 export class Socket {
 	

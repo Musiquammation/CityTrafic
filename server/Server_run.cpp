@@ -48,7 +48,6 @@ void Server::run(int port) {
                 switch ((ServerId)*ptr++) {
                     get(CONNECT, connect);
                     get(LISTEN, listen);
-                    get(PLACE_SINGLE_ROAD, placeSingleRoad);
                     get(GAME_COMMANDS, runCommand);
                     get(GET_ENTITIES, getEntities);
                     get(ERROR, onerror);

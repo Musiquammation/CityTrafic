@@ -1,6 +1,6 @@
 // Auto-generated file
 
-export enum ClientIds {
+export enum CLIENT_IDS {
 	JOIN_CREATED,
 	JOIN_ALIVE,
 	AREAS,

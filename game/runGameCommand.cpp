@@ -9,11 +9,13 @@
 #include <stdio.h>
 
 
-#define take(T) ({ T _v = *(T*)args; args = (uint8_t*)args + sizeof(T); _v; })
-#define move(T) {args = (uint8_t*)args + sizeof(T);}
+#define take(T) ({ T _v = *(T*)ptr; ptr = (uint8_t*)ptr + sizeof(T); _v; })
+#define push(T, val) {*(T*)res = (T)val; res += sizeof(T);}
+#define align(ptr,n) {ptr += n;}
+#define retRes() {*(uint32_t*)response =  (uint32_t)(res - response - 4); return response;}
 
 
-void* run_test(Game& game, const void* args) {
+void* run_test(Game& game, const void* ptr) {
 	int x = take(int32_t);
 	int y = take(int32_t);
 	int w = take(int32_t);
@@ -24,7 +26,7 @@ void* run_test(Game& game, const void* args) {
 }
 
 
-void run_placeSingleRoad(Game& game, const void* args) {
+void run_placeSingleRoad(Game& game, const void* ptr) {
 	int x = take(int32_t);
 	int y = take(int32_t);
 
@@ -49,16 +51,16 @@ void run_placeSingleRoad(Game& game, const void* args) {
 
 
 
-void* runGameCommand(Game& game, const void* args) {
-	move(uint16_t); // for int32 padding
+void* runGameCommand(Game& game, const void* ptr) {
+	align(ptr,3);
 	auto code = take(uint16_t);
 
 	switch ((CommandCode)code) {
 	case CommandCode::TEST:
-		return run_test(game, args);
+		return run_test(game, ptr);
 
 	case CommandCode::PLACE_SINGLE_ROAD:
-		run_placeSingleRoad(game, args);
+		run_placeSingleRoad(game, ptr);
 		return nullptr;
 	}
 

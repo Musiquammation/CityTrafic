@@ -1,6 +1,6 @@
 import { CommandCode } from "../shared/CommandCode";
 import { DataWriter } from "../shared/DataWriter";
-import { SERVER_IDS } from "../../serverIds";
+import { SERVER_IDS } from "../shared/ServerId";
 import { askWorker, postWorker } from "../worker/askWorker";
 import { sendSocket } from "./sendSocket";
 

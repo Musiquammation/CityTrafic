@@ -4,6 +4,7 @@
 
 #include <game/Game.hpp>
 #include <game/Map.hpp>
+#include <game/runGameCommand.hpp>
 
 #include "MISSED_REGION_SIZE.hpp"
 #include "ClientId.hpp"
@@ -195,11 +196,11 @@ uint8_t* Server::listen(Client* client, const uint8_t* ptr) {
 	retRes();
 }
 
-uint8_t* Server::placeSingleRoad(Client* client, const uint8_t* ptr) {
-	return nullptr;
-}
 
 uint8_t* Server::runCommand(Client* client, const uint8_t* ptr) {
+	Match* match = client->match;
+	runGameCommand(*match->game, ptr);
+
 	return nullptr;
 }
 

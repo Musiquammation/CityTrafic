@@ -3,8 +3,9 @@ from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 
 class Translation:
-	def __init__(self, name, srcFile, hppFile, tsFile):
+	def __init__(self, name, NAME, srcFile, hppFile, tsFile):
 		self.name = name
+		self.NAME = NAME
 		self.srcFile = os.path.abspath(srcFile)
 		self.hppFile = os.path.abspath(hppFile)
 		self.tsFile = os.path.abspath(tsFile)
@@ -13,6 +14,7 @@ def translation(name, NAME):
 	# Generates the object with the requested relative paths
 	return Translation(
 		name, 
+		NAME,
 		f"def/{NAME}.def", 
 		f"server/{name}.hpp", 
 		f"client/src/shared/{name}.ts"
@@ -24,6 +26,7 @@ translations = [
 	translation("ClientId", "CLIENT_IDS"),
 	Translation(
 		"CommandCode",
+		"COMMAND_CODES",
 		"def/COMMAND_CODES.def", 
 		"game/CommandCode.hpp", 
 		"client/src/shared/CommandCode.ts"
@@ -66,10 +69,8 @@ def generate_files(t: Translation):
 		f.write(cpp_content)
 
 	# ---- TypeScript generation ----
-	ts_enum_name = enum_name + "s"  # ServerId -> ServerIds
-
 	ts_content = "// Auto-generated file\n\n"
-	ts_content += f"export enum {ts_enum_name} {{\n"
+	ts_content += f"export enum {t.NAME} {{\n"
 	for name in ids:
 		ts_content += f"\t{name},\n"
 	ts_content += "}\n"

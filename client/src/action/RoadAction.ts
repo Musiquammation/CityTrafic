@@ -1,4 +1,4 @@
-import { CommandCode } from "../shared/CommandCode";
+import { COMMAND_CODES } from "../shared/CommandCode";
 import { sendCommand } from "../net/sendCommand";
 import { Action } from "./Action";
 import { ActionConstructor } from "./ActionConstructor";
@@ -35,7 +35,7 @@ export class RoadAction extends Action {
 
 	override mouseDown(x: number, y: number, btn: number) {
 		if (btn === Action.LEFT_BTN) {
-			sendCommand(CommandCode.PLACE_SINGLE_ROAD, writer => {
+			sendCommand(COMMAND_CODES.PLACE_SINGLE_ROAD, writer => {
 				writer.writeInt32(Math.floor(x));
 				writer.writeInt32(Math.floor(y));
 			});
@@ -47,7 +47,7 @@ export class RoadAction extends Action {
 			const xfloor = Math.floor(x);
 			const yfloor = Math.floor(y);
 			if (Math.floor(prevX) != xfloor || Math.floor(prevY) != yfloor) {
-				sendCommand(CommandCode.PLACE_SINGLE_ROAD, writer => {
+				sendCommand(COMMAND_CODES.PLACE_SINGLE_ROAD, writer => {
 					writer.writeInt32(xfloor);
 					writer.writeInt32(yfloor);
 				});

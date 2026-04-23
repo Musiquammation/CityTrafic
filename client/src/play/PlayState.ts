@@ -1,5 +1,5 @@
 import { DataWriter } from "../shared/DataWriter";
-import { SERVER_IDS } from "../../serverIds";
+import { SERVER_IDS } from "../shared/ServerId"
 import { GAME_HEIGHT, GAME_WIDTH } from "../handler/dimensions";
 import { GameHandler } from "../handler/GameHandler";
 import { InputHandler } from "../handler/InputHandler";
@@ -10,7 +10,7 @@ import { sendCommand } from "../net/sendCommand";
 import { drawCell } from "./drawCell";
 import { MouseHandler } from "./MouseHandler";
 import { askWorker } from "../worker/askWorker";
-import { CommandCode } from "../shared/CommandCode";
+import { COMMAND_CODES } from "../shared/CommandCode";
 import { ActionHandler } from "../action/ActionHandler";
 import { Car } from "./Car";
 import { Character } from "./Character";
@@ -65,7 +65,7 @@ export class PlayState extends GameState {
 
 
 	test() {
-		sendCommand(CommandCode.TEST, writer => {
+		sendCommand(COMMAND_CODES.TEST, writer => {
 			writer.writeInt32(18);
 			writer.writeInt32(32);
 			writer.writeInt32(44);
@@ -228,11 +228,12 @@ export class PlayState extends GameState {
 
 
 	placeBlock(x: number, y: number) {
-		const buffer = new DataWriter();
-        buffer.writeUint8(SERVER_IDS.PLACE_SINGLE_ROAD);
-        buffer.writeInt32(x);
-        buffer.writeInt32(y);
-        sendSocket(buffer.toArrayBuffer());
+		console.log("placeBlock");
+		// const buffer = new DataWriter();
+        // buffer.writeUint8(SERVER_IDS.PLACE_SINGLE_ROAD);
+        // buffer.writeInt32(x);
+        // buffer.writeInt32(y);
+        // sendSocket(buffer.toArrayBuffer());
 	}
 
 	sendAskEntities() {

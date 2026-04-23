@@ -5,8 +5,8 @@ import { Vector3 } from "../handler/Vector3";
 import { sendSocket } from "../net/sendSocket";
 import { DataWriter } from "../shared/DataWriter"
 import { DataReader } from "../shared/DataReader"
-import { SERVER_IDS } from "../../serverIds"
-import { CLIENT_IDS } from "../shared/clientIds"
+import { SERVER_IDS } from "../shared/ServerId"
+import { CLIENT_IDS } from "../shared/ClientId"
 
 
 export class HomeState extends GameState {
