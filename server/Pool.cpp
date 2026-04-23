@@ -27,6 +27,7 @@ Match* Pool::createMatch(hash_t hash) {
 	
 	std::shared_lock<std::shared_mutex> lock{this->mutex};
 
+	printf("Pool::createch %lu\n", hash);
 	this->matchs[hash] = match;
 
 	return match;

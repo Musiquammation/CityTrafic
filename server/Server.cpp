@@ -62,7 +62,7 @@ uint8_t* Server::connect(Client* client, const uint8_t* ptr) {
 		push(uint32_t, MISSED_REGION_SIZE);
 		align(res,4);
 
-		match = this->getMatch((hash_t)ptr);
+		match = this->getMatch(hash);
 	}
 
 	push(hash_t, hash);

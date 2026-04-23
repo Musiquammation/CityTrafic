@@ -1,6 +1,4 @@
 import { DataReader } from "../shared/DataReader"
-import { DataWriter } from "../shared/DataWriter"
-import { CLIENT_IDS } from "../shared/ClientId"
 import { handleMessage } from "./handleMessage";
 
 declare global {
