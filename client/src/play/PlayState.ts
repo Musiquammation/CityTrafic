@@ -60,7 +60,6 @@ export class PlayState extends GameState {
 		this.sendAskEntities();
 
 		(window as any).playState = this;
-
 	}
 
 
@@ -227,15 +226,7 @@ export class PlayState extends GameState {
 
 
 
-	placeBlock(x: number, y: number) {
-		console.log("placeBlock");
-		// const buffer = new DataWriter();
-        // buffer.writeUint8(SERVER_IDS.PLACE_SINGLE_ROAD);
-        // buffer.writeInt32(x);
-        // buffer.writeInt32(y);
-        // sendSocket(buffer.toArrayBuffer());
-	}
-
+	
 	sendAskEntities() {
 		const writer = new DataWriter();
 		writer.writeUint8(SERVER_IDS.GET_ENTITIES);

@@ -27,7 +27,6 @@ const void* run_test(Game& game, const void* ptr) {
 const void* run_placeSingleRoad(Game& game, const void* ptr) {
 	int x = take(int32_t);
 	int y = take(int32_t);
-	printf("place (%d, %d)\n", x,y);
 
 	if (!game.checkBounds(x,y,1,1))
 		return ptr;

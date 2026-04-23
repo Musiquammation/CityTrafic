@@ -33,11 +33,11 @@ function net_joinAlive(reader: DataReader) {
 
 function net_areas(reader: DataReader) {
 	reader.skip(3);
-	const areasCount = reader.readInt32();
+	const areasCount = reader.readUint32();
 
 	for (let count = 0; count < areasCount; count++) {
-		const x0 = reader.readUint32() * REGION_SIZE;
-		const y0 = reader.readUint32() * REGION_SIZE;
+		const x0 = reader.readInt32() * REGION_SIZE;
+		const y0 = reader.readInt32() * REGION_SIZE;
 
 		const list = new Uint16Array(REGION_SIZE * REGION_SIZE);
 		for (let i = 0; i < REGION_SIZE * REGION_SIZE; i++)

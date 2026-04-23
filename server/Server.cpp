@@ -165,24 +165,36 @@ uint8_t* Server::listen(Client* client, const uint8_t* ptr) {
 
 	// Send new (unvisited) regions
 	for (auto r: newRegions) {
-		push(uint32_t, r.rx);
-		push(uint32_t, r.ry);
-		match->game->map.copyCells((Cell*)res, r.rx, r.ry,
-			MISSED_REGION_SIZE, MISSED_REGION_SIZE);
+		push(int32_t, r.rx);
+		push(int32_t, r.ry);
+		match->game->map.copyCells(
+			(Cell*)res,
+			r.rx * MISSED_REGION_SIZE,
+			r.ry * MISSED_REGION_SIZE,
+			MISSED_REGION_SIZE,
+			MISSED_REGION_SIZE
+		);
 
-		align(res,MISSED_REGION_SIZE*MISSED_REGION_SIZE*2);
+		// move
+		res += MISSED_REGION_SIZE*MISSED_REGION_SIZE*2;
 
 		client->visitedRegions.insert(r.key);
 	}
 
 	// Send missed regions (and remove them from the set)
 	for (auto r: missedInView) {
-		push(uint32_t, r.rx);
-		push(uint32_t, r.ry);
-		match->game->map.copyCells((Cell*)res, r.rx, r.ry,
-			MISSED_REGION_SIZE, MISSED_REGION_SIZE);
+		push(int32_t, r.rx);
+		push(int32_t, r.ry);
+		match->game->map.copyCells(
+			(Cell*)res,
+			r.rx * MISSED_REGION_SIZE,
+			r.ry * MISSED_REGION_SIZE,
+			MISSED_REGION_SIZE,
+			MISSED_REGION_SIZE
+		);
 
-		align(res,MISSED_REGION_SIZE*MISSED_REGION_SIZE*2);
+		// move
+		res += MISSED_REGION_SIZE*MISSED_REGION_SIZE*2;
 	}
 
 
