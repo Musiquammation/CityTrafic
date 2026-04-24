@@ -1,5 +1,6 @@
 #include "Server.hpp"
 
+#include "Client.hpp"
 #include "ServerId.hpp"
 
 #include <uWebSockets/src/App.h>

@@ -1,13 +1,20 @@
 #pragma once
 
 #include "declarations.hpp"
+#include "hash.hpp"
 #include "Client.hpp"
+#include "GameOwner.hpp"
 
 #include <vector>
 #include <set>
 
 struct Match {
+private:
 	Game* const game;
+
+public:
+	hash_t const hash;
+	Pool* const pool;
 	std::vector<Client*> clients;
 	int mapX = 0;
 	int mapY = 0;
@@ -18,6 +25,9 @@ struct Match {
 	int pushClient(Client* client);
 	bool popClient(Client* client);
 
-	Match();
+	template<bool serv = false>
+	GameOwner<serv> getGame();
+
+	Match(Pool* pool, hash_t hash);
 	~Match();
 };

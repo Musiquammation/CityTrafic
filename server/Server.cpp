@@ -2,10 +2,6 @@
 
 #include "declarations.hpp"
 
-#include <game/Game.hpp>
-#include <game/Map.hpp>
-#include <game/runGameCommand.hpp>
-
 #include "MISSED_REGION_SIZE.hpp"
 #include "ClientId.hpp"
 #include "hash.hpp"
@@ -13,11 +9,18 @@
 #include "Client.hpp"
 #include "Match.hpp"
 
+
+#include <game/Game.hpp>
+#include <game/Map.hpp>
+#include <game/runGameCommand.hpp>
+
+
 #include <iostream>
 #include <vector>
-
 #include <stdint.h>
 #include <cmath>
+
+
 
 Server::Server(int poolNum):
 	poolNum(poolNum),
@@ -163,11 +166,13 @@ uint8_t* Server::listen(Client* client, const uint8_t* ptr) {
 	align(res,3);
 	push(uint32_t, totalCount);
 
+	auto game = match->getGame();
+
 	// Send new (unvisited) regions
 	for (auto r: newRegions) {
 		push(int32_t, r.rx);
 		push(int32_t, r.ry);
-		match->game->map.copyCells(
+		game->map.copyCells(
 			(Cell*)res,
 			r.rx * MISSED_REGION_SIZE,
 			r.ry * MISSED_REGION_SIZE,
@@ -185,7 +190,7 @@ uint8_t* Server::listen(Client* client, const uint8_t* ptr) {
 	for (auto r: missedInView) {
 		push(int32_t, r.rx);
 		push(int32_t, r.ry);
-		match->game->map.copyCells(
+		game->map.copyCells(
 			(Cell*)res,
 			r.rx * MISSED_REGION_SIZE,
 			r.ry * MISSED_REGION_SIZE,
@@ -211,7 +216,7 @@ uint8_t* Server::listen(Client* client, const uint8_t* ptr) {
 
 uint8_t* Server::runCommand(Client* client, const uint8_t* ptr) {
 	Match* match = client->match;
-	Game& game = *match->game;
+	Game& game = *match->getGame();
 
 	auto count = take(uint8_t);
 	ptr = (uint8_t*)runGameCommand(game, ptr);

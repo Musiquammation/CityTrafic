@@ -1,10 +1,10 @@
 #pragma once
 
 #include "declarations.hpp"
+#include "clientId_t.hpp"
 
 #include "Pool.hpp"
 
-#include "clientId_t.hpp"
 
 #include <memory>
 #include <unordered_map>

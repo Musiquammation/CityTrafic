@@ -3,7 +3,12 @@
 #include <algorithm>
 #include <game/Game.hpp>
 
-Match::Match(): game(new Game{}) {}
+Match::Match(Pool* pool, hash_t hash):
+    game(new Game{}),
+    hash(hash),
+    pool(pool)
+{}
+
 Match::~Match() {
     delete this->game;
 }
@@ -24,3 +29,11 @@ bool Match::popClient(Client* client) {
 
     return false;
 }
+
+template<bool serv>
+GameOwner<serv> Match::getGame() {
+    return GameOwner<serv>{this->game, this->pool, this->hash};
+}
+
+template GameOwner<false> Match::getGame<false>();
+template GameOwner<true> Match::getGame<true>();
