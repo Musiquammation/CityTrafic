@@ -20,4 +20,6 @@ struct Client {
 
 	std::set<uint64_t> visitedRegions;
 	uWS::WebSocket<false, true, Client>* ws = nullptr;
+
+	void send(void* data, int size);
 };

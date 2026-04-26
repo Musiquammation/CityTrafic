@@ -25,6 +25,7 @@ public:
     void updateCars(Game* game);
     void moveCars();
     Car* getCar(int x, int y);
+    void clear();
 
     // Iterators
     auto begin() { return this->cars.begin(); }

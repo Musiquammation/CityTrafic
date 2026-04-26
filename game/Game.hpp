@@ -17,6 +17,13 @@ private:
 public:
     friend class Api;
     friend class Server;
+    friend uint32_t* entities_helper_make(
+        Game& game,
+        int x, int y, int w, int h,
+        uint8_t prefix
+    );
+    friend void entities_helper_read(Game& game, void* args);
+
     friend int main();
 
 

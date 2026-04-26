@@ -55,6 +55,8 @@ public:
 	float getSpeed() const;
 	Vector<int> getTargetPoint() const;
 
+	void setSpeed(float speed);
+
 	bool appendDriver(Character* driver);
 	Character* removeDriver();
 };

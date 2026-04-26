@@ -132,6 +132,11 @@ Vector<int> Car::getTargetPoint() const {
 	return this->publicTargetPoint;
 }
 
+void Car::setSpeed(float speed) {
+	this->publicSpeed = speed;
+	this->realSpeed = speed;
+}
+
 
 bool Car::appendDriver(Character* driver) {
 	if (this->driver)

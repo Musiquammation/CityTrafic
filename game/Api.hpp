@@ -50,13 +50,6 @@ class Api {
 	std::map<int, ApiGame> games;
 	void* buffer = nullptr;
 
-
-	static void* makeEntities(Game& game,
-		int x, int y, int w, int h);
-
-	static void readEntities(Game& game, void* args);
-
-
 public:
 	Api(int indexStart, int indexSpacing);
 	~Api();

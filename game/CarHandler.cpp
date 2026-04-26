@@ -50,6 +50,10 @@ Car* CarHandler::getCar(int x, int y) {
 	return this->cars[{x,y}];
 }
 
+void CarHandler::clear() {
+	this->cars.clear();
+}
+
 
 
 CarHandler::~CarHandler() {

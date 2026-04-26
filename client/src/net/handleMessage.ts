@@ -6,6 +6,7 @@ import { Car } from "../play/Car";
 import { Character } from "../play/Character";
 import { PlayState } from "../play/PlayState";
 import { askWorker, postWorker } from "../worker/askWorker";
+import { ENTITY_ASK_COULDOWN } from "./ENTITY_ASK_COULDOWN";
 
 let REGION_SIZE = 1;
 
@@ -61,17 +62,16 @@ function net_edits(reader: DataReader) {
 
 
 let lastEntityAsk = -Infinity;
-const ENTITY_ASK_COULDOWN = 1000;
 
 
 async function net_getEntities(reader: DataReader) {
 	reader.skip(3);
 
-	/// TODO: read entities
 	const msgSize = reader.readUint32(); // msg size
+	console.log(msgSize);
 
 	const prevOffset = reader.getOffset();
-	const buffer = reader.readUint8Array(msgSize);
+	const buffer = reader.readUint8Array(msgSize-4);
 
 	await askWorker('readEntities', [buffer], [buffer.buffer]);
 
