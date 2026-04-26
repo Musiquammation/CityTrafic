@@ -5,6 +5,7 @@
 #include "Vector.hpp"
 #include "Cell.hpp"
 
+#include <map>
 #include <vector>
 #include <stdint.h>
 #include <unordered_set>
@@ -30,10 +31,19 @@ class Map {
     Cell* cells;
 
     std::vector<std::unordered_set<Vector<int>>> editedCells{};
+    std::map<Vector<int>, Building*> buildings;
+
     int x;
     int y;
     int width;
     int height;
+
+    struct BuildingInfo {
+        int x;
+        int y;
+        Building* building;
+    };
+
 
 
 public:
@@ -66,6 +76,10 @@ public:
     bool checkBounds(int x, int y, int width, int height) const;
 
     void copyCells(Cell* dst, int x, int y, int w, int h) const;
+
+    BuildingInfo getBuilding(int x, int y);
+    bool addBuilding(int x, int y, Building* building, Game& game);
+    bool removeBuilding(int x, int y, Game& game);
 };
 
 

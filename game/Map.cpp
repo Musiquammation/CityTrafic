@@ -1,5 +1,7 @@
 #include "Map.hpp"
 #include "Cell.hpp"
+#include "Building.hpp"
+
 #include <cstdlib>
 #include <cstring>
 
@@ -262,4 +264,151 @@ void Map::copyCells(Cell* dst, int x, int y, int w, int h) const {
 			sizeof(Cell) * w
 		);
 	}
+}
+
+
+
+
+
+Map::BuildingInfo Map::getBuilding(int x, int y) {
+	// Search BUILDING cell
+	const Cell* cell = this->getCell(x, y);
+	while (true) {
+		if (cell->getType() == CellType::BUILDING) {
+			BuildingType btype = (BuildingType)((cell->data >> 4) & 0x0F);
+			auto it = this->buildings.find(Vector<int>{x,y});
+			if (it != this->buildings.end()) {
+				return {x, y, it->second};
+			} else {
+				return {x, y, nullptr};
+			}
+		} else if (cell->getType() == CellType::LINK) {
+			if (cell->data & (1<<12)) {
+				x -= 16 * (((cell->data >> 4) & 0xf) + 1); // jump
+			} else {
+				x -= (cell->data >> 4) & 0xf; // direct
+			}
+
+			if (cell->data & (1<<13)) {
+				y -= 16 * (((cell->data >> 8) & 0xf) + 1); // jump
+			} else {
+				y -= (cell->data >> 8) & 0xf; // direct
+			}
+
+			cell = this->getCell(x, y);
+
+		} else {
+			return {x, y, nullptr};
+		}
+	}
+}
+
+bool Map::addBuilding(int x, int y, Building* building, Game& game) {
+    if (!building) return false;
+
+    const auto size = building->getSize();
+
+	// Check bounds
+    if (!checkBounds(x, y, size.x, size.y)) {
+        return false;
+    }
+
+	cell_t tmpArea[size.y * size.x];
+	// Edit tmpArea and check if it can be editedW
+	
+	cell_t* tmpCell = tmpArea;
+	char fail = 0;
+
+	// Try to fill area
+	for (int dy = 0; dy < size.y; dy++) {
+		cell_t argBase;
+		if (dy < 16) {
+			argBase = (cell_t)(1<<13) | (cell_t)(dy<<8);
+		} else {
+			int decalage = dy / 4 - 1;
+			if (decalage>16) {decalage=16;}
+			argBase = (cell_t)(decalage<<8);
+		}
+		
+		for (int dx = 0; dx < size.x; dx++) {
+			auto src = this->getEditCell(x+dx, y+dy);
+			cell_t next;
+
+			if (dx == 0 && dy == 0) {
+				cell_t arg = (cell_t)((int)building->type << 4);
+				next = src->editType(CellType::BUILDING, game, arg, &fail);
+
+			} else {
+				// Fill arg
+				cell_t arg = argBase;
+				if (dx < 16) {
+					arg |= (cell_t)((1<<12) | (dx<<4));
+				} else {
+					int decalage = dx / 4 - 1;
+					if (decalage>16) {decalage=16;}
+					arg |= (cell_t)(decalage<<4);
+				}
+	
+				next = src->editType(CellType::LINK, game, arg, &fail);
+			}
+
+			if (fail) {
+				return false;
+			}
+
+			*tmpCell++ = next;
+		}
+	}
+
+	// Area is editable, let's copy our edits
+	for (int dy = 0; dy < size.y; dy++) {
+		memcpy(
+			&this->cells[(y+dy - this->y) * this->width + (x - this->x)],
+			&tmpArea[size.y*dy],
+			size.x * sizeof(Cell)
+		);
+	}
+	
+	
+	BuildingElementSpec edits[size.y * size.x];
+	int editsLength = building->fillBuildingSpecs(edits);
+
+	// Apply edits
+	mfor(edits, editsLength, i) {
+		auto cell = this->getEditCell(x + i->dx, y + i->dy);
+		if (i->entry) {
+			cell->data |= 1 << 14;
+		}
+
+		if (i->exit) {
+			/// TODO: is this test useful?
+		}
+	}
+
+
+
+    return true;
+}
+
+
+bool Map::removeBuilding(int x, int y, Game& game) {
+	auto info = this->getBuilding(x, y);
+    if (!info.building) {return false;}
+
+    const auto size = info.building->getSize();
+
+	// Check bounds
+    if (!checkBounds(x, y, size.x, size.y)) {
+        return false;
+    }
+
+	for (int dy = 0; dy < size.y; dy++) {
+		for (int dx = 0; dx < size.x; dx++) {
+			this->getEditCell(x+dx, y+dy)->setType(CellType::NONE, game);
+		}
+	}
+
+
+
+	return true;
 }

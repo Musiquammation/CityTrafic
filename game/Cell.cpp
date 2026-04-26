@@ -26,7 +26,12 @@ CellType Cell::getType() const {
 }
 
 
-void Cell::setType(CellType type, Game& game, cell_t arg) {
+cell_t Cell::editType(
+	CellType type,
+	Game& game,
+	cell_t arg,
+	char* failure
+) const {
 	cell_t current = this->data;
 	cell_t result;
 
@@ -39,11 +44,30 @@ void Cell::setType(CellType type, Game& game, cell_t arg) {
 		result = 0;
 		break;
 
+	case CellType::BUILDING:
+	case CellType::LINK:
+		if (type != CellType::NONE) {
+			*failure = 1;
+			break;
+		}
+		result = arg;
+		break;
+
 	default:
 		result = 0;
 		break;
 	}
 
-	this->data = result | ((int)type & 0x0f);
+	return result | ((int)type & 0x0f);
 }
 
+bool Cell::setType(CellType type, Game& game, cell_t arg) {
+	char fail = 0;
+	cell_t data = this->editType(type, game, arg, &fail);
+
+	if (fail)
+		return false;
+
+	this->data = data;
+	return true;
+}

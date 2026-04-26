@@ -15,5 +15,8 @@ struct Cell {
 	bool hasCar() const;
 
 	CellType getType() const;
-	void setType(CellType type, Game& game, cell_t arg = 0);
+	cell_t editType(CellType type, Game& game,
+		cell_t arg, char* failure) const;
+		
+	bool setType(CellType type, Game& game, cell_t arg = 0);
 };
