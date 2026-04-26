@@ -1,5 +1,8 @@
 #include "Cell.hpp"
 #include "Game.hpp"
+#include "CellInstruction.hpp"
+
+#include <stdio.h>
 
 void Cell::setCarOn() {
 	this->data |= 1 << 15;
@@ -35,30 +38,39 @@ cell_t Cell::editType(
 	cell_t current = this->data;
 	cell_t result;
 
+	#define check(ins) if (\
+		type != CellType::NONE ||\
+		(arg>>4) != (cell_t)ins) {\
+			*failure = 1;\
+			break;\
+		}
+
+
+	printf("current %d %d\n", current & 0x0f, (int)type);
+
 	switch ((CellType)(current & 0x0f)) {
 	case CellType::NONE:
-		result = 0;
+		result = arg;
 		break;
 
 	case CellType::ROAD:
-		result = 0;
+		result = arg;
 		break;
 
 	case CellType::BUILDING:
 	case CellType::LINK:
-		if (type != CellType::NONE) {
-			*failure = 1;
-			break;
-		}
-		result = arg;
+		check(CellInstruction::BUILDING);
+		result = 0;
 		break;
 
 	default:
-		result = 0;
+		result = arg;
 		break;
 	}
 
 	return result | ((int)type & 0x0f);
+
+	#undef check
 }
 
 bool Cell::setType(CellType type, Game& game, cell_t arg) {

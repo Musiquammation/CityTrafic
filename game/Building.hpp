@@ -32,7 +32,7 @@ struct Building {
 	};
 	
 	
-	static Building create_home(int capacity);
+	static Building* create_home(int capacity);
 
 
 	

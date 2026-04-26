@@ -15,6 +15,7 @@ private:
     void test();
 
 public:
+    friend struct GameCommand;
     friend class Api;
     friend class Server;
     friend uint32_t* entities_helper_make(

@@ -246,7 +246,6 @@ uint8_t* Server::getEntities(Client* client, const uint8_t* ptr) {
 	);
 
 	uint32_t fullSize = msg[1];
-	printf("fullSize %d\n", fullSize);
 
 	client->send(msg, fullSize + (uint32_t)sizeof(uint32_t));
 

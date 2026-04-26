@@ -1,12 +1,12 @@
 #include "Building.hpp"
 
-Building Building::create_home(int capacity) {
-	Building b;
-	b.type = BuildingType::HOME;
-	b.home.capacity = capacity;
-	b.home.characters = new Character*[capacity];
+Building* Building::create_home(int capacity) {
+	auto b = new Building;
+	b->type = BuildingType::HOME;
+	b->home.capacity = capacity;
+	b->home.characters = new Character*[capacity];
 	for (int i = 0; i < capacity; i++) {
-		b.home.characters[i] = nullptr;
+		b->home.characters[i] = nullptr;
 	}
 	return b;
 }

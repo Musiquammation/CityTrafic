@@ -1,6 +1,7 @@
 #include "Map.hpp"
 #include "Cell.hpp"
 #include "Building.hpp"
+#include "CellInstruction.hpp"
 
 #include <cstdlib>
 #include <cstring>
@@ -406,7 +407,9 @@ bool Map::removeBuilding(int x, int y, Game& game) {
 
 	for (int dy = 0; dy < size.y; dy++) {
 		for (int dx = 0; dx < size.x; dx++) {
-			this->getEditCell(x+dx, y+dy)->setType(CellType::NONE, game);
+			auto cell = this->getEditCell(x+dx, y+dy);
+			cell_t arg = (cell_t)CellInstruction::BUILDING << 4;
+			cell->setType(CellType::NONE, game, arg);
 		}
 	}
 

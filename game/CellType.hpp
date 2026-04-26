@@ -3,7 +3,7 @@
 enum class CellType {
     /**
      * +00: (type)
-     * +04: (empty)
+     * +04: code
      * +15: (taken)
      */
     NONE,
