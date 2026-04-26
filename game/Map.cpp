@@ -386,6 +386,8 @@ bool Map::addBuilding(int x, int y, Building* building, Game& game) {
 	}
 
 
+	// Add building to map
+	this->buildings[Vector<int>{x,y}] = building;
 
     return true;
 }
@@ -408,6 +410,9 @@ bool Map::removeBuilding(int x, int y, Game& game) {
 		}
 	}
 
+
+	this->buildings.erase(Vector<int>{info.x, info.y}); // Remove building
+	delete info.building; // delete building
 
 
 	return true;
