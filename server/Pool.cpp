@@ -85,8 +85,6 @@ void Pool::acquireGame(hash_t hash, int id) {
 	
 	// Take index
 	this->currents[id] = hash;
-
-	printf("Acquire %d\n", id);
 }
 
 void Pool::releaseGame(int id) {
@@ -95,7 +93,6 @@ void Pool::releaseGame(int id) {
 		this->currents[id] = 0; // Remove ownership
 	}
 	
-	printf("Release %d\n", id);
 	cv.notify_one();
 }
 
