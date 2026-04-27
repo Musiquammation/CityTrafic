@@ -1,13 +1,11 @@
 #include "ActionNode.hpp"
 
+#include "../declarations.hpp"
 
 namespace actionNodes {
-	namespace test {
-		struct Data {
-			int location;
-			int time;
-		};
+	namespace character {
+		typedef Character Data;
 
 		const ActionNode* init();
-	};
+	}
 }

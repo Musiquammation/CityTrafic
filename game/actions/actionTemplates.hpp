@@ -6,7 +6,7 @@
 #include <array>
 
 template<typename... T>
-constexpr auto list(T... elems) {
+constexpr auto fillList(T... elems) {
 	return std::array<const ActionNode*, sizeof...(T)>{ elems... };
 }
 
@@ -34,16 +34,27 @@ constexpr ActionNode _makeFst(const std::array<const ActionNode*, N>& children) 
 	};
 }
 
-#define makeAll(name) all_##name = _makeAll(list_all_ ## name);
-#define makeFst(name) fst_##name = _makeFst(list_fst_ ## name);
 
 
 #define def(name) ActionCode run_##name(Game& game, Character* character, void* _data)
-#define setData(T) T* data = (T*)_data;
+#define setData() Data* data = (Data*)_data;
 
+#define declNode(name) ActionNode name;
+#define declLink(name) 
+#define declList() LIST(declNode, declNode, declNode, declLink)
 
+#define makeAll(name) name = _makeAll(list_## name);
+#define makeFst(name) name = _makeFst(list_## name);
 #define makeFnc(name) name = ActionNode{ \
 	.type = ActionNodeType::RUNNER, \
 	.runner = {run_##name} \
 };
+#define makeLink(name)
+#define makeList() LIST(makeAll, makeFst, makeFnc, makeLink)
 
+
+#define give(name, ...) auto list_##name = fillList(__VA_ARGS__);
+
+
+#define startns(name) namespace actionNodes::name { bool initialized = false;
+#define finishns() }

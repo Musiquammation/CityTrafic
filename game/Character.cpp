@@ -5,6 +5,15 @@
 #include "Game.hpp"
 #include "Building.hpp"
 
+#include "actions/action_character.hpp"
+
+
+Character::Character():
+	executor(actionNodes::character::init(), this, nullptr)
+{
+
+}
+
 
 void Character::cleanupState() {
 	switch (this->state) {
@@ -46,15 +55,22 @@ Character* Character::createClientCharacter(float x, float y) {
 bool Character::makeWalk(Game& game, int destX, int destY) {
 	this->state = CharacterState::WALK;
 
-	auto path = new PathHandler<true>;
-	if (!makePedestranPath(game.getMap(), *path)) {
-		delete path;
+	auto path = makePedestranPath(
+		game.getMap(),
+		(int)this->x,
+		(int)this->y,
+		destX,
+		destY
+	);
+
+	if (!path) {
 		return false;
 	}
 
 
 	this->state = CharacterState::WALK;
 	this->data.walk.path = path;
+	this->data.walk.position = 0;
 	return true;
 }
 
@@ -85,6 +101,10 @@ bool Character::makeInside(Game& game) {
 
 void Character::notifyDrive() {
 
+}
+
+void Character::frame(Game& game) {
+	this->executor.run(game, this);
 }
 
 

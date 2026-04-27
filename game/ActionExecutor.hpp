@@ -8,7 +8,7 @@
 
 
 
-class ActionNodeExecutor {
+class ActionExecutor {
 	const ActionNode* const root;
 	const ActionNode* currentNode;
 	void* const args;
@@ -18,12 +18,12 @@ class ActionNodeExecutor {
 public:
 	static void FREE_DESTRUCTOR(void* args);
 
-	ActionNodeExecutor(
+	ActionExecutor(
 		const ActionNode* root,
 		void* args,
 		void(*destructor)(void* args)
 	);
-	~ActionNodeExecutor();
+	~ActionExecutor();
 
 	bool run(Game& game, Character* character);
 };

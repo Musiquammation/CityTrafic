@@ -5,7 +5,7 @@
 enum class ActionCode {
 	FAILURE,
 	SUCCESS,
-	RUNNING
+	PENDING
 };
 
 enum class ActionNodeType {

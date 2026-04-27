@@ -1,6 +1,8 @@
 #pragma once
 
 #include "declarations.hpp"
+#include "Vector.hpp"
+#include "ActionExecutor.hpp"
 
 enum class CharacterState {
 	CLIENT,
@@ -12,8 +14,10 @@ enum class CharacterState {
 class Character {
 	CharacterState state;
 	Car* car = nullptr;
+	ActionExecutor executor;
+	Vector<int> home;
 
-	Character() = default;
+	Character();
 
 	union {
 		struct {
@@ -21,7 +25,8 @@ class Character {
 		} client;
 
 		struct {
-			PathHandler<true>* path;
+			char* path;
+			int position;
 		} walk;
 
 		struct {
@@ -48,6 +53,8 @@ public:
 	bool makeInside(Game& game);
 
 	void notifyDrive();
+
+	void frame(Game& game);
 
 	CharacterState getState() const;
 

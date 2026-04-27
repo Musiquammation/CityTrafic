@@ -33,12 +33,12 @@ Node* getListNode(Node* root, const std::vector<int>& list, bool ignoreLast = fa
 	return node;
 }
 
-void ActionNodeExecutor::FREE_DESTRUCTOR(void* args) {
+void ActionExecutor::FREE_DESTRUCTOR(void* args) {
 	free(args);
 }
 
 
-ActionNodeExecutor::ActionNodeExecutor(
+ActionExecutor::ActionExecutor(
 	const ActionNode* root,
 	void* args,
 	void(*destructor)(void* args)
@@ -51,18 +51,18 @@ ActionNodeExecutor::ActionNodeExecutor(
 	
 }
 
-ActionNodeExecutor::~ActionNodeExecutor() {
+ActionExecutor::~ActionExecutor() {
 	if (this->destructor == nullptr)
 		return;
 
-	if (this->destructor == ActionNodeExecutor::FREE_DESTRUCTOR)
+	if (this->destructor == ActionExecutor::FREE_DESTRUCTOR)
 		free(this->args);
 
 	this->destructor(this->args);
 }
 
-bool ActionNodeExecutor::run(Game& game, Character* character) {
-	ActionCode prevResult = ActionCode::RUNNING;
+bool ActionExecutor::run(Game& game, Character* character) {
+	ActionCode prevResult = ActionCode::PENDING;
 	
 	Node* node = this->currentNode;
 	
@@ -71,7 +71,7 @@ bool ActionNodeExecutor::run(Game& game, Character* character) {
 		case ActionNodeType::RUNNER:
 		{
 			auto result = node->runner.run(game, character, this->args);
-			if (result == ActionCode::RUNNING) {
+			if (result == ActionCode::PENDING) {
 				goto exit;
 			}
 
@@ -85,7 +85,7 @@ bool ActionNodeExecutor::run(Game& game, Character* character) {
 		case ActionNodeType::FIRST:
 		{
 			// First iteration
-			if (prevResult == ActionCode::RUNNING) {
+			if (prevResult == ActionCode::PENDING) {
 				this->list.push_back(0);
 				node = node->first.children[0];
 				break;
@@ -107,7 +107,7 @@ bool ActionNodeExecutor::run(Game& game, Character* character) {
 				// Run next child
 				this->list.back() = idx;
 				node = getListNode(this->root, this->list);
-				prevResult = ActionCode::RUNNING;
+				prevResult = ActionCode::PENDING;
 				break;
 			}
 
@@ -119,7 +119,7 @@ bool ActionNodeExecutor::run(Game& game, Character* character) {
 		case ActionNodeType::ALL:
 		{
 			// First iteration
-			if (prevResult == ActionCode::RUNNING) {
+			if (prevResult == ActionCode::PENDING) {
 				this->list.push_back(0);
 				node = node->first.children[0];
 				break;
@@ -141,7 +141,7 @@ bool ActionNodeExecutor::run(Game& game, Character* character) {
 				// Run next child
 				this->list.back() = idx;
 				node = getListNode(this->root, this->list);
-				prevResult = ActionCode::RUNNING;
+				prevResult = ActionCode::PENDING;
 				break;
 			}
 
@@ -162,10 +162,12 @@ bool ActionNodeExecutor::run(Game& game, Character* character) {
 
 	
 
+	// Action graph finished
 	this->currentNode = NULL;
 	return true;
 
 	exit:
+	// Performing pending instruction
 	this->currentNode = node;
 	return false;
 }

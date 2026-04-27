@@ -1,18 +1,21 @@
 #include "action_test.hpp"
 
+#include "ActionNode.hpp"
 #include "actionTemplates.hpp"
 #include <stdio.h>
 
-bool initialized = false;
-using namespace actionNodes;
 
-ActionNode all_result;
-	ActionNode all_goTo;
+startns(test)
+
+
+
+ActionNode result;
+	ActionNode goTo;
 		ActionNode search;
 		ActionNode moveTo;
 	
-	ActionNode fst_open;
-		ActionNode all_get;
+	ActionNode open;
+		ActionNode get;
 			ActionNode takeKey;
 			ActionNode unlock;
 
@@ -34,11 +37,11 @@ def(search) {
 def(moveTo) {
 	printf("moveTo\n");
 
-	setData(Test);
+	setData();
 
 	data->time--;
 	if (data->time > 0)
-		return ActionCode::RUNNING;
+		return ActionCode::PENDING;
 
 	return ActionCode::SUCCESS;
 }
@@ -73,15 +76,15 @@ def(pass) {
 
 
 
-auto list_all_result = list(&all_goTo, &fst_open, &pass);
-auto list_all_goTo   = list(&search, &moveTo);
-auto list_fst_open   = list(&all_get, &force);
-auto list_all_get    = list(&takeKey, &unlock);
+auto list_result = fillList(&goTo, &open, &pass);
+auto list_goTo   = fillList(&search, &moveTo);
+auto list_open   = fillList(&get, &force);
+auto list_get    = fillList(&takeKey, &unlock);
 
 
-const ActionNode* Test::init() {
+const ActionNode* init() {
 	if (initialized)
-		return &all_result;
+		return &result;
 
 	initialized = true;
 
@@ -95,8 +98,11 @@ const ActionNode* Test::init() {
 				makeFnc(takeKey);
 				makeFnc(unlock);
 			makeFnc(force);
-		makeFnc(pass);			
+		makeFnc(pass);	
 
 
-	return &all_result;
+	return &result;
 }
+
+
+finishns()

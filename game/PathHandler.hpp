@@ -39,10 +39,8 @@ public:
 	void next();
 
 
-	friend bool makeCarPath(
-		const Map& map, PathHandler<true>& path);
-	friend bool makePedestranPath(
-		const Map& map, PathHandler<true>& path);
+	friend bool makeCarPath(const Map& map,
+		int startX, int startY, int destX, int destY);
 };
 
 

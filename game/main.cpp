@@ -136,7 +136,7 @@ int main() {
 	Character character;
 
 	actionNodes::Test test{10, 5};
-	ActionNodeExecutor executor{actionNodes::Test::init(), &test, nullptr};
+	ActionExecutor executor{actionNodes::Test::init(), &test, nullptr};
 	
 	while (1) {
 		printf("[[run]]\n");
