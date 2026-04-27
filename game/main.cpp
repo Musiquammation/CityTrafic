@@ -2,7 +2,7 @@
 
 #ifndef COMPILE_SERVER
 
-#define MAIN_TEST_ID 0
+#define MAIN_TEST_ID 2
 
 
 
@@ -143,6 +143,43 @@ int main() {
 		if (executor.run(game, &character))
 			break;
 	}
+
+	
+	printf("Success!\n");
+	return 0;
+	
+}
+
+
+#elif MAIN_TEST_ID == 2
+
+
+#include "Game.hpp"
+#include "Building.hpp"
+#include "Character.hpp"
+#include "Map.hpp"
+#include "Vector.hpp"
+
+#include <map>
+
+
+int main() {
+	Game game;
+
+	int value = 12;
+	int* valuePtr = &value;
+    std::map<Vector<int>, int*> map;
+
+	map[Vector<int>{10,12}] = valuePtr;
+
+	auto it = map.find(Vector<int>{10,12});
+	if (it != map.end()) {
+		printf("%p\n", it->second);
+	} else {
+		printf("%p\n", nullptr);
+	}
+
+
 
 	
 	printf("Success!\n");

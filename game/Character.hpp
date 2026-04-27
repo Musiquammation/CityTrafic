@@ -16,6 +16,7 @@ class Character {
 	Car* car = nullptr;
 	ActionExecutor executor;
 	Vector<int> home;
+	int homePosition;
 
 	Character();
 

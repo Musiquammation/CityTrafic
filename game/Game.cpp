@@ -15,6 +15,7 @@ void Game::test() {
 void Game::frame() {
 	this->test();
 
+
 	// Car logic
 	this->carHandler.updateCars(this);
 	this->carHandler.moveCars();

@@ -48,6 +48,7 @@ Character* Character::createClientCharacter(float x, float y) {
 	c->x = x;
 	c->y = y;
 	c->state = CharacterState::CLIENT;
+	c->homePosition = -1;
 	return c;
 }
 
@@ -67,10 +68,13 @@ Character* Character::spawnCharacter(const Map& map, int x, int y) {
 	c->x = (float)x + .5f;
 	c->y = (float)y + .5f;
 	c->state = CharacterState::INSIDE;
-	if (!info.building->home.add(c)) {
+	int homePosition = info.building->home.add(c);
+	if (homePosition < 0) {
 		delete c;
 		return nullptr;
 	}
+
+	c->homePosition = homePosition;
 
 	
 
