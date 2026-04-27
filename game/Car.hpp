@@ -60,4 +60,5 @@ public:
 	void setSpeed(float speed);
 
 	bool drive(Character* driver, int destX, int destY);
+	void removeDriver(Character* driver);
 };

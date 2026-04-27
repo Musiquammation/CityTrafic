@@ -1,12 +1,8 @@
 #pragma once
 
 #include "../declarations.hpp"
+#include "ActionCode.hpp"
 
-enum class ActionCode {
-	FAILURE,
-	SUCCESS,
-	PENDING
-};
 
 enum class ActionNodeType {
 	RUNNER,

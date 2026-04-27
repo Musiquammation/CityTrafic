@@ -5,6 +5,7 @@
 
 #include "../Game.hpp"
 #include "../Map.hpp"
+#include "../Car.hpp"
 #include "../Building.hpp"
 #include "../Character.hpp"
 
@@ -14,7 +15,7 @@
 startns(character)
 
 static inline float frac(float x) {
-    return x - std::floor(x);
+	return x - std::floor(x);
 }
 
 #define LIST(all, fst, run, link)\
@@ -23,21 +24,22 @@ static inline float frac(float x) {
 			all(workSection);\
 				run(isWorkDay);\
 				all(workDay);\
-					link(takeCarToWork);\
-					link(waitCarNotification);\
-					link(walkToWork);\
-					link(takeCarToHome);\
-					link(waitCarNotification);\
-					link(walkToHome);\
+					/* A lot of tasks */ \
 			all(chillSection);\
 				run(isChillDay);\
 				all(chillDay);\
 					run(chillDayTest);\
-	run(takeCarToWork);\
-	run(takeCarToHome);\
-	run(walkToWork);\
-	run(walkToHome);\
-	run(waitCarNotification);\
+	run(drive);\
+	run(walk);\
+	run(orientCar);\
+	run(orientWork);\
+	run(orientHome);\
+	run(locateCar);\
+	run(locateWork);\
+	run(locateHome);\
+	run(enter);\
+	run(leave);\
+	run(passWork);\
 			
 		
 
@@ -59,157 +61,110 @@ struct CharacterFriend {
 		return ActionCode::FAILURE;
 	}
 
-	def(takeCarToWork) {
-		return ActionCode::PENDING;
-	}
-	
-	def(directlyWalkToWork) {
-		setCharacter();
-
-
-		if (c->state == CharacterState::INSIDE) {
-			int x = (int)c->x;
-			int y = (int)c->y;
-			auto entryInfo = game.getMap().getBuilding(x, y);
-			if (!entryInfo.building) {
-				throw std::runtime_error{"Missing entry building"};
-			}
-			
-			
-			auto exitInfo = c->getWorkBuilding(game.getMap());
-			if (!exitInfo.building) {
-				throw std::runtime_error{"Missing exit building"};
-			}
-
-			Vector<int> entry;
-			Vector<int> exit;
-			// Select entry and exit
-			{
-				int entryLargeLength = entryInfo.building->getBufferLargeLength();
-				int exitLargeLength = exitInfo.building->getBufferLargeLength();
-				int largeLength = entryLargeLength > exitLargeLength ?
-					entryLargeLength : exitLargeLength;
-
-				Vector<int> list[largeLength];
-
-				int entryLength = entryInfo.building->fillEntryList(list);
-				entry = list[c->takeRandomPointId(entryLength)];
-				
-				int exitLength = exitInfo.building->fillExitList(list);
-				exit = list[c->takeRandomPointId(exitLength)];
-			}
-
-			c->x = (float)(entryInfo.x + entry.x) + .5f;
-			c->y = (float)(entryInfo.y + entry.y) + .5f;
-
-			// Define path and go outside
-			bool result = c->makeWalk(game, exitInfo.x + exit.x, exitInfo.y + exit.y);
-
-			return result ? ActionCode::PENDING : ActionCode::FAILURE;
-		}
-		
-		
-		if (c->state == CharacterState::WALK) {
-			char dir = c->data.walk.path[c->data.walk.position];
-
-
-			static constexpr float SQRT2 = 1.41421356f;
-			static constexpr float INV_SQRT2 = 0.70710678f;
-			static const Vector<float> DELTAS[] = {
-				{ 1.0f,  0.0f},              // right
-				{ INV_SQRT2, -INV_SQRT2},    // up-right
-				{ 0.0f, -1.0f},              // up
-				{-INV_SQRT2, -INV_SQRT2},    // up-left
-				{-1.0f,  0.0f},              // left
-				{-INV_SQRT2,  INV_SQRT2},    // down-left
-				{ 0.0f,  1.0f},              // down
-				{ INV_SQRT2,  INV_SQRT2}     // down-right
-			};
-
-			static const Vector<int> DIRECTIONS[] = {
-				{ 1,  0},   // right
-				{ 1, -1},   // up-right
-				{ 0, -1},   // up
-				{-1, -1},   // up-left
-				{-1,  0},   // left
-				{-1,  1},   // down-left
-				{ 0,  1},   // down
-				{ 1,  1}    // down-right
-			};
-
-
-			auto move = [c, &dir, &game]() {
-				c->data.walk.anchor.x += DIRECTIONS[dir].x;
-				c->data.walk.anchor.y += DIRECTIONS[dir].y;
-				c->data.walk.position++;
-
-				dir = c->data.walk.path[c->data.walk.position];
-
-				if (dir != 8) {
-					return ActionCode::PENDING;
-				}
-
-				auto info = game.getMap().getBuilding(
-					c->data.walk.anchor.x,
-					c->data.walk.anchor.y
-				);
-
-				printf("final %p\n", info.building);
-
-				return c->makeInside(game) ?
-					ActionCode::SUCCESS : ActionCode::FAILURE;
-			};
-
-			// Move step
-			c->data.walk.step += Character::SPEED;
-			if (dir%2 == 0) {
-				if (c->data.walk.step > 1) {
-					c->data.walk.step -= 1;
-					ActionCode c = move();
-					if (c != ActionCode::PENDING) {return c;}
-				}
-			} else if (c->data.walk.step > SQRT2) {
-				c->data.walk.step -= SQRT2;
-				ActionCode c = move();
-				if (c != ActionCode::PENDING) {return c;}
-			}
-
-			c->x = (float)c->data.walk.anchor.x + .5f + DELTAS[dir].x * c->data.walk.step;
-			c->y = (float)c->data.walk.anchor.y + .5f + DELTAS[dir].y * c->data.walk.step;
-
-			printf("(%.3f, %3f | %d)\n", c->x, c->y, c->data.walk.position);
-
-			return ActionCode::PENDING;
-		}
-		
-		return ActionCode::FAILURE;	
-	}
-	
-	def(takeCarToHome) {
-		printf("take car to home\n");
-		return ActionCode::PENDING;
-	}
-	
-	def(walkToWork) {
-		printf("walkToWork\n");
-		return ActionCode::PENDING;
-	}
-	
-	def(walkToHome) {
-		printf("walkToHome\n");
-		return ActionCode::PENDING;
-	}
-	
-	def(waitCarNotification) {
-		printf("waitCarNotification\n");
-		return ActionCode::PENDING;
-	}
-	
 	def(chillDayTest) {
 		printf("chillDayTest\n");
 		return ActionCode::PENDING;
-	
 	}
+
+	def(drive) {
+		setCharacter();
+		return c->data.drive.state;
+	}
+
+	def(walk) {
+		setCharacter();
+		return c->walk(game);
+	}
+
+	def(orientCar) {
+		setCharacter();
+		if (!c->car)
+			return ActionCode::FAILURE;
+
+		bool r = c->makeWalk(game, c->car->x, c->car->y);
+		printf("walk %d\n", r);
+		return ActionCode_get(r);
+	}
+
+	def(orientWork) {
+		setCharacter();
+		auto& map = game.getMap();
+		auto info = c->getWorkBuilding(map);
+		bool r = c->orientBuilding(game, info);
+		return ActionCode_get(r);
+	}
+
+	def(orientHome) {
+		setCharacter();
+		auto& map = game.getMap();
+		auto info = c->getHomeBuilding(map);
+		bool r = c->orientBuilding(game, info);
+		return ActionCode_get(r);
+		return ActionCode::PENDING;
+	}
+
+	def(locateCar) {
+		printf("locateCar\n");
+		return ActionCode::PENDING;
+	}
+
+	def(locateWork) {
+		printf("locateWork\n");
+		return ActionCode::PENDING;
+	}
+
+	def(locateHome) {
+		printf("locateHome\n");
+		return ActionCode::PENDING;
+	}
+
+	def(enter) {
+		printf("enter\n");
+		return ActionCode::PENDING;
+	}
+
+
+	def(leave) {
+		setCharacter();
+
+		if (c->state != CharacterState::INSIDE)
+			throw std::runtime_error{"Trying to leave while not inside"};
+
+
+		auto info = game.getMap().getBuilding(
+			(int)c->x,
+			(int)c->y
+		);
+
+		if (!info.building) {
+			throw std::runtime_error{"Missing entry building"};
+		}
+
+		Vector<int> point;
+		{
+			int largeLength = info.building->getBufferLargeLength();
+			Vector<int> leaveList[largeLength];
+			int length = info.building->fillLeaveList(leaveList);
+			point = leaveList[c->takeRandomPointId(length)];
+		}
+
+		c->x = (float)(info.x + point.x) + .5f;
+		c->y = (float)(info.y + point.y) + .5f;
+
+		printf("leave %d %d\n", info.x + point.x, info.y + point.y);
+
+		c->setState(CharacterState::OUTSIDE);
+		return ActionCode::SUCCESS;
+	}
+
+	def(passWork) {
+		printf("passWork\n");
+		return ActionCode::PENDING;
+	}
+
+
+	
+	
 };
 
 
@@ -220,12 +175,22 @@ give(runDayJob, &workSection, &chillSection);
 give(workSection, &isWorkDay, &workDay);
 
 give(workDay,
-    &takeCarToWork,
-    &waitCarNotification,
-    &walkToWork,
-    &takeCarToHome,
-    &waitCarNotification,
-    &walkToHome
+	&leave,
+	&orientCar,
+	&walk,
+	&locateWork,
+	&drive,
+	&orientWork,
+	&walk,
+	&enter,
+	&passWork,
+	&leave,
+	&orientCar,
+	&walk,
+	&locateHome,
+	&drive,
+	&orientHome,
+	&enter
 );
 
 give(chillSection, &isChillDay, &chillDay);

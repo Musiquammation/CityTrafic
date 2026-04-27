@@ -149,6 +149,12 @@ bool Car::drive(Character* driver, int destX, int destY) {
 	return true;
 }
 
+void Car::removeDriver(Character* driver) {
+	if (this->driver == driver) {
+		this->driver = nullptr;
+	}
+}
+
 void Car::finishDriving() {
 	this->driver->notifyDrive();
 	this->driver = nullptr;

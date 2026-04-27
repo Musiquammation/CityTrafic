@@ -22,6 +22,9 @@ static const void* test(Game& game, const void* ptr) {
 	int h = take(int32_t);
 
 
+	game.map.getEditCell(2, 14)->setType(CellType::ROAD, game, 0);
+	Car* car = game.spawnCar(2, 14, Direction::RIGHT);
+
 	auto home = Building::create_home(3);
 	game.map.addBuilding(10, 12, home, game);
 	
@@ -30,6 +33,7 @@ static const void* test(Game& game, const void* ptr) {
 
 	auto character = Character::spawnCharacter(game.getMap(), 10, 12);
 	if (character) {
+		character->setCar(car);
 		game.characterHandler.pushCharacter(character);
 	}
 

@@ -37,7 +37,8 @@ void Server::run(int port) {
 			}
 			
 			const uint8_t* ptr = (const uint8_t*)(message.data());
-
+			if ((size_t)ptr % 4)
+				printf("received %p\n", ptr);
 
 			
             try {
@@ -46,6 +47,7 @@ void Server::run(int port) {
 					res = this->fn(client, ptr);\
 					break;
 					
+
                 switch ((ServerId)*ptr++) {
                     get(CONNECT, connect);
                     get(LISTEN, listen);

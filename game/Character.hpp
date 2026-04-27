@@ -2,8 +2,9 @@
 
 #include "declarations.hpp"
 #include "Vector.hpp"
-#include "ActionExecutor.hpp"
 #include "BuildingInfo.hpp"
+#include "ActionExecutor.hpp"
+#include "actions/ActionCode.hpp"
 
 namespace actionNodes::character {
 	struct CharacterFriend;
@@ -13,6 +14,7 @@ enum class CharacterState {
 	CLIENT,
 	WALK,
 	INSIDE,
+	OUTSIDE,
 	DRIVE
 };
 
@@ -46,14 +48,18 @@ class Character {
 		} inside;
 
 		struct {
-			
+
+		} outside;
+
+		struct {
+			ActionCode state;
 		} drive;
 	} data;
 
 	void cleanupState();
 	void setState(CharacterState next);
+	ActionCode walk(Game& game);
 
-	void followWalkPath();
 	friend struct actionNodes::character::CharacterFriend;
 
 public:
@@ -70,11 +76,16 @@ public:
 	void notifyDrive();
 
 	BuildingInfo getWorkBuilding(const Map& map) const;
+	BuildingInfo getHomeBuilding(const Map& map) const;
+	bool orientBuilding(Game& game, BuildingInfo info);
 
 	void frame(Game& game);
 	int takeRandomPointId(int modulo);
 
 	CharacterState getState() const;
+
+	Car* getCar() const;
+	bool setCar(Car* car);
 
 	~Character();
 };

@@ -33,7 +33,9 @@ uint32_t* entities_helper_make(
 	}
 
 	for (auto character: game.characterHandler) {
-		if (character->getState() == CharacterState::WALK
+		auto state = character->getState();
+		if ((state == CharacterState::WALK ||
+			state == CharacterState::OUTSIDE)
 			&& character->x >= fx0 && character->x < fx1
 			&& character->y >= fy0 && character->y < fy1
 		) {
@@ -74,7 +76,9 @@ uint32_t* entities_helper_make(
 	// Send characters
 	*ptr++ = charactersCount;
 	for (auto character: game.characterHandler) {
-		if (character->getState() == CharacterState::WALK
+		auto state = character->getState();
+		if ((state == CharacterState::WALK ||
+			state == CharacterState::OUTSIDE)
 			&& character->x >= fx0 && character->x < fx1
 			&& character->y >= fy0 && character->y < fy1
 		) {
