@@ -70,7 +70,11 @@ def(waitCarNotification) {
 	return ActionCode::PENDING;
 }
 
+def(chillDayTest) {
+	printf("chillDayTest\n");
+	return ActionCode::PENDING;
 
+}
 
 
 give(result, &runDayJob);
@@ -104,7 +108,7 @@ const ActionNode* init() {
 
 	initialized = true;
 
-	makeLink();
+	makeList();
 
 	return &result;
 }
