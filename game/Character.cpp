@@ -97,9 +97,17 @@ bool Character::makeWalk(Game& game, int destX, int destY) {
 	}
 
 
+	printf("Path (%d %d -> %d %d):", (int)this->x, (int)this->y, destX, destY);
+	for (char* p = path; *p != 8; p++) {
+		printf("%d ", *p);
+	}
+	printf("\n");
+
 	this->state = CharacterState::WALK;
 	this->data.walk.path = path;
 	this->data.walk.position = 0;
+	this->data.walk.step = 0;
+	this->data.walk.anchor = {(int)this->x, (int)this->y};
 	return true;
 }
 
@@ -130,6 +138,11 @@ bool Character::makeInside(Game& game) {
 
 void Character::notifyDrive() {
 
+}
+
+BuildingInfo Character::getWorkBuilding(const Map& map) const {
+	/// TODO: rework getWorkBuilding
+	return map.getBuilding(1, 5);
 }
 
 void Character::frame(Game& game) {

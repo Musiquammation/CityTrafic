@@ -13,7 +13,7 @@ import { askWorker } from "../worker/askWorker";
 import { COMMAND_CODES } from "../shared/CommandCode";
 import { ActionHandler } from "../action/ActionHandler";
 import { Car } from "./Car";
-import { Character } from "./Character";
+import { Character, CHARACTER_SIZE } from "./Character";
 import { drawCar } from "./drawCar";
 import { drawCharacter } from "./drawCharacter";
 
@@ -131,7 +131,10 @@ export class PlayState extends GameState {
 	private drawCharacters(ctx: OffscreenCanvasRenderingContext2D) {
 		for (const character of this.characters) {
 			ctx.save();
-			ctx.translate(character.x, character.y);
+			ctx.translate(
+				character.x - CHARACTER_SIZE.x/2,
+				character.y - CHARACTER_SIZE.y/2
+			);
 			drawCharacter(character, ctx);
 			ctx.restore();
 		}

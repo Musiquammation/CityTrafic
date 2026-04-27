@@ -3,6 +3,7 @@
 #include "declarations.hpp"
 #include "Vector.hpp"
 #include "ActionExecutor.hpp"
+#include "BuildingInfo.hpp"
 
 namespace actionNodes::character {
 	struct CharacterFriend;
@@ -24,8 +25,7 @@ class Character {
 	unsigned int pointId;
 
 
-	static constexpr float FRONT_SPEED = .04f;
-	static constexpr float SIDE_SPEED = FRONT_SPEED/1.4f;
+	static constexpr float SPEED = .04f;
 
 	Character();
 
@@ -37,6 +37,8 @@ class Character {
 		struct {
 			char* path;
 			int position;
+			float step;
+			Vector<int> anchor;
 		} walk;
 
 		struct {
@@ -51,6 +53,7 @@ class Character {
 	void cleanupState();
 	void setState(CharacterState next);
 
+	void followWalkPath();
 	friend struct actionNodes::character::CharacterFriend;
 
 public:
@@ -65,6 +68,8 @@ public:
 	bool makeInside(Game& game);
 
 	void notifyDrive();
+
+	BuildingInfo getWorkBuilding(const Map& map) const;
 
 	void frame(Game& game);
 	int takeRandomPointId(int modulo);

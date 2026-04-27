@@ -97,8 +97,8 @@ async function net_getEntities(reader: DataReader) {
 	const charactersCount = reader.readUint32();
 	const characters = new Array<Character>(charactersCount);
 	for (let i = 0; i < charactersCount; i++) {
-		const x = reader.readInt32();
-		const y = reader.readInt32();
+		const x = reader.readFloat32();
+		const y = reader.readFloat32();
 		characters[i] = {x,y};
 	}
 

@@ -65,6 +65,8 @@ bool ActionExecutor::run(Game& game, Character* character) {
 	ActionCode prevResult = ActionCode::PENDING;
 	
 	Node* node = this->currentNode;
+	if (!node)
+		return true;
 	
 	do {
 		switch (node->type) {
@@ -170,4 +172,9 @@ bool ActionExecutor::run(Game& game, Character* character) {
 	// Performing pending instruction
 	this->currentNode = node;
 	return false;
+}
+
+
+void ActionExecutor::restart() {
+	this->currentNode = this->root;
 }

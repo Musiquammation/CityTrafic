@@ -33,7 +33,7 @@ struct PosHash {
 char* makePedestranPath(const Map& map, int startX, int startY, int destX, int destY) {
     // Directions: 0:R, 1:UR, 2:U, 3:UL, 4:L, 5:DL, 6:D, 7:DR
     const int dx[] = {1,  1,  0, -1, -1, -1,  0,  1};
-    const int dy[] = {0,  1,  1,  1,  0, -1, -1, -1};
+    const int dy[] = {0, -1, -1, -1,  0,  1,  1,  1};
     const int costs[] = {10, 14, 10, 14, 10, 14, 10, 14};
 
     int curX = startX;
