@@ -26,6 +26,9 @@ void Building::Home::remove(int position) {
 	this->characters[position] = nullptr;
 }
 
+bool Building::Home::isFull() const {
+	return this->left == 0;
+}
 
 
 const Vector<int> SIZES[] = {
@@ -45,12 +48,23 @@ Vector<int> Building::getSize() const {
 }
 
 
-int Building::fillBuildingSpecs(BuildingElementSpec list[]) const {
-	BuildingElementSpec* ptr = list;
+int Building::fillEntryList(Vector<int> list[]) const {
+	Vector<int>* ptr = list;
 	switch (this->type) {
 	case BuildingType::HOME:
-		*list++ = {2, 1, true, false}; // entry (2,1)
-		*list++ = {1, 0, false, true}; // exit  (1,2)
+		*list++ = {2, 1};
+		break;
+	}
+
+	return (int)(ptr-list);
+}
+
+
+int Building::fillExitList(Vector<int> list[]) const {
+	Vector<int>* ptr = list;
+	switch (this->type) {
+	case BuildingType::HOME:
+		*list++ = {2, 2};
 		break;
 	}
 

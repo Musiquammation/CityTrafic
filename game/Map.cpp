@@ -271,7 +271,7 @@ void Map::copyCells(Cell* dst, int x, int y, int w, int h) const {
 
 
 
-BuildingInfo Map::getBuilding(int x, int y) {
+BuildingInfo Map::getBuilding(int x, int y) const {
 	// Search BUILDING cell
 	const Cell* cell = this->getCell(x, y);
 	while (true) {
@@ -371,19 +371,13 @@ bool Map::addBuilding(int x, int y, Building* building, Game& game) {
 	}
 	
 	
-	BuildingElementSpec edits[size.y * size.x];
-	int editsLength = building->fillBuildingSpecs(edits);
+	Vector<int> edits[size.y * size.x];
+	int editsLength = building->fillEntryList(edits);
 
-	// Apply edits
+	// Apply entry list
 	mfor(edits, editsLength, i) {
-		auto cell = this->getEditCell(x + i->dx, y + i->dy);
-		if (i->entry) {
-			cell->data |= 1 << 14;
-		}
-
-		if (i->exit) {
-			/// TODO: is this test useful?
-		}
+		auto cell = this->getEditCell(x + i->x, y + i->y);
+		cell->data |= 1 << 14;
 	}
 
 

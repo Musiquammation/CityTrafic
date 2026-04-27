@@ -1,6 +1,7 @@
 #include "Game.hpp"
 
 #include "Car.hpp"
+#include "Character.hpp"
 #include "Cell.hpp"
 #include "Map.hpp"
 
@@ -18,12 +19,20 @@ void Game::frame() {
 	this->carHandler.updateCars(this);
 	this->carHandler.moveCars();
 
+
+	// Character logic
+	for (Character* character : this->characterHandler) {
+		character->frame(*this);
+	}
+
 	// Update grid
 	this->map.resetCarMarks();
 	for (auto& [pos, car] : this->carHandler) {
 		auto cell = this->map.getEditCell(car->x, car->y);
 		cell->setCarOn();
 	}
+
+
 
 	this->frameCount++;
 }

@@ -7,12 +7,6 @@ enum class BuildingType: int {
 	HOME,
 };
 
-struct BuildingElementSpec {
-	int dx;
-	int dy;
-	bool entry;
-	bool exit;
-};
 
 struct Building {
 	BuildingType type;
@@ -24,6 +18,7 @@ struct Building {
 
 		int add(Character* c);
 		void remove(int position);
+		bool isFull() const;
 	};
 
 
@@ -37,7 +32,8 @@ struct Building {
 
 	
 	Vector<int> getSize() const;
-	int fillBuildingSpecs(BuildingElementSpec list[]) const;
+	int fillEntryList(Vector<int> list[]) const;
+	int fillExitList(Vector<int> list[]) const;
 
 	~Building();
 };

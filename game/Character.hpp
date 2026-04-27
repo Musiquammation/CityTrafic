@@ -46,7 +46,7 @@ public:
 	float y;
 
 	static Character* createClientCharacter(float x, float y);
-
+	static Character* spawnCharacter(const Map& map, int x, int y);
 
 	bool makeWalk(Game& game, int destX, int destY);
 	bool makeDrive(Game& game, int destX, int destY);

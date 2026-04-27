@@ -51,6 +51,32 @@ Character* Character::createClientCharacter(float x, float y) {
 	return c;
 }
 
+Character* Character::spawnCharacter(const Map& map, int x, int y) {
+	auto info = map.getBuilding(x, y);
+	if (!info.building)
+		return nullptr;
+
+	if (info.building->type != BuildingType::HOME)
+		return nullptr;
+
+	if (info.building->home.isFull())
+		return nullptr;
+
+
+	auto c = new Character;
+	c->x = (float)x + .5f;
+	c->y = (float)y + .5f;
+	c->state = CharacterState::INSIDE;
+	if (!info.building->home.add(c)) {
+		delete c;
+		return nullptr;
+	}
+
+	
+
+	return c;
+}
+
 
 bool Character::makeWalk(Game& game, int destX, int destY) {
 	this->state = CharacterState::WALK;

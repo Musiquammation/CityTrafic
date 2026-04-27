@@ -71,7 +71,7 @@ public:
 
     void copyCells(Cell* dst, int x, int y, int w, int h) const;
 
-    BuildingInfo getBuilding(int x, int y);
+    BuildingInfo getBuilding(int x, int y) const;
     bool addBuilding(int x, int y, Building* building, Game& game);
     bool removeBuilding(int x, int y, Game& game);
 };

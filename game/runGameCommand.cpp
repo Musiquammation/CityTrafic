@@ -2,6 +2,7 @@
 #include "CommandCode.hpp"
 
 #include "Game.hpp"
+#include "Character.hpp"
 #include "Building.hpp"
 #include "Cell.hpp"
 #include "CellType.hpp"
@@ -21,10 +22,17 @@ static const void* test(Game& game, const void* ptr) {
 	int h = take(int32_t);
 
 
-	auto building = Building::create_home(3);
-	auto success = game.map.addBuilding(10, 12, building, game);
+	auto home = Building::create_home(3);
+	game.map.addBuilding(10, 12, home, game);
+	
+	auto shop = Building::create_home(3);
+	game.map.addBuilding(1, 5, home, game);
 
-	printf("Hello %d\n", success);
+	auto character = Character::spawnCharacter(game.getMap(), 10, 12);
+	if (character) {
+		game.characterHandler.pushCharacter(character);
+	}
+
 	return ptr;
 }
 
