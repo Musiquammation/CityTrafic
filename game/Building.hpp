@@ -32,6 +32,7 @@ struct Building {
 
 	
 	Vector<int> getSize() const;
+	int getBufferLargeLength() const;
 	int fillEntryList(Vector<int> list[]) const;
 	int fillExitList(Vector<int> list[]) const;
 

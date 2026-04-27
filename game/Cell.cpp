@@ -46,7 +46,6 @@ cell_t Cell::editType(
 		}
 
 
-	printf("current %d %d\n", current & 0x0f, (int)type);
 
 	switch ((CellType)(current & 0x0f)) {
 	case CellType::NONE:

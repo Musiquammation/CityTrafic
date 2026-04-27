@@ -83,6 +83,7 @@ char* makePedestranPath(const Map& map, int startX, int startY, int destX, int d
         int dX = std::abs(x - destX);
         int dY = std::abs(y - destY);
         // Octile distance heuristic
+        // printf("dist %d %d\n", dX, dY);
         return 10 * (dX + dY) + (14 - 20) * std::min(dX, dY);
     };
 

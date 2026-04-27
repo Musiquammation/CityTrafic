@@ -48,11 +48,15 @@ Vector<int> Building::getSize() const {
 }
 
 
+int Building::getBufferLargeLength() const {
+	return 16;
+}
+
 int Building::fillEntryList(Vector<int> list[]) const {
 	Vector<int>* ptr = list;
 	switch (this->type) {
 	case BuildingType::HOME:
-		*list++ = {2, 1};
+		*ptr++ = {2, 1};
 		break;
 	}
 
@@ -64,7 +68,7 @@ int Building::fillExitList(Vector<int> list[]) const {
 	Vector<int>* ptr = list;
 	switch (this->type) {
 	case BuildingType::HOME:
-		*list++ = {2, 2};
+		*ptr++ = {2, 2};
 		break;
 	}
 

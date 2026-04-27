@@ -65,18 +65,17 @@ Character* Character::spawnCharacter(const Map& map, int x, int y) {
 
 
 	auto c = new Character;
-	c->x = (float)x + .5f;
-	c->y = (float)y + .5f;
-	c->state = CharacterState::INSIDE;
 	int homePosition = info.building->home.add(c);
 	if (homePosition < 0) {
 		delete c;
 		return nullptr;
 	}
 
+	c->x = (float)x + .5f;
+	c->y = (float)y + .5f;
+	c->state = CharacterState::INSIDE;
 	c->homePosition = homePosition;
-
-	
+	c->pointId = 0;
 
 	return c;
 }
@@ -134,7 +133,16 @@ void Character::notifyDrive() {
 }
 
 void Character::frame(Game& game) {
+	if (this->state == CharacterState::CLIENT)
+		return;
+		
 	this->executor.run(game, this);
+}
+
+int Character::takeRandomPointId(int modulo) {
+	int exit = this->pointId % modulo;
+	this->pointId++;
+	return exit;
 }
 
 

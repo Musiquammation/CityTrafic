@@ -4,6 +4,10 @@
 #include "Vector.hpp"
 #include "ActionExecutor.hpp"
 
+namespace actionNodes::character {
+	struct CharacterFriend;
+}
+
 enum class CharacterState {
 	CLIENT,
 	WALK,
@@ -17,6 +21,11 @@ class Character {
 	ActionExecutor executor;
 	Vector<int> home;
 	int homePosition;
+	unsigned int pointId;
+
+
+	static constexpr float FRONT_SPEED = .04f;
+	static constexpr float SIDE_SPEED = FRONT_SPEED/1.4f;
 
 	Character();
 
@@ -42,6 +51,8 @@ class Character {
 	void cleanupState();
 	void setState(CharacterState next);
 
+	friend struct actionNodes::character::CharacterFriend;
+
 public:
 	float x;
 	float y;
@@ -56,6 +67,7 @@ public:
 	void notifyDrive();
 
 	void frame(Game& game);
+	int takeRandomPointId(int modulo);
 
 	CharacterState getState() const;
 

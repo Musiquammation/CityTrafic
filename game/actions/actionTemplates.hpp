@@ -36,7 +36,7 @@ constexpr ActionNode _makeFst(const std::array<const ActionNode*, N>& children) 
 
 
 
-#define def(name) ActionCode run_##name(Game& game, Character* character, void* _data)
+#define def(name) static ActionCode run_##name(Game& game, Character* character, void* _data)
 #define setData() Data* data = (Data*)_data;
 
 #define declNode(name) ActionNode name;
