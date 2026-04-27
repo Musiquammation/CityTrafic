@@ -1,5 +1,6 @@
 #pragma once
 
+#include "declarations.hpp"
 #include "Vector.hpp"
 #include "Direction.hpp"
 #include <stdint.h>
@@ -36,6 +37,12 @@ public:
 	Direction seekDirection();
 
 	void next();
+
+
+	friend bool makeCarPath(
+		const Map& map, PathHandler<true>& path);
+	friend bool makePedestranPath(
+		const Map& map, PathHandler<true>& path);
 };
 
 

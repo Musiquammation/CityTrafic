@@ -3,6 +3,7 @@
 #include "Map.hpp"
 #include "CarHandler.hpp"
 #include "CharacterHandler.hpp"
+#include "BuildingInfo.hpp"
 
 #include "declarations.hpp"
 
@@ -34,6 +35,8 @@ public:
     const Cell* getCell(int x, int y);
     Car* spawnCar(int x, int y, Direction direction);
     Car* getCar(int x, int y);
+    BuildingInfo getBuilding(int x, int y);
+    const Map& getMap() const;
 
     int getFrame() const;
     bool checkBounds(int x, int y, int width, int height) const;

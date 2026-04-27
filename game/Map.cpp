@@ -271,7 +271,7 @@ void Map::copyCells(Cell* dst, int x, int y, int w, int h) const {
 
 
 
-Map::BuildingInfo Map::getBuilding(int x, int y) {
+BuildingInfo Map::getBuilding(int x, int y) {
 	// Search BUILDING cell
 	const Cell* cell = this->getCell(x, y);
 	while (true) {

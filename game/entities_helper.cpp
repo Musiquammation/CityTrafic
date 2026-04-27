@@ -33,7 +33,7 @@ uint32_t* entities_helper_make(
 	}
 
 	for (auto character: game.characterHandler) {
-		if (character->state == CharacterState::WALK
+		if (character->getState() == CharacterState::WALK
 			&& character->x >= fx0 && character->x < fx1
 			&& character->y >= fy0 && character->y < fy1
 		) {
@@ -74,7 +74,7 @@ uint32_t* entities_helper_make(
 	// Send characters
 	*ptr++ = charactersCount;
 	for (auto character: game.characterHandler) {
-		if (character->state == CharacterState::WALK
+		if (character->getState() == CharacterState::WALK
 			&& character->x >= fx0 && character->x < fx1
 			&& character->y >= fy0 && character->y < fy1
 		) {
@@ -116,7 +116,7 @@ void entities_helper_read(Game& game, void* args) {
         float x = *(float*)(ptr++);
         float y = *(float*)(ptr++);
 
-        Character* character = new Character{x, y, CharacterState::WALK};
+        Character* character = Character::createClientCharacter(x, y);
         game.characterHandler.pushCharacter(character);
     }
 }

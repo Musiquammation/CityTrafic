@@ -12,3 +12,6 @@ class Building;
 struct PriorityNode;
 struct Cell;
 struct ActionNode;
+
+template<bool freeArray>
+class PathHandler;

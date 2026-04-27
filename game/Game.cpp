@@ -51,6 +51,15 @@ Car* Game::getCar(int x, int y) {
 	return this->carHandler.getCar(x, y);
 }
 
+BuildingInfo Game::getBuilding(int x, int y) {
+	return this->map.getBuilding(x, y);
+}
+
+
+const Map& Game::getMap() const {
+	return this->map;
+}
+
 
 int Game::getFrame() const {
 	return this->frameCount;

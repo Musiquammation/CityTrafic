@@ -4,6 +4,7 @@
 
 #include "Vector.hpp"
 #include "Cell.hpp"
+#include "BuildingInfo.hpp"
 
 #include <map>
 #include <vector>
@@ -37,13 +38,6 @@ class Map {
     int y;
     int width;
     int height;
-
-    struct BuildingInfo {
-        int x;
-        int y;
-        Building* building;
-    };
-
 
 
 public:

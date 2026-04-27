@@ -138,27 +138,18 @@ void Car::setSpeed(float speed) {
 }
 
 
-bool Car::appendDriver(Character* driver) {
+bool Car::drive(Character* driver, int destX, int destY) {
 	if (this->driver)
 		return false;
 
 	this->driver = driver;
 
-	driver->state = CharacterState::DRIVE;
-
 	/// TODO: find path according to driver aim
-
 
 	return true;
 }
 
-Character* Car::removeDriver() {
-	if (!this->driver)
-		return nullptr;
-
-	Character* driver = this->driver;
+void Car::finishDriving() {
+	this->driver->notifyDrive();
 	this->driver = nullptr;
-
-	driver->state = CharacterState::WALK;
-	return driver;
 }

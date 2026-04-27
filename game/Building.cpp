@@ -22,15 +22,8 @@ int Building::Home::add(Character* c) {
 	return -1;
 }
 
-int Building::Home::remove(Character* c) {
-	for (int i = 0; i < this->capacity; i++) {
-		if (this->characters[i] == c) {
-			this->characters[i] = nullptr;
-			this->left++;
-			return i;
-		}
-	}
-	return -1;
+void Building::Home::remove(int position) {
+	this->characters[position] = nullptr;
 }
 
 

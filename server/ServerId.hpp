@@ -2,7 +2,7 @@
 #pragma once
 
 
-enum class ServerId: uint8_t {
+enum class ServerId {
 	CONNECT,
 	LISTEN,
 	GAME_COMMANDS,

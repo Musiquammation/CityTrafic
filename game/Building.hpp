@@ -23,7 +23,7 @@ struct Building {
 		int capacity;
 
 		int add(Character* c);
-		int remove(Character* c);
+		void remove(int position);
 	};
 
 
