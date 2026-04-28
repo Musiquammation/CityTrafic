@@ -341,7 +341,6 @@ getDanger_t getDanger(
 	Game* game,
 	std::vector<PriorityNode>& priorities
 ) {
-	printf("getDanger:\n");
 	enum {
 		FRONT_RANGE = 64,
 		SIDE_RANGE = 64
@@ -403,7 +402,6 @@ getDanger_t getDanger(
 	
 	// Get terrain speed limit and check priorities
 	for (int dist = 0; dist <= FRONT_RANGE; dist++) {
-		printf("spy %d %d | %d\n", spy.x, spy.y, (int)spy.dir);
 		auto cell = game->getCell(spy.x, spy.y);
 		CellType cellType = cell->getType();
 		const Car* other = cell->hasCar() ?
@@ -522,12 +520,10 @@ getDanger_t getDanger(
 
 	
 		// Check if we need to turn
-		printf("pathPoint %d %d\n", pathPoint.x, pathPoint.y);
 		if (spy.x == pathPoint.x && spy.y == pathPoint.y) {
 			spy.dir = pathHandler.seekDirection();
 			pathHandler.next();
 			pathPoint = pathHandler.seek();
-			printf("step %d %d %d\n", spy.x, spy.y, (int)spy.dir);
 
 		}
 

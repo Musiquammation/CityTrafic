@@ -52,6 +52,31 @@ void Car::move() {
 	if (this->step >= 1) {
 		this->step -= 1;
 
+
+		// Turn car to follow pathHandler
+		auto next = this->pathHandler.seek();
+		if (this->x == next.x && this->y == next.y) {
+			Direction aim = this->pathHandler.seekDirection();
+			int dir = Direction_getTurn(this->direction, aim);
+			switch (dir) {
+			case 1:
+				this->state = CarState::TURN_RIGHT;
+				break;
+
+			case -1:
+				this->state = CarState::TURN_LEFT;
+				break;
+
+			default:
+				this->state = CarState::FRONT;
+				break;
+			}
+			this->pathHandler.next();
+		
+		} else {
+			this->state = CarState::FRONT;
+		}
+
 		switch (this->state) {
 		case CarState::FRONT:
 			break;
