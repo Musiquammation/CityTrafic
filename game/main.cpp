@@ -154,39 +154,77 @@ int main() {
 #elif MAIN_TEST_ID == 2
 
 
-#include "Game.hpp"
-#include "Building.hpp"
-#include "Character.hpp"
-#include "Map.hpp"
-#include "Vector.hpp"
+#include "direction.hpp"
 
-#include <map>
+#include <stdio.h>
+#include <assert.h>
+#include <stdint.h>
 
+// Assuming the functions direction::getSide and setSide are defined above...
 
-int main() {
-	Game game;
-
-	int value = 12;
-	int* valuePtr = &value;
-    std::map<Vector<int>, int*> map;
-
-	map[Vector<int>{10,12}] = valuePtr;
-
-	auto it = map.find(Vector<int>{10,12});
-	if (it != map.end()) {
-		printf("%p\n", it->second);
-	} else {
-		printf("%p\n", nullptr);
-	}
-
-
-
-	
-	printf("Success!\n");
-	return 0;
-	
+void print_bits(uint16_t data) {
+    for (int i = 15; i >= 0; i--) {
+        printf("%d", (data >> i) & 1);
+        if (i % 4 == 0) printf(" ");
+    }
+    printf("\n");
 }
 
+int main() {
+    printf("Starting tests...\n");
+
+    // --- TEST 1: Basic standard values ---
+    uint16_t data = 0; 
+    data = direction::setSide(data, 0, 1); // Right = 1
+    data = direction::setSide(data, 1, 2); // Up = 2
+    assert(direction::getSide(data, 0) == 1);
+    assert(direction::getSide(data, 1) == 2);
+    assert((data >> 12 & 1) == 0); // Special flag should be 0
+    printf("Test 1 Passed: Standard mode working.\n");
+
+    // --- TEST 2: Activating Special ---
+    // Set "Up" (direction 1) to special
+    data = direction::setSide(data, 1, 4); 
+    assert(direction::getSide(data, 1) == 4);
+    assert((data >> 12 & 1) == 1);     // Special flag ON
+    assert(((data >> 13) & 0x03) == 1); // Selector should point to 1
+    printf("Test 2 Passed: Special flag and selector auto-activation.\n");
+
+    // --- TEST 3: Multiple Special Sides (Chaining) ---
+    // Set "Down" (direction 3) to special as well
+    data = direction::setSide(data, 3, 4); 
+    assert(direction::getSide(data, 1) == 4);
+    assert(direction::getSide(data, 3) == 4);
+    assert(direction::getSide(data, 0) == 1); // Right remains 1
+    
+    /* Internal Logic Check:
+       Selector is 1 (Up).
+       Offset at direction 1 should be 2 (to reach direction 3: (1+2)%4 = 3).
+       Offset at direction 3 should be 0 (end of chain).
+    */
+    int idx_at_1 = (data >> (4 + 2 * 1)) & 0x03;
+    int idx_at_3 = (data >> (4 + 2 * 3)) & 0x03;
+    assert(idx_at_1 == 2);
+    assert(idx_at_3 == 0);
+    printf("Test 3 Passed: Multi-special chaining (idx calculation).\n");
+
+    // --- TEST 4: Removing Special ---
+    // Set "Up" back to a normal value
+    data = direction::setSide(data, 1, 0); 
+    assert(direction::getSide(data, 1) == 0);
+    assert(direction::getSide(data, 3) == 4); // Down should still be special
+    assert(((data >> 13) & 0x03) == 3); // Selector must now point to 3
+    printf("Test 4 Passed: Special removal and selector update.\n");
+
+    // --- TEST 5: Total Deactivation ---
+    data = direction::setSide(data, 3, 2); 
+    assert((data >> 12 & 1) == 0); // Special flag should turn OFF
+    assert(direction::getSide(data, 3) == 2);
+    printf("Test 5 Passed: Special flag auto-deactivation.\n");
+
+    printf("\nAll tests passed successfully!\n");
+    return 0;
+}
 
 #endif
 #endif

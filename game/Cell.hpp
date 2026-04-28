@@ -3,9 +3,9 @@
 #include <stdexcept>
 #include <stdint.h>
 #include "CellType.hpp"
+#include "cell_t.hpp"
 #include "declarations.hpp"
 
-typedef uint16_t cell_t;
 
 struct Cell {
 	cell_t data = 0;

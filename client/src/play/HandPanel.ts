@@ -86,6 +86,7 @@ export class HandPanel {
 
 		pushButton(handlist.erase);
 		pushButton(handlist.road);
+		pushButton(handlist.parking);
 
 
 

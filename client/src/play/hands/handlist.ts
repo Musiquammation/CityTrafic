@@ -53,34 +53,6 @@ function placeParking(x: number, y: number, btn: number, play: PlayState) {
 }
 
 
-const parking = new HandButton(
-	{
-		list: {parking: "assets/icons/parking.png"},
-		first: 'parking'
-	},
-
-	// enable
-	()=>null,
-
-	// diseable
-	()=>{},
-
-	// mouseUp
-	(x, y, btn, play) => {
-		placeParking(x, y, btn, play);
-	},
-
-	// mouseDown
-	(x, y, btn, play) => {
-		placeParking(x, y, btn, play);
-	},
-
-	// mouseMove
-	(prevX, prevY, x, y, btn, play) => {
-		placeParking(x, y, btn, play);
-	},
-);
-
 export const handlist = {
 	erase: new HandButton(
 		{
@@ -136,5 +108,35 @@ export const handlist = {
 		(prevX, prevY, x, y, btn, play) => {
 			placeRoad(x, y, btn, play);
 		},
+	),
+
+
+	parking: new HandButton(
+		{
+			list: {parking: "assets/icons/parking.png"},
+			first: 'parking'
+		},
+
+		// enable
+		()=>null,
+
+		// diseable
+		()=>{},
+
+		// mouseUp
+		(x, y, btn, play) => {
+			placeParking(x, y, btn, play);
+		},
+
+		// mouseDown
+		(x, y, btn, play) => {
+			placeParking(x, y, btn, play);
+		},
+
+		// mouseMove
+		(prevX, prevY, x, y, btn, play) => {
+			placeParking(x, y, btn, play);
+		},
 	)
+
 }

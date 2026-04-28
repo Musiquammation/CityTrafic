@@ -48,14 +48,6 @@ cell_t Cell::editType(
 
 
 	switch ((CellType)(current & 0x0f)) {
-	case CellType::NONE:
-		result = arg;
-		break;
-
-	case CellType::ROAD:
-		result = arg;
-		break;
-
 	case CellType::BUILDING:
 	case CellType::LINK:
 		check(CellInstruction::BUILDING);
