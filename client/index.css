@@ -40,8 +40,86 @@ canvas {
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+/* hand panel */
+#handPanel {
+	--cellSize: 48px;
+
+	position: fixed;
+	top: 10px;
+	left: 50%;
+	transform: translateX(-50%);
+	
+	width: 500px;
+	max-width: 50vw;
+	height: var(--cellSize);
+
+	display: flex;
+	align-items: center;
+	gap: 4px;
+
+	padding: 2px;
+
+	overflow-x: auto;
+	overflow-y: hidden;
+
+	background: #ddd;
+	border-radius: 4px;
+}
+
+#handPanel > div {
+	width: var(--cellSize);
+	height: var(--cellSize);
+	border-radius: 4px;
+	background-color: gold;
+	flex: 0 0 auto;
+	cursor: pointer;
+
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+#handPanel > div > div {
+	width: 100%;
+	height: 100%;
+	border-radius: 4px;
+
+	background-color: black;
+	background-repeat: no-repeat;
+	background-size: cover;
+	background-position: center;
+
+	image-rendering: pixelated;
+
+	transform: translateZ(0) rotate(-90deg) scale(1);
+	transform-origin: center;
+
+	transition: transform 0.25s ease;
+	will-change: transform;
+}
+
+#handPanel > div.selected > div {
+	transform: translateZ(0) rotate(-90deg) scale(0.83);
+}
+
+
 .hidden {
 	display: none !important; 
 }
+
+
+
 
 

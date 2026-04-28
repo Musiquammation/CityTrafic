@@ -11,6 +11,7 @@
 		<div id="gameView" class="view hidden">
 			<canvas id="gameCanvas"></canvas>
 			<div id="fps"></div>
+			<div id="handPanel"></div>
         </div>
 
 		<div id="homeView" class="view hidden">
@@ -26,6 +27,13 @@
 
 			import("/src/index.ts").then(m => {m.startGame()});
 			
+
+			setTimeout(() => {
+				if (document.getElementById("homeView").classList.contains('hidden'))
+					return;
+
+				document.getElementById("home-createSession").click();
+			}, 500);
 			/*import("/src/index.ts").then(m => {
 				m.startGame();
 				window.switchToTestState = true;

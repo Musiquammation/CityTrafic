@@ -1,7 +1,5 @@
 export class ImageLoader {
 	private folders: { [folderName: string]: { [imageName: string]: (HTMLImageElement | HTMLCanvasElement)[] } } = {};
-	private loadedCount = 0;
-	private totalCount = 0;
 	private placeholder: HTMLCanvasElement;
 	private pathRoot: string;
 
@@ -59,43 +57,39 @@ export class ImageLoader {
 	}
 
 	async load(list: { [key: string]: string }): Promise<void> {
-		this.totalCount = Object.keys(list).length;
-		this.loadedCount = 0;
+		// Initialisation du dossier si inexistant
+		if (!this.folders['default']) this.folders['default'] = {};
 
-		const promises: Promise<void>[] = [];
+		const entries = Object.entries(list);
 
-		for (const [name, path] of Object.entries(list)) {
-			const p = (async () => {
-				try {
-					const res = await fetch(this.pathRoot + path);
-					if (!res.ok) throw new Error('Failed to fetch ' + path);
-					const blob = await res.blob();
+		const promises = entries.map(async ([name, path]) => {
+			// OPTIMISATION : Vérifie si déjà chargé
+			if (this.folders['default'][name]) {
+				return;
+			}
 
-					const img = await new Promise<HTMLImageElement>((resolve, reject) => {
-						const i = new Image();
-						i.onload = () => resolve(i);
-						i.onerror = e => reject(e);
-						i.src = URL.createObjectURL(blob);
-					});
+			try {
+				const res = await fetch(this.pathRoot + path);
+				if (!res.ok) throw new Error('Failed to fetch ' + path);
+				const blob = await res.blob();
+				const objectUrl = URL.createObjectURL(blob);
 
-					if (!this.folders['default'])
-						this.folders['default'] = {};
+				const img = await new Promise<HTMLImageElement>((resolve, reject) => {
+					const i = new Image();
+					i.onload = () => {
+						URL.revokeObjectURL(objectUrl); // Nettoyage mémoire
+						resolve(i);
+					};
+					i.onerror = e => reject(e);
+					i.src = objectUrl;
+				});
 
-					if (!this.folders['default'][name])
-						this.folders['default'][name] = [];
+				this.folders['default'][name] = [img];
 
-					this.folders['default'][name].push(img);
-					this.loadedCount++;
-
-				} catch (err) {
-					console.warn("Error with:", path);
-					console.error(err);
-					this.loadedCount++;
-				}
-			})();
-
-			promises.push(p);
-		}
+			} catch (err) {
+				console.warn("Error with:", path, err);
+			}
+		});
 
 		await Promise.all(promises);
 	}
@@ -105,65 +99,59 @@ export class ImageLoader {
 		colors: string[],
 		list: { [key: string]: string }
 	): Promise<void> {
-		this.totalCount += Object.keys(list).length;
+		if (!this.folders['colored']) this.folders['colored'] = {};
 
-		const promises: Promise<void>[] = [];
+		const entries = Object.entries(list);
 
-		for (const [name, path] of Object.entries(list)) {
-			const p = (async () => {
-				try {
-					const res = await fetch(this.pathRoot + path);
-					if (!res.ok) throw new Error('Failed to fetch ' + path);
-					const blob = await res.blob();
+		const promises = entries.map(async ([name, path]) => {
+			// Check if already loaded
+			if (this.folders['colored'][name]) {
+				return;
+			}
 
-					const img = await new Promise<HTMLImageElement>((resolve, reject) => {
-						const i = new Image();
-						i.onload = () => resolve(i);
-						i.onerror = e => reject(e);
-						i.src = URL.createObjectURL(blob);
-					});
+			try {
+				const res = await fetch(this.pathRoot + path);
+				if (!res.ok) throw new Error('Failed to fetch ' + path);
+				const blob = await res.blob();
+				const objectUrl = URL.createObjectURL(blob);
 
-					if (!this.folders['colored'])
-						this.folders['colored'] = {};
+				const img = await new Promise<HTMLImageElement>((resolve, reject) => {
+					const i = new Image();
+					i.onload = () => {
+						URL.revokeObjectURL(objectUrl);
+						resolve(i);
+					};
+					i.onerror = e => reject(e);
+					i.src = objectUrl;
+				});
 
-					if (!this.folders['colored'][name])
-						this.folders['colored'][name] = [];
-
-					for (const color of colors) {
-						const recolored = this.recolorImage(img, checked, color);
-						this.folders['colored'][name].push(recolored);
-					}
-
-					this.loadedCount++;
-
-				} catch (err) {
-					console.warn("Error with:", path);
-					console.error(err);
-					this.loadedCount++;
+				this.folders['colored'][name] = [];
+				for (const color of colors) {
+					const recolored = this.recolorImage(img, checked, color);
+					this.folders['colored'][name].push(recolored);
 				}
-			})();
 
-			promises.push(p);
-		}
+
+			} catch (err) {
+				console.warn("Error with:", path, err);
+			}
+		});
 
 		await Promise.all(promises);
-	}
-
-	isLoaded(): boolean {
-		return this.loadedCount === this.totalCount;
 	}
 
 	get(name: string, color = -1): HTMLCanvasElement | HTMLImageElement {
 		if (color >= 0) {
 			const folder = this.folders['colored'];
-			if (folder && folder[name] && folder[name][color] !== undefined)
-				return folder[name][color] as HTMLCanvasElement;
+			if (folder && folder[name] && folder[name][color])
+				return folder[name][color];
 			return this.placeholder;
 		}
 
 		const folder = this.folders['default'];
 		if (folder && folder[name] && folder[name][0])
 			return folder[name][0];
+			
 		return this.placeholder;
 	}
 

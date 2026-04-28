@@ -16,6 +16,7 @@ import { Car } from "./Car";
 import { Character, CHARACTER_SIZE } from "./Character";
 import { drawCar } from "./drawCar";
 import { drawCharacter } from "./drawCharacter";
+import { HandPanel } from "./HandPanel";
 
 
 
@@ -30,6 +31,7 @@ export class PlayState extends GameState {
 	private viewBox_y = 0;
 	private viewBox_w = 1;
 	private viewBox_h = 1;
+	private handPanel: HandPanel;
 
 
 	actionHandler = new ActionHandler(this);
@@ -38,6 +40,9 @@ export class PlayState extends GameState {
 
 	constructor() {
 		super();
+
+		const handPanelDiv = document.getElementById("handPanel")!;
+		this.handPanel = new HandPanel(handPanelDiv);
 	}
 
 
@@ -59,6 +64,7 @@ export class PlayState extends GameState {
 		this.updateCamera(this.camX, this.camY, this.camZ);
 		this.sendAskEntities();
 
+		// For debug
 		(window as any).playState = this;
 	}
 
@@ -144,6 +150,11 @@ export class PlayState extends GameState {
 	async draw(args: DrawStateData) {
 		const ctx = args.ctx;
 
+		// Init hand panel
+		if (!this.handPanel.isInitialized()) {
+			this.handPanel.init(args.imageLoader);
+		}
+
 		// Background
 		{
 			ctx.fillStyle = "#261f19";
@@ -172,6 +183,10 @@ export class PlayState extends GameState {
 	}
 
 	exit() {
+		if (this.handPanel.isInitialized()) {
+			this.handPanel.cleanup();
+		}
+
 		document.getElementById("gameView")?.classList.add("hidden");
 
 		if (this.cameraTimeout >= 0)
