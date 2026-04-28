@@ -16,6 +16,8 @@ import { Character, CHARACTER_SIZE } from "./Character";
 import { drawCar } from "./drawCar";
 import { drawCharacter } from "./drawCharacter";
 import { HandPanel } from "./HandPanel";
+import { ImageLoader } from "../handler/ImageLoader";
+import { loadAssets } from "./loadAssets";
 
 function modulo(a: number, n: number) {
 	return (a % n + n) % n;
@@ -53,7 +55,7 @@ export class PlayState extends GameState {
 
 
 	
-	enter(data: any, input: InputHandler): void {
+	enter(data: any, input: InputHandler, imageLoader: ImageLoader) {
 		document.getElementById("gameView")?.classList.remove("hidden");
 
 		input.onMouseUp = e => this.mouseHandler.onMouseUp(e);
@@ -68,6 +70,11 @@ export class PlayState extends GameState {
 		// Send request to load area
 		this.updateCamera(this.camX, this.camY, this.camZ);
 		this.sendAskEntities();
+
+
+		// Load
+		this.handPanel.init(imageLoader);
+		loadAssets(imageLoader);
 
 		// For debug
 		(window as any).playState = this;
@@ -97,7 +104,10 @@ export class PlayState extends GameState {
 
 
 
-	private async drawGrid(ctx: OffscreenCanvasRenderingContext2D) {
+	private async drawGrid(
+		ctx: OffscreenCanvasRenderingContext2D,
+		loader: ImageLoader
+	) {
 		const rangeW = GAME_WIDTH/this.camZ;
 		const rangeH = GAME_HEIGHT/this.camZ;
 
@@ -126,7 +136,7 @@ export class PlayState extends GameState {
 
 					ctx.save();
 					ctx.translate(x+dx, y+dy);
-					drawCell(cell, ctx);
+					drawCell(cell, ctx, loader);
 					ctx.restore();
 				}
 			}
@@ -158,14 +168,9 @@ export class PlayState extends GameState {
 	async draw(args: DrawStateData) {
 		const ctx = args.ctx;
 
-		// Init hand panel
-		if (!this.handPanel.isInitialized()) {
-			this.handPanel.init(args.imageLoader);
-		}
-
 		// Background
 		{
-			ctx.fillStyle = "#261f19";
+			ctx.fillStyle = "#D9E0E6";
 			ctx.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
 		}
 
@@ -180,7 +185,7 @@ export class PlayState extends GameState {
 
 		// Draw game
 		args.followCamera();
-		await this.drawGrid(args.ctx);
+		await this.drawGrid(args.ctx, args.imageLoader);
 		this.drawCharacters(args.ctx);
 		this.drawCars(args.ctx);
 		args.unfollowCamera();

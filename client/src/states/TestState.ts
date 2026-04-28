@@ -1,4 +1,5 @@
 import { GameHandler } from "../handler/GameHandler";
+import { ImageLoader } from "../handler/ImageLoader";
 import { InputHandler } from "../handler/InputHandler";
 import { DrawStateData, GameState } from "../handler/states";
 import { Vector3 } from "../handler/Vector3";
@@ -10,7 +11,7 @@ export class TestState extends GameState {
 		super();
 	}
 
-	enter(data: any, input: InputHandler): void {
+	enter(data: any, input: InputHandler, imageLoader: ImageLoader) {
 		input.onMouseUp = e => {};
 		input.onMouseDown = e => {};
 		input.onMouseMove = e => {};

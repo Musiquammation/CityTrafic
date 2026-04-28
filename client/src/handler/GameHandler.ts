@@ -49,7 +49,7 @@ export class GameHandler {
 		this.inputHandler.startMouseListeners(mouseEventTarget);
 
 		this.state = new HomeState();
-		this.state.enter(undefined, this.inputHandler);
+		this.state.enter(undefined, this.inputHandler, this.imgLoader);
 
 		/// TODO: Load assets
 	}
@@ -69,7 +69,7 @@ export class GameHandler {
 		if (this.nextState) {
 			this.state.exit();
 			this.state = this.nextState;
-			this.state.enter(null, this.inputHandler);
+			this.state.enter(null, this.inputHandler, this.imgLoader);
 			this.nextState = null;
 		}
 
@@ -79,13 +79,13 @@ export class GameHandler {
 		if (next) {
 			const data = this.state.exit();
 			this.state = next;
-			next.enter(data, this.inputHandler);
+			next.enter(data, this.inputHandler, this.imgLoader);
 		
 		} else if (window.switchToTestState) {
 			window.switchToTestState = false;
 			this.state.exit();
 			this.state = new TestState();
-			this.state.enter(null, this.inputHandler);
+			this.state.enter(null, this.inputHandler, this.imgLoader);
 		}
 	}
 

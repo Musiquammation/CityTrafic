@@ -11,7 +11,9 @@ export interface DrawStateData {
 }
 
 export abstract class GameState {
-	abstract enter(data: any, input: InputHandler): void;
+	abstract enter(data: any, input: InputHandler,
+		imageLoader: ImageLoader): void;
+
 	abstract frame(game: GameHandler): GameState | null;
 	abstract draw(args: DrawStateData): Promise<void>;
 	abstract exit(): any;
@@ -21,7 +23,7 @@ export abstract class GameState {
 
 export namespace states {
 	export class Home extends GameState {
-		enter(data: any, input: InputHandler): void {
+		enter(data: any, input: InputHandler, imageLoader: ImageLoader) {
 			input.onMouseUp = e => {};
 			input.onMouseDown = e => {};
 			input.onMouseMove = e => {};
