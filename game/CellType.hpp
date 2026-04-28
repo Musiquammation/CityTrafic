@@ -14,7 +14,7 @@ enum class CellType {
      * +05: up?
      * +06: left?
      * +07: down?
-     * +08: (empty)
+     * +08: weight [128 values]
      * +15: (taken)
      */
     ROAD,

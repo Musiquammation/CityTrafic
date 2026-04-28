@@ -165,7 +165,8 @@ bool Car::drive(Character* driver, int destX, int destY, const Map& map) {
 
 	bool r = makeCarPath(
 		map, this->pathHandler,
-		this->x, this->y, spot.x, spot.y
+		this->x, this->y, spot.x, spot.y,
+		this->direction
 	);
 	/// TODO: find path according to driver aim
 
