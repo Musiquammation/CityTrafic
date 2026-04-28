@@ -36,7 +36,7 @@ static const void* test(Game& game, const void* ptr) {
 	game.map.getEditCell(4, 9)->setType(CellType::ROAD, game, 0);
 	game.map.getEditCell(4, 8)->setType(CellType::PARKING, game, 0);
 
-	Car* car = game.spawnCar(2, 14, Direction::RIGHT);
+	Car* car = game.spawnCar(2, 14, Direction::UP);
 
 	auto home = Building::create_home(3);
 	game.map.addBuilding(10, 12, home, game);

@@ -1,3 +1,4 @@
+
 #include "pathfinder.hpp"
 
 #include "PathHandler.hpp"
@@ -203,17 +204,18 @@ static Direction applyRelative(Direction current, int relative) {
 
 
 
+
+
 bool makeCarPath(
 	const Map& map, PathHandler<true>& path,
 	int startX, int startY, int destX, int destY,
 	Direction startDir
 ) {
 	using Key = std::tuple<int, int, Direction>;
-	using State = std::pair<int, Key>; // (cost, key)
+	using State = std::pair<int, Key>;
 
 	std::unordered_map<Key, int, StateHash> dist;
-	std::unordered_map<Key, std::pair<Key, Direction>, StateHash> prev;
-	// prev[key] = { previousKey, directionUsedToArrive }
+	std::unordered_map<Key, Key, StateHash> prev;
 
 	std::priority_queue<State, std::vector<State>, std::greater<State>> pq;
 
@@ -221,11 +223,11 @@ bool makeCarPath(
 	dist[startKey] = 0;
 	pq.push({0, startKey});
 
-	Key destKey = {-1, -1, Direction::RIGHT}; // will be updated when reached
+	Key destKey = {-1, -1, Direction::RIGHT};
 	bool found = false;
 
+	// --- Dijkstra Search ---
 	while (!pq.empty()) {
-		// Extract current state (avoid structured bindings issues)
 		State top = pq.top();
 		pq.pop();
 
@@ -236,11 +238,9 @@ bool makeCarPath(
 		int y = std::get<1>(curKey);
 		Direction dir = std::get<2>(curKey);
 
-		// Skip if we already found a better path
 		if (dist.count(curKey) && dist[curKey] < cost)
 			continue;
 
-		// Destination reached
 		if (x == destX && y == destY) {
 			destKey = curKey;
 			found = true;
@@ -248,158 +248,96 @@ bool makeCarPath(
 		}
 
 		const Cell* cell = map.getCell(x, y);
-		if (!cell)
-			continue;
-
 		CellType type = cell->getType();
 
-		// Lambda to try a neighbor transition
 		auto tryNeighbor = [&](Direction outDir, int extraWeight) {
 			auto dv = DIRECTION_VECTORS[(int)outDir];
-
 			int nx = x + dv.x;
 			int ny = y + dv.y;
 
 			const Cell* ncell = map.getCell(nx, ny);
-			if (!ncell)
-				return;
-
 			CellType ntype = ncell->getType();
 
-			// Only traversable cell types
-			if (ntype != CellType::ROAD &&
-				ntype != CellType::DIRECTION &&
-				ntype != CellType::PARKING)
+			if (ntype != CellType::ROAD && ntype != CellType::DIRECTION && ntype != CellType::PARKING)
 				return;
 
 			Key nextKey = {nx, ny, outDir};
+			int weight = (ntype == CellType::ROAD) ? ((ncell->data >> 8) & 0x7F) : 0;
+			int newCost = cost + 1 + extraWeight + weight;
 
-			if (ntype == CellType::ROAD) {
-				// Check connectivity (can we enter from opposite direction)
-				Direction inDir = Direction_getOpposite(outDir);
-				int bit = 4 + (int)inDir;
-
-				if (!((ncell->data >> bit) & 1))
-					return;
-
-				int roadWeight = (ncell->data >> 8) & 0x7F;
-				int newCost = cost + 1 + extraWeight + roadWeight;
-
-				if (!dist.count(nextKey) || dist[nextKey] > newCost) {
-					dist[nextKey] = newCost;
-					prev[nextKey] = {curKey, outDir};
-					pq.push({newCost, nextKey});
-				}
-			}
-			else {
-				// DIRECTION or PARKING: no connectivity constraint
-				int newCost = cost + 1 + extraWeight;
-
-				if (!dist.count(nextKey) || dist[nextKey] > newCost) {
-					dist[nextKey] = newCost;
-					prev[nextKey] = {curKey, outDir};
-					pq.push({newCost, nextKey});
-				}
+			if (!dist.count(nextKey) || dist[nextKey] > newCost) {
+				dist[nextKey] = newCost;
+				prev[nextKey] = curKey;
+				pq.push({newCost, nextKey});
 			}
 		};
 
 		if (type == CellType::ROAD || type == CellType::PARKING) {
-			// Move forward only
 			tryNeighbor(dir, 0);
-		}
-		else if (type == CellType::DIRECTION) {
-			// Determine allowed relative directions
+		} else if (type == CellType::DIRECTION) {
 			int side = direction::getSide(cell->data, (int)dir);
-
-			// Decomposition of side into relative moves
 			static const int SIDE_DECOMP[8][3] = {
-				{0, 0, 0},      // 0: nothing
-				{1, 0, 0},      // 1: front
-				{2, 0, 0},      // 2: right
-				{3, 0, 0},      // 3: left
-				{1, 2, 0},      // 4: front-right
-				{1, 3, 0},      // 5: front-left
-				{2, 3, 0},      // 6: left-right
-				{1, 2, 3},      // 7: front-left-right
+				{1, 0, 0}, {1, 0, 0}, {2, 0, 0}, {3, 0, 0},
+				{1, 2, 0}, {1, 3, 0}, {2, 3, 0}, {1, 2, 3},
 			};
 
 			for (int i = 0; i < 3; i++) {
 				int rel = SIDE_DECOMP[side][i];
-				if (rel == 0)
-					break;
-
-				Direction outDir = applyRelative(dir, rel);
-				tryNeighbor(outDir, 0);
+				if (rel == 0) break;
+				tryNeighbor(applyRelative(dir, rel), 0);
 			}
-		}
-		else {
-			// Non-walkable cell
-			continue;
 		}
 	}
 
-	if (!found)
-		return false;
+	if (!found) return false;
 
-	// Reconstruct path from destination to start
-	std::vector<Key> keyPath;
-	std::vector<Direction> dirPath;
+	// --- Path Reconstruction (Compression Logic) ---
+	std::vector<Vector<int>> finalPos;
+	std::vector<Direction> finalDir;
 
 	Key cur = destKey;
 
+	// 1. Start by adding the destination
+	finalPos.push_back({std::get<0>(cur), std::get<1>(cur)});
+	finalDir.push_back(std::get<2>(cur));
+
 	while (cur != startKey) {
-		keyPath.push_back(cur);
-
-		auto it = prev.find(cur);
-		if (it == prev.end())
-			break;
-
-		Key parentKey = it->second.first;
-		Direction usedDir = it->second.second;
-
-		dirPath.push_back(usedDir);
-		cur = parentKey;
+		Key parent = prev[cur];
+		
+		// A "pivot" occurs if the direction to leave 'parent' is different 
+		// from the direction that was used to leave 'parent-of-parent'.
+		// We also explicitly keep the startKey to define the beginning of the path.
+		if (parent == startKey || std::get<2>(cur) != std::get<2>(parent)) {
+			finalPos.push_back({std::get<0>(parent), std::get<1>(parent)});
+			
+			// The direction associated with this coordinate is the one 
+			// used to MOVE TOWARDS the next point in the path.
+			finalDir.push_back(std::get<2>(cur));
+		}
+		cur = parent;
 	}
 
-	keyPath.push_back(startKey);
+	// 2. Reverse to get Start -> End order
+	std::reverse(finalPos.begin(), finalPos.end());
+	std::reverse(finalDir.begin(), finalDir.end());
 
-	std::reverse(keyPath.begin(), keyPath.end());
-	std::reverse(dirPath.begin(), dirPath.end());
+	// 3. Fixup the initial direction at the starting point
+	if (!finalDir.empty()) {
+		finalDir[0] = startDir;
+	}
 
-	int len = (int)keyPath.size();
-
-	// Allocate arrays
+	// --- Encoding & Buffer Allocation ---
+	int len = (int)finalPos.size();
 	Vector<int>* posArray = new Vector<int>[len];
+	std::copy(finalPos.begin(), finalPos.end(), posArray);
 
-	// Compact direction array (2 bits per entry)
 	int byteCount = (2 * len + 7) / 8;
-	uint8_t* compactDirs = new uint8_t[byteCount]();
+	uint8_t* compactDirs = (uint8_t*) calloc(byteCount, 1);
 
 	for (int i = 0; i < len; i++) {
-		int px = std::get<0>(keyPath[i]);
-		int py = std::get<1>(keyPath[i]);
-
-		posArray[i] = {px, py};
-	}
-
-	// Encode directions
-	for (int i = 0; i < (int)dirPath.size(); i++) {
 		int bitIndex = 2 * i;
-		int byteIndex = bitIndex / 8;
-		int bitInByte = bitIndex % 8;
-
-		compactDirs[byteIndex] |= uint8_t(((uint8_t)dirPath[i] & 0b11) << bitInByte);
-	}
-
-	// Last direction = direction at destination
-	{
-		Direction ddir = std::get<2>(destKey);
-
-		int bitIndex = 2 * (len - 1);
-		int byteIndex = bitIndex / 8;
-		int bitInByte = bitIndex % 8;
-
-		compactDirs[byteIndex] |= uint8_t(((uint8_t)ddir & 0b11) << bitInByte);
+		compactDirs[bitIndex / 8] |= uint8_t(((uint8_t)finalDir[i] & 0b11) << (bitIndex % 8));
+		printf("(%d %d | %d)\n", posArray[i].x, posArray[i].y, (int)finalDir[i]);
 	}
 
 	path.fill(posArray, compactDirs, len);

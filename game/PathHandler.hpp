@@ -37,10 +37,6 @@ public:
 	Direction seekDirection();
 
 	void next();
-
-
-	bool makeCarPath(const Map& map, PathHandler<true>& path,
-    	int startX, int startY, int destX, int destY, Direction startDir);
 };
 
 

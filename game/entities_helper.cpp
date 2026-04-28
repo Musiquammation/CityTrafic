@@ -90,7 +90,7 @@ uint32_t* entities_helper_make(
 
 	return buffer;
 }
-
+#include <stdio.h>
 
 void entities_helper_read(Game& game, void* args) {
     uint32_t* ptr = (uint32_t*)args;

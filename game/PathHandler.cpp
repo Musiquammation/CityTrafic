@@ -67,7 +67,7 @@ Direction PathHandler<freeArray>::seekDirection() {
 
 template<bool freeArray>
 void PathHandler<freeArray>::next() {
-	if (this->step < this->length) {
+	if (this->step < this->length-1) {
 		this->step++;
 	} else {
 		this->step = -1;

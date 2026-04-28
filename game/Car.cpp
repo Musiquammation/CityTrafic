@@ -18,6 +18,9 @@ Car::Car(int x, int y, Direction direction)
 
 
 void Car::update(Game* game, std::vector<PriorityNode>& prioritiesBuffer) {
+	if (this->driver == nullptr)
+			return; // no driver
+
 	auto danger = getDanger(this, game, prioritiesBuffer);
 
 
@@ -157,11 +160,11 @@ bool Car::drive(Character* driver, int destX, int destY, const Map& map) {
 		Car::PARKING_RADIUS
 	);
 	
+	printf("start driving %d %d\n", spot.x, spot.y);
 	if (spot.x == INT32_MIN)
 		return false; // no spots
 	
 	
-	printf("start driving\n");
 
 	bool r = makeCarPath(
 		map, this->pathHandler,
@@ -169,6 +172,8 @@ bool Car::drive(Character* driver, int destX, int destY, const Map& map) {
 		this->direction
 	);
 	/// TODO: find path according to driver aim
+
+	printf("path found: %d\n", r);
 
 	if (r) {
 		this->driver = driver;

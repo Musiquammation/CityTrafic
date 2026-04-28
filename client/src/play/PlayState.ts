@@ -78,6 +78,7 @@ export class PlayState extends GameState {
 
 		// For debug
 		(window as any).playState = this;
+		this.updateCamera(10, 10, 50);
 	}
 
 

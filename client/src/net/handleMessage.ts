@@ -68,7 +68,6 @@ async function net_getEntities(reader: DataReader) {
 	reader.skip(3);
 
 	const msgSize = reader.readUint32(); // msg size
-	console.log(msgSize);
 
 	const prevOffset = reader.getOffset();
 	const buffer = reader.readUint8Array(msgSize-4);
@@ -83,8 +82,8 @@ async function net_getEntities(reader: DataReader) {
 	for (let i = 0; i < carsCount; i++) {
 		const x = reader.readInt32();
 		const y = reader.readInt32();
-		const step = reader.readInt32();
-		const speed = reader.readInt32();
+		const step = reader.readFloat32();
+		const speed = reader.readFloat32();
 		const flag = reader.readInt32();
 
 		const direction = flag & 0xff;
