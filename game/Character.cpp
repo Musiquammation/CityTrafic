@@ -21,11 +21,16 @@ void Character::cleanupState() {
 		break;
 
 	case CharacterState::WALK:
-		delete this->data.walk.path;
+		free(this->data.walk.path);
 		break;
 
 	case CharacterState::INSIDE:
+	{
+		if (this->data.inside.index >= 0) {
+			throw std::runtime_error{"Character has not leaved the building"};
+		}
 		break;
+	}
 
 	case CharacterState::OUTSIDE:
 		break;
@@ -114,7 +119,6 @@ Character* Character::createClientCharacter(float x, float y) {
 	c->x = x;
 	c->y = y;
 	c->state = CharacterState::CLIENT;
-	c->homePosition = -1;
 	return c;
 }
 
@@ -123,16 +127,13 @@ Character* Character::spawnCharacter(const Map& map, int x, int y) {
 	if (!info.building)
 		return nullptr;
 
-	if (info.building->type != BuildingType::HOME)
-		return nullptr;
-
-	if (info.building->home.isFull())
+	if (info.building->isFull())
 		return nullptr;
 
 
 	auto c = new Character;
-	int homePosition = info.building->home.add(c);
-	if (homePosition < 0) {
+	int index = info.building->enter(c);
+	if (index < 0) {
 		delete c;
 		return nullptr;
 	}
@@ -140,7 +141,7 @@ Character* Character::spawnCharacter(const Map& map, int x, int y) {
 	c->x = (float)x + .5f;
 	c->y = (float)y + .5f;
 	c->state = CharacterState::INSIDE;
-	c->homePosition = homePosition;
+	c->data.inside.index = index;
 	c->pointId = 0;
 
 	return c;
@@ -156,10 +157,15 @@ bool Character::makeWalk(Game& game, int destX, int destY) {
 		destY
 	);
 
+
 	if (!path) {
 		return false;
 	}
 
+	printf("path from (%d %d) to (%d %d):", (int)this->x, (int)this->y, destX, destY);
+	for (char* i = path; *i != 8; i++)
+		printf("%d ", *i);
+	printf("\n");
 
 	this->setState(CharacterState::WALK);
 	this->data.walk.path = path;
@@ -176,7 +182,7 @@ bool Character::makeDrive(Map& map, int destX, int destY) {
 	if (!this->car->drive(this, destX, destY, map))
 		return false;
 		
-	this->state = CharacterState::DRIVE;
+	this->setState(CharacterState::DRIVE);
 	this->data.drive.state = ActionCode::PENDING;
 	return true;
 }
@@ -186,15 +192,46 @@ bool Character::makeInside(Game& game) {
 	if (!info.building)
 		return false;
 
-	int place = info.building->home.add(this);
+	int place = info.building->enter(this);
 	if (place < 0)
 		return false;
 
-	this->state = CharacterState::INSIDE;
+	this->data.inside.index = place;
+	this->setState(CharacterState::INSIDE);
 	return true;
 }
 
+void Character::makeOutside(Game& game) {
+	if (this->state != CharacterState::INSIDE)
+		throw std::runtime_error{"Trying to leave while not inside"};
 
+
+	auto info = game.getMap().getBuilding(
+		(int)this->x,
+		(int)this->y
+	);
+
+	if (!info.building) {
+		throw std::runtime_error{"Character is not placed on a building"};
+	}
+
+	info.building->leave(this->data.inside.index);
+
+	Vector<int> point;
+	{
+		int largeLength = info.building->getBufferLargeLength();
+		Vector<int> leaveList[largeLength];
+		int length = info.building->fillLeaveList(leaveList);
+		point = leaveList[this->takeRandomPointId(length)];
+	}
+
+	this->x = (float)(info.x + point.x) + .5f;
+	this->y = (float)(info.y + point.y) + .5f;
+
+	this->data.inside.index = -1; // Mark outside
+	this->setState(CharacterState::OUTSIDE);
+
+}
 
 
 void Character::notifyDrive() {

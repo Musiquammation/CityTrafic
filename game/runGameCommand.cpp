@@ -39,12 +39,12 @@ static const void* test(Game& game, const void* ptr) {
 	Car* car = game.spawnCar(4, 14, Direction::UP);
 
 	auto home = Building::create_home(3);
-	game.map.addBuilding(10, 12, home, game);
+	game.map.addBuilding(10, 11, home, game);
 	
 	auto shop = Building::create_home(3);
 	game.map.addBuilding(1, 5, home, game);
 
-	auto character = Character::spawnCharacter(game.getMap(), 10, 12);
+	auto character = Character::spawnCharacter(game.getMap(), 10, 11);
 	if (character) {
 		character->setCar(car);
 		game.characterHandler.pushCharacter(character);

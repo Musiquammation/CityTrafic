@@ -11,24 +11,6 @@ Building* Building::create_home(int capacity) {
 	return b;
 }
 
-int Building::Home::add(Character* c) {
-	for (int i = 0; i < this->capacity; i++) {
-		if (this->characters[i] == nullptr) {
-			this->characters[i] = c;
-			this->left--;
-			return i;
-		}
-	}
-	return -1;
-}
-
-void Building::Home::remove(int position) {
-	this->characters[position] = nullptr;
-}
-
-bool Building::Home::isFull() const {
-	return this->left == 0;
-}
 
 
 const Vector<int> SIZES[] = {
@@ -56,7 +38,7 @@ int Building::fillEntryList(Vector<int> list[]) const {
 	Vector<int>* ptr = list;
 	switch (this->type) {
 	case BuildingType::HOME:
-		*ptr++ = {3, 0};
+		*ptr++ = {2, 0};
 		break;
 	}
 
@@ -68,11 +50,51 @@ int Building::fillLeaveList(Vector<int> list[]) const {
 	Vector<int>* ptr = list;
 	switch (this->type) {
 	case BuildingType::HOME:
-		*ptr++ = {3, 1};
+		*ptr++ = {2, 1};
 		break;
 	}
 
 	return (int)(ptr-list);
+}
+
+
+
+int Building::enter(Character* c) {
+	switch (this->type) {
+	case BuildingType::HOME:
+	{
+		for (int i = 0; i < this->home.capacity; i++) {
+			if (this->home.characters[i] == nullptr) {
+				this->home.characters[i] = c;
+				this->home.left--;
+				return i;
+			}
+		}
+		return -1;
+	}
+	
+	}
+
+
+	return -1;
+}
+
+void Building::leave(int position) {
+	switch (this->type) {
+	case BuildingType::HOME:
+		this->home.characters[position] = nullptr;
+		break;
+	}
+
+}
+
+bool Building::isFull() const {
+	switch (this->type) {
+	case BuildingType::HOME:
+		return this->home.left == 0;
+	}
+
+	return true;
 }
 
 

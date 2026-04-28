@@ -23,7 +23,6 @@ class Character {
 	Car* car = nullptr;
 	ActionExecutor executor;
 	Vector<int> home;
-	int homePosition;
 	unsigned int pointId;
 
 
@@ -38,13 +37,13 @@ class Character {
 
 		struct {
 			char* path;
+			Vector<int> anchor;
 			int position;
 			float step;
-			Vector<int> anchor;
 		} walk;
 
 		struct {
-			
+			int index;
 		} inside;
 
 		struct {
@@ -72,6 +71,7 @@ public:
 	bool makeWalk(Game& game, int destX, int destY);
 	bool makeDrive(Map& map, int destX, int destY);
 	bool makeInside(Game& game);
+	void makeOutside(Game& game);
 
 	void notifyDrive();
 

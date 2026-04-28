@@ -11,25 +11,23 @@ enum class BuildingType: int {
 struct Building {
 	BuildingType type;
 
-	struct Home {
-		Character** characters;
-		int left;
-		int capacity;
-
-		int add(Character* c);
-		void remove(int position);
-		bool isFull() const;
-	};
-
 
 	union {
-		Home home;
+		struct {
+			Character** characters;
+			int left;
+			int capacity;	
+		} home;
 	};
 	
 	
 	static Building* create_home(int capacity);
 
 
+
+	int enter(Character* c);
+	void leave(int position);
+	bool isFull() const;
 	
 	Vector<int> getSize() const;
 	int getBufferLargeLength() const;

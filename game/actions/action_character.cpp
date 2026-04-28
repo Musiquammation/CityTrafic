@@ -85,8 +85,9 @@ struct CharacterFriend {
 		if (!c->car)
 			return ActionCode::FAILURE;
 
+		
 		bool r = c->makeWalk(game, c->car->x, c->car->y);
-		printf("walk %d\n", r);
+		printf("walk %d => %d %d\n", r, c->car->x, c->car->y);
 		return ActionCode_get(r);
 	}
 
@@ -123,41 +124,16 @@ struct CharacterFriend {
 	}
 
 	def(enter) {
-		printf("enter\n");
-		return ActionCode::PENDING;
+		setCharacter();
+		bool r = c->makeInside(game);
+		return ActionCode_get(r);
 	}
 
 
 	def(leave) {
 		setCharacter();
 
-		if (c->state != CharacterState::INSIDE)
-			throw std::runtime_error{"Trying to leave while not inside"};
-
-
-		auto info = game.getMap().getBuilding(
-			(int)c->x,
-			(int)c->y
-		);
-
-		if (!info.building) {
-			throw std::runtime_error{"Missing entry building"};
-		}
-
-		Vector<int> point;
-		{
-			int largeLength = info.building->getBufferLargeLength();
-			Vector<int> leaveList[largeLength];
-			int length = info.building->fillLeaveList(leaveList);
-			point = leaveList[c->takeRandomPointId(length)];
-		}
-
-		c->x = (float)(info.x + point.x) + .5f;
-		c->y = (float)(info.y + point.y) + .5f;
-
-		printf("leave %d %d\n", info.x + point.x, info.y + point.y);
-
-		c->setState(CharacterState::OUTSIDE);
+		c->makeOutside(game);		
 		return ActionCode::SUCCESS;
 	}
 
