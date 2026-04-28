@@ -11,13 +11,15 @@ import { drawCell } from "./drawCell";
 import { MouseHandler } from "./MouseHandler";
 import { askWorker } from "../worker/askWorker";
 import { COMMAND_CODES } from "../shared/CommandCode";
-import { ActionHandler } from "../action/ActionHandler";
 import { Car } from "./Car";
 import { Character, CHARACTER_SIZE } from "./Character";
 import { drawCar } from "./drawCar";
 import { drawCharacter } from "./drawCharacter";
 import { HandPanel } from "./HandPanel";
 
+function modulo(a: number, n: number) {
+	return (a % n + n) % n;
+}
 
 
 export class PlayState extends GameState {
@@ -31,10 +33,13 @@ export class PlayState extends GameState {
 	private viewBox_y = 0;
 	private viewBox_w = 1;
 	private viewBox_h = 1;
-	private handPanel: HandPanel;
-
-
-	actionHandler = new ActionHandler(this);
+	private chunks: {
+		x: number;
+		y: number;
+		cells: Uint16Array<ArrayBufferLike>;
+	}[] = [];
+	
+	readonly handPanel: HandPanel;
 	cars: Car[] = [];
 	characters: Character[] = [];
 
@@ -107,6 +112,9 @@ export class PlayState extends GameState {
 			Math.floor(rangeH),
 		]);
 
+
+		// Update chunks
+		this.chunks = chunks;
 
 		for (const {x, y, cells} of chunks) {
 			let j = 0;
@@ -242,7 +250,20 @@ export class PlayState extends GameState {
 		return {x: this.camX, y: this.camY, z: this.camZ};
 	}
 
+	getCell(x: number, y: number) {
+		const cx = Math.floor(x / Chunk.SIZE);
+		const cy = Math.floor(y / Chunk.SIZE);
 
+		for (const chunk of this.chunks) {
+			if (chunk.x === cx*Chunk.SIZE && chunk.y === cy*Chunk.SIZE) {
+				const cellX =  modulo(x, Chunk.SIZE);
+				const cellY = modulo(y, Chunk.SIZE);
+				return chunk.cells[cellY*Chunk.SIZE + cellX];
+			}
+		}
+
+		return null;
+	}
 
 	
 	sendAskEntities() {

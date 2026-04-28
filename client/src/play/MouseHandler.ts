@@ -1,5 +1,5 @@
-import { Action } from "../action/Action";
 import { GAME_HEIGHT, GAME_WIDTH } from "../handler/dimensions";
+import { HandPanel } from "./HandPanel";
 import { PlayState } from "./PlayState";
 
 export class MouseHandler {
@@ -24,13 +24,15 @@ export class MouseHandler {
 
 		const {x, y} = this.getMousePosition(e.clientX, e.clientY);
 
-		const action = this.playState.actionHandler.getAction();
+		const action = this.playState.handPanel.getButton();
 		if (leftDown) {
-			action.mouseDown(x, y, Action.LEFT_BTN);
+			const cell = this.playState.getCell(Math.floor(x), Math.floor(y));
+			action.mouseDown(x, y, HandPanel.LEFT_BTN, cell);
 		}
 
 		if (rightDown) {
-			action.mouseDown(x, y, Action.RIGHT_BTN);
+			const cell = this.playState.getCell(Math.floor(x), Math.floor(y));
+			action.mouseDown(x, y, HandPanel.RIGHT_BTN, cell);
 		}
 
 
@@ -65,15 +67,17 @@ export class MouseHandler {
 		}
 
 
-		const action = this.playState.actionHandler.getAction();
+		const action = this.playState.handPanel.getButton();
 		
 		const prev = this.getMousePosition(this.lastScreenX, this.lastScreenY);
 		if (leftDown) {
-			action.mouseMove(prev.x, prev.y, pos.x, pos.y, Action.LEFT_BTN);
+			const cell = this.playState.getCell(Math.floor(pos.x), Math.floor(pos.y));
+			action.mouseMove(prev.x, prev.y, pos.x, pos.y, HandPanel.LEFT_BTN, cell);
 		}
 
 		if (rightDown) {
-			action.mouseMove(prev.x, prev.y, pos.x, pos.y, Action.RIGHT_BTN);
+			const cell = this.playState.getCell(Math.floor(pos.x), Math.floor(pos.y));
+			action.mouseMove(prev.x, prev.y, pos.x, pos.y, HandPanel.RIGHT_BTN, cell);
 		}
 
 

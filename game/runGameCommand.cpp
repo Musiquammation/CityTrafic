@@ -41,6 +41,19 @@ static const void* test(Game& game, const void* ptr) {
 }
 
 
+static const void* erase(Game& game, const void* ptr) {
+	int x = take(int32_t);
+	int y = take(int32_t);
+
+	if (!game.checkBounds(x,y,1,1))
+		return ptr;
+
+	Cell* cell = game.getEditCell(x,y);
+	cell->setType(CellType::NONE, game);
+	return ptr;
+
+}
+
 static const void* placeSingleRoad(Game& game, const void* ptr) {
 	int x = take(int32_t);
 	int y = take(int32_t);
@@ -76,6 +89,9 @@ const void* runGameCommand(Game& game, const void* ptr) {
 	switch ((CommandCode)code) {
 	case CommandCode::TEST:
 		return GameCommand::test(game, ptr);
+		
+	case CommandCode::ERASE:
+		return GameCommand::erase(game, ptr);
 
 	case CommandCode::PLACE_SINGLE_ROAD:
 		return GameCommand::placeSingleRoad(game, ptr);

@@ -14,6 +14,10 @@ import { HandButton, HandObject } from "./hands/handtypes";
 
 
 export class HandPanel {
+	static readonly LEFT_BTN   = 0;
+	static readonly RIGHT_BTN  = 1;
+	static readonly MIDDLE_BTN = 2;
+
 	private div: HTMLElement;
 	private initialized = 0;
 	private selected = 0;
@@ -88,5 +92,9 @@ export class HandPanel {
 		this.list[idx].enable();
 
 		this.selected = idx;
+	}
+
+	getButton() {
+		return this.list[this.selected];
 	}
 }

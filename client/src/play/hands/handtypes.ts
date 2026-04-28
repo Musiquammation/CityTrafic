@@ -4,13 +4,13 @@ export abstract class HandObject {
     abstract diseable(): void;
 
     abstract mouseUp(x: number, y: number,
-        btn: number, current: number): void;
+        btn: number, current: number|null): void;
 
     abstract mouseDown(x: number, y: number,
-        btn: number, current: number): void;
+        btn: number, current: number|null): void;
 
     abstract mouseMove(prevX: number, prevY: number,
-        x: number, y: number, btn: number, current: number): void;
+        x: number, y: number, btn: number, current: number|null): void;
 
 }
 
@@ -21,22 +21,22 @@ export class HandButton extends HandObject {
     private readonly _disable: ()=>void;
 
     private readonly _mouseUp: (x: number, y: number,
-        btn: number, current: number)=>void;
+        btn: number, current: number|null)=>void;
 
     private readonly _mouseDown: (x: number, y: number,
-        btn: number, current: number)=>void;
+        btn: number, current: number|null)=>void;
 
     private readonly _mouseMove: (prevX: number, prevY: number,
-        x: number, y: number, btn: number, current: number)=>void;
+        x: number, y: number, btn: number, current: number|null)=>void;
 
     constructor(
         icon: string,
         enable: ()=>void,
         disable: ()=>void,
-        mouseUp: (x: number, y: number, btn: number, current: number)=>void,
-        mouseDown: (x: number, y: number, btn: number, current: number)=>void = ()=>{},
+        mouseUp: (x: number, y: number, btn: number, current: number|null)=>void,
+        mouseDown: (x: number, y: number, btn: number, current: number|null)=>void = ()=>{},
         mouseMove: (prevX: number, prevY: number,
-            x: number, y: number, btn: number, current: number)=>void = ()=>{},
+            x: number, y: number, btn: number, current: number|null)=>void = ()=>{},
     ) {
         super();
         this.icon = icon;
@@ -58,16 +58,16 @@ export class HandButton extends HandObject {
         this._disable();
     }
     
-    override mouseUp(x: number, y: number, btn: number, current: number) {
+    override mouseUp(x: number, y: number, btn: number, current: number|null) {
         this._mouseUp(x, y, btn, current);
     }
 
-    override mouseDown(x: number, y: number, btn: number, current: number) {
+    override mouseDown(x: number, y: number, btn: number, current: number|null) {
         this._mouseDown(x, y, btn, current);
     }
 
     override mouseMove(prevX: number, prevY: number,
-        x: number, y: number, btn: number, current: number
+        x: number, y: number, btn: number, current: number|null
     ) {
         this._mouseMove(prevX, prevY, x, y, btn, current);
     }

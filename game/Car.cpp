@@ -157,7 +157,7 @@ bool Car::drive(Character* driver, int destX, int destY, const Map& map) {
 		Car::PARKING_RADIUS
 	);
 	
-	if (spot.x = INT32_MIN)
+	if (spot.x == INT32_MIN)
 		return false; // no spots
 	
 	
