@@ -337,7 +337,6 @@ bool makeCarPath(
 	for (int i = 0; i < len; i++) {
 		int bitIndex = 2 * i;
 		compactDirs[bitIndex / 8] |= uint8_t(((uint8_t)finalDir[i] & 0b11) << (bitIndex % 8));
-		printf("(%d %d | %d)\n", posArray[i].x, posArray[i].y, (int)finalDir[i]);
 	}
 
 	path.fill(posArray, compactDirs, len);

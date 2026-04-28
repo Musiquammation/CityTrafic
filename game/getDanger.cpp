@@ -526,7 +526,7 @@ getDanger_t getDanger(
 			if (!pathHandler.next()) {
 				appendStopDist(
 					(float)dist - car->step + (1 - Car::WIDTH/2),
-					Car::FRONT_DECELERATION,
+					Car::SOFT_DECELERATION,
 					{spy.x, spy.y}
 				);
 				goto finishUpdate;

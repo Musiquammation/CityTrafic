@@ -167,11 +167,11 @@ bool Character::makeWalk(Game& game, int destX, int destY) {
 	return true;
 }
 
-bool Character::makeDrive(Game& game, int destX, int destY) {
+bool Character::makeDrive(Map& map, int destX, int destY) {
 	if (!this->car)
 		return false;
 
-	if (!this->car->drive(this, destX, destY, game.getMap()))
+	if (!this->car->drive(this, destX, destY, map))
 		return false;
 		
 	this->state = CharacterState::DRIVE;
@@ -222,7 +222,7 @@ bool Character::orientBuilding(Game& game, BuildingInfo info) {
 	return this->makeWalk(game, info.x + point.x, info.y + point.y);
 }
 
-bool Character::locateBuilding(Game& game, BuildingInfo info) {
+bool Character::locateBuilding(Map& map, BuildingInfo info) {
 	int largeLength = info.building->getBufferLargeLength();
 	
 	Vector<int> point;
@@ -233,7 +233,7 @@ bool Character::locateBuilding(Game& game, BuildingInfo info) {
 		point = leaveList[this->takeRandomPointId(length)];
 	}
 
-	return this->makeDrive(game, info.x + point.x, info.y + point.y);
+	return this->makeDrive(map, info.x + point.x, info.y + point.y);
 }
 
 

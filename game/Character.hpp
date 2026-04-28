@@ -70,7 +70,7 @@ public:
 	static Character* spawnCharacter(const Map& map, int x, int y);
 
 	bool makeWalk(Game& game, int destX, int destY);
-	bool makeDrive(Game& game, int destX, int destY);
+	bool makeDrive(Map& map, int destX, int destY);
 	bool makeInside(Game& game);
 
 	void notifyDrive();
@@ -78,7 +78,7 @@ public:
 	BuildingInfo getWorkBuilding(const Map& map) const;
 	BuildingInfo getHomeBuilding(const Map& map) const;
 	bool orientBuilding(Game& game, BuildingInfo info);
-	bool locateBuilding(Game& game, BuildingInfo info);
+	bool locateBuilding(Map& map, BuildingInfo info);
 
 	void frame(Game& game);
 	int takeRandomPointId(int modulo);

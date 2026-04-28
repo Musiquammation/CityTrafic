@@ -178,7 +178,7 @@ void Car::setSpeed(float speed) {
 }
 
 
-bool Car::drive(Character* driver, int destX, int destY, const Map& map) {
+bool Car::drive(Character* driver, int destX, int destY, Map& map) {
 	// Check previous driver and position
 	if (this->driver ||
 		(int)driver->x != this->x ||
@@ -196,7 +196,8 @@ bool Car::drive(Character* driver, int destX, int destY, const Map& map) {
 		Car::PARKING_RADIUS
 	);
 	
-	printf("start driving %d %d\n", spot.x, spot.y);
+
+
 	if (spot.x == INT32_MIN)
 		return false; // no spots
 	
@@ -209,11 +210,23 @@ bool Car::drive(Character* driver, int destX, int destY, const Map& map) {
 	);
 	/// TODO: find path according to driver aim
 
-	printf("path found: %d", success);
-
 	if (success) {
+		// Append driver
 		this->driver = driver;
 		this->pathIsFinished = false;
+
+		// Add parking spot
+		auto nextCell = map.getEditCell(spot.x, spot.y);
+		if (nextCell && nextCell->getType() == CellType::PARKING) {
+			nextCell->data |= (1<<4); // add 'reserved' mark
+		}
+
+
+		// Free parking spot
+		auto prevCell = map.getEditCell(this->x, this->y);
+		if (prevCell && prevCell->getType() == CellType::PARKING) {
+			prevCell->data &= ~(1<<4); // remove 'reserved' mark
+		}
 	}
 
 	return success;

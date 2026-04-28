@@ -62,5 +62,5 @@ public:
 	void setSpeed(float speed);
 
 	bool drive(Character* driver,
-		int destX, int destY, const Map& map);
+		int destX, int destY, Map& map);
 };

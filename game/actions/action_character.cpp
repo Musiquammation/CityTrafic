@@ -105,7 +105,7 @@ struct CharacterFriend {
 		setCharacter();
 		auto& map = game.getMap();
 		auto info = c->getWorkBuilding(map);
-		bool r = c->locateBuilding(game, info);
+		bool r = c->locateBuilding(map, info);
 		return ActionCode_get(r);
 	}
 
@@ -113,7 +113,7 @@ struct CharacterFriend {
 		setCharacter();
 		auto& map = game.getMap();
 		auto info = c->getHomeBuilding(map);
-		bool r = c->locateBuilding(game, info);
+		bool r = c->locateBuilding(map, info);
 		return ActionCode_get(r);
 	}
 

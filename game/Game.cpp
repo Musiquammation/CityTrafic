@@ -66,9 +66,6 @@ BuildingInfo Game::getBuilding(int x, int y) {
 }
 
 
-const Map& Game::getMap() const {
-	return this->map;
-}
 
 
 int Game::getFrame() const {

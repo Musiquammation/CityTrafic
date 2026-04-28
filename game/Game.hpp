@@ -36,7 +36,8 @@ public:
     Car* spawnCar(int x, int y, Direction direction);
     Car* getCar(int x, int y);
     BuildingInfo getBuilding(int x, int y);
-    const Map& getMap() const;
+    const Map& getMap() const {return this->map;}
+    Map& getMap() {return this->map;}
 
     int getFrame() const;
     bool checkBounds(int x, int y, int width, int height) const;
