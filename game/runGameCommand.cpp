@@ -6,7 +6,7 @@
 #include "Building.hpp"
 #include "Cell.hpp"
 #include "CellType.hpp"
-
+#include "direction.hpp"
 
 #include <stdio.h>
 
@@ -23,6 +23,19 @@ static const void* test(Game& game, const void* ptr) {
 
 
 	game.map.getEditCell(2, 14)->setType(CellType::ROAD, game, 0);
+	game.map.getEditCell(2, 13)->setType(CellType::ROAD, game, 0);
+	game.map.getEditCell(2, 12)->setType(CellType::ROAD, game, 0);
+	game.map.getEditCell(2, 11)->setType(CellType::DIRECTION, game,
+		direction::setSide(0, 1, 2));
+
+	game.map.getEditCell(3, 11)->setType(CellType::ROAD, game, 0);
+	game.map.getEditCell(4, 11)->setType(CellType::DIRECTION, game,
+		direction::setSide(0, 0, 3));
+
+	game.map.getEditCell(4, 10)->setType(CellType::ROAD, game, 0);
+	game.map.getEditCell(4, 9)->setType(CellType::ROAD, game, 0);
+	game.map.getEditCell(4, 8)->setType(CellType::PARKING, game, 0);
+
 	Car* car = game.spawnCar(2, 14, Direction::RIGHT);
 
 	auto home = Building::create_home(3);
