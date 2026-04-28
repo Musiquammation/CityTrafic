@@ -1,1 +1,1 @@
-export const ENTITY_ASK_COULDOWN = 20;
+export const ENTITY_ASK_COULDOWN = 1000;

@@ -3,6 +3,7 @@ import { COMMAND_CODES } from '../../shared/CommandCode';
 import { HandPanel } from '../HandPanel';
 import { PlayState } from '../PlayState';
 import { HandButton } from './handtypes'
+import { turnSelector } from './turnSelector'
 
 function erase(x: number, y: number, btn: number, play: PlayState) {
 	x = Math.floor(x);
@@ -54,8 +55,33 @@ function placeParking(x: number, y: number, btn: number, play: PlayState) {
 
 
 function applyTurn(x: number, y: number, btn: number, play: PlayState, edit: boolean) {
+	x = Math.floor(x);
+	y = Math.floor(y);
+	const current = play.getCell(x, y);
+
 	// Place turn pixel
 	if (btn === HandPanel.LEFT_BTN) {
+		sendCommand(COMMAND_CODES.DIRECTION, writer => {
+			writer.writeInt32(x);
+			writer.writeInt32(y);
+			writer.writeUint16(0);
+		});
+
+	} else if (btn === HandPanel.RIGHT_BTN && edit) {
+		if (current === null || ((current & 0xf) != 5)) {
+			return; // nothing to do
+		}
+
+		turnSelector.take(current, next => {
+			if (next === null)
+				return;
+
+			sendCommand(COMMAND_CODES.DIRECTION, writer => {
+				writer.writeInt32(x);
+				writer.writeInt32(y);
+				writer.writeUint16(next);
+			});
+		})
 	}
 }
 

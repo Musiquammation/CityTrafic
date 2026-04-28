@@ -82,11 +82,13 @@ export class HandPanel {
 
 			// Load texture
 
+
 		}
 
 		pushButton(handlist.erase);
 		pushButton(handlist.road);
 		pushButton(handlist.parking);
+		pushButton(handlist.turn);
 
 
 

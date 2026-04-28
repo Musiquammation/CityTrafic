@@ -115,10 +115,73 @@ canvas {
 }
 
 
+
+
+
+
+
+
+
+#turnSelector {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: #2c3e50;
+    color: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+    z-index: 1000;
+}
+
+#turnSelector.hidden { display: none; }
+
+.input-group {
+    margin-bottom: 20px;
+    padding: 10px;
+    border-bottom: 1px solid #444;
+}
+
+.sub-options {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+    font-size: 0.9em;
+}
+
+.actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+#turnSelector button {
+	cursor: pointer;
+	padding: 5px 15px;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 .hidden {
 	display: none !important; 
 }
-
 
 
 

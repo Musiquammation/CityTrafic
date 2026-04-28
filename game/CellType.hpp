@@ -55,6 +55,17 @@ enum class CellType {
      * +12: second: direction
      * +14: (empty)
      * +15: (taken)
+     * 
+     * 
+     * for side:
+     *   0: nothing
+     *   1: front
+     *   2: right
+     *   3: left
+     *   4: front-right
+     *   5: front-left
+     *   6: left-right
+     *   7: all
      */
     DIRECTION,
     

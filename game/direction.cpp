@@ -30,27 +30,25 @@ uint16_t direction::setSide(uint16_t data, int direction, int value) {
 	if (side1 != 0 && dir1 == direction) {
 		// Clear old side bits (+04) and set new value
 		data &= ~(0x7 << 4); 
-		data |= (uint16_t)(value & 0x7) << 4;
+		data |= (uint16_t)((value & 0x7) << 4);
 		return data;
-	} 
-	else if (side2 != 0 && dir2 == direction) {
+	} else if (side2 != 0 && dir2 == direction) {
 		// Clear old side bits (+07) and set new value
 		data &= ~(0x7 << 7);
-		data |= (uint16_t)(value & 0x7) << 7;
+		data |= (uint16_t)((value & 0x7) << 7);
 		return data;
 	}
 
 	// --- Fill empty slot if direction doesn't exist ---
 	if (side1 == 0) {
 		// Set side at +04 and direction at +10
-		data |= (uint16_t)(value & 0x7) << 4;
-		data |= (uint16_t)(direction & 0x3) << 10;
+		data |= (uint16_t)((value & 0x7) << 4);
+		data |= (uint16_t)((direction & 0x3) << 10);
 		return data;
-	} 
-	else if (side2 == 0) {
+	} else if (side2 == 0) {
 		// Set side at +07 and direction at +12
-		data |= (uint16_t)(value & 0x7) << 7;
-		data |= (uint16_t)(direction & 0x3) << 12;
+		data |= (uint16_t)((value & 0x7) << 7);
+		data |= (uint16_t)((direction & 0x3) << 12);
 		return data;
 	}
 

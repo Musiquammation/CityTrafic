@@ -7,4 +7,5 @@ enum class CommandCode {
 	ERASE,
 	PLACE_SINGLE_ROAD,
 	PARKING,
+	DIRECTION,
 };

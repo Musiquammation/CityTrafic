@@ -79,6 +79,20 @@ static const void* parking(Game& game, const void* ptr) {
 
 }
 
+static const void* direction(Game& game, const void* ptr) {
+	int x = take(int32_t);
+	int y = take(int32_t);
+	cell_t args = take(uint16_t);
+
+	if (!game.checkBounds(x,y,1,1))
+		return ptr;
+
+	Cell* cell = game.getEditCell(x,y);
+	cell->setType(CellType::DIRECTION, game, args);
+	return ptr;
+
+}
+
 
 
 
@@ -112,6 +126,9 @@ const void* runGameCommand(Game& game, const void* ptr) {
 
 	case CommandCode::PARKING:
 		return GameCommand::parking(game, ptr);
+
+	case CommandCode::DIRECTION:
+		return GameCommand::direction(game, ptr);
 	}
 
 	return ptr;
