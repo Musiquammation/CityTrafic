@@ -53,6 +53,13 @@ function placeParking(x: number, y: number, btn: number, play: PlayState) {
 }
 
 
+function applyTurn(x: number, y: number, btn: number, play: PlayState, edit: boolean) {
+	// Place turn pixel
+	if (btn === HandPanel.LEFT_BTN) {
+	}
+}
+
+
 export const handlist = {
 	erase: new HandButton(
 		{
@@ -136,6 +143,34 @@ export const handlist = {
 		// mouseMove
 		(prevX, prevY, x, y, btn, play) => {
 			placeParking(x, y, btn, play);
+		},
+	),
+
+	turn: new HandButton(
+		{
+			list: {rotate: "assets/icons/rotate.png"},
+			first: 'rotate'
+		},
+
+		// enable
+		()=>null,
+
+		// diseable
+		()=>{},
+
+		// mouseUp
+		(x, y, btn, play) => {
+			applyTurn(x, y, btn, play, false);
+		},
+
+		// mouseDown
+		(x, y, btn, play) => {
+			applyTurn(x, y, btn, play, true);
+		},
+
+		// mouseMove
+		(prevX, prevY, x, y, btn, play) => {
+			applyTurn(x, y, btn, play, false);
 		},
 	)
 
