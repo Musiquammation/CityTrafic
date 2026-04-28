@@ -123,44 +123,85 @@ canvas {
 
 
 #turnSelector {
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    background: #2c3e50;
-    color: white;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.5);
-    z-index: 1000;
+	position: fixed;
+	inset: 0;
+	background: rgba(0, 0, 0, 0.45);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	z-index: 1000;
 }
 
-#turnSelector.hidden { display: none; }
-
-.input-group {
-    margin-bottom: 20px;
-    padding: 10px;
-    border-bottom: 1px solid #444;
+#turnSelector.hidden {
+	display: none;
 }
 
-.sub-options {
-    display: flex;
-    gap: 10px;
-    margin-top: 10px;
-    font-size: 0.9em;
+.ts-panel {
+	background: #fff;
+	border-radius: 10px;
+	padding: 20px 24px;
+	min-width: 320px;
+	display: flex;
+	flex-direction: column;
+	gap: 16px;
+	box-shadow: 0 4px 24px rgba(0,0,0,0.18);
 }
 
-.actions {
-    display: flex;
-    justify-content: flex-end;
-    gap: 10px;
+.ts-row {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
 }
 
-#turnSelector button {
+.ts-row label {
+	font-size: 13px;
+	font-weight: 600;
+	color: #444;
+}
+
+.ts-row select {
+	padding: 6px 8px;
+	border-radius: 6px;
+	border: 1px solid #ccc;
+	font-size: 14px;
+}
+
+.ts-checkboxes {
+	display: flex;
+	gap: 12px;
+	padding-left: 4px;
+}
+
+.ts-checkboxes label {
+	display: flex;
+	align-items: center;
+	gap: 4px;
+	font-size: 13px;
+	font-weight: 400;
+	color: #333;
+}
+
+.ts-actions {
+	display: flex;
+	justify-content: flex-end;
+	gap: 10px;
+	margin-top: 4px;
+}
+
+.ts-actions button {
+	padding: 7px 18px;
+	border-radius: 6px;
+	border: 1px solid #ccc;
+	background: #f5f5f5;
 	cursor: pointer;
-	padding: 5px 15px;
+	font-size: 14px;
 }
 
+.ts-actions button.ts-ok {
+	background: #2563eb;
+	color: #fff;
+	border-color: #2563eb;
+}
 
 
 

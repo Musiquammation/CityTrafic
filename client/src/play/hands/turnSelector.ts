@@ -1,132 +1,216 @@
-import { direction } from "../direction"
+import { direction as direction_helper } from "../direction";
 
-type DirectionInfo = { id: number; name: string };
-const DIRECTIONS: DirectionInfo[] = [
-    { id: 0, name: 'RIGHT' },
-    { id: 1, name: 'UP' },
-    { id: 2, name: 'LEFT' },
-    { id: 3, name: 'DOWN' }
+// Direction entries for the dropdown menus
+const DIRECTIONS = [
+	{ value: 0, label: "RIGHT" },
+	{ value: 1, label: "UP" },
+	{ value: 2, label: "LEFT" },
+	{ value: 3, label: "DOWN" },
+] as const;
+
+// Sub-direction checkboxes (relative to the chosen direction)
+const SUB_OPTIONS = [
+	{ key: "front" as const, label: "Front" },
+	{ key: "right" as const, label: "Right" },
+	{ key: "left"  as const, label: "Left"  },
 ];
 
-
-
-class TurnSelector {
-    private parent: HTMLElement;
-    private currentData: number = 0;
-    private callback: ((data: number | null) => void) | null = null;
-
-    constructor(parent: HTMLElement) {
-        this.parent = parent;
-        this.initEvents();
-    }
-
-    private initEvents() {
-        this.parent.querySelector('#btn-cancel')?.addEventListener('click', () => this.close(null));
-        this.parent.querySelector('#btn-ok')?.addEventListener('click', () => this.handleConfirm());
-        
-        // Update exclusion logic when dropdowns change
-        this.parent.querySelectorAll('.main-direction').forEach(select => {
-            select.addEventListener('change', () => this.refreshUI());
-        });
-    }
-
-    take(data: number, callback: (data: number | null) => void) {
-        this.currentData = data;
-        this.callback = callback;
-        this.parent.classList.remove("hidden");
-
-        // Initialiser les directions à partir de data
-        const activeDirs = DIRECTIONS.filter(d => direction.getSide(data, d.id) !== 0);
-        const dir1 = activeDirs[0]?.id ?? 0;
-        const dir2 = activeDirs[1]?.id ?? (dir1 === 1 ? 0 : 1);
-
-        this.setupSelects(dir1, dir2);
-        this.refreshUI();
-    }
-
-    private setupSelects(val1: number, val2: number) {
-        const selects = this.parent.querySelectorAll('.main-direction') as NodeListOf<HTMLSelectElement>;
-        selects[0].value = val1.toString();
-        selects[1].value = val2.toString();
-    }
-
-    private refreshUI() {
-        const selects = this.parent.querySelectorAll('.main-direction') as NodeListOf<HTMLSelectElement>;
-        const v1 = parseInt(selects[0].value);
-        const v2 = parseInt(selects[1].value);
-
-        // 1. Gérer l'exclusion dans les dropdowns
-        this.updateDropdownOptions(selects[0], v2);
-        this.updateDropdownOptions(selects[1], v1);
-
-        // 2. Générer les sous-menus (checkboxes)
-        this.renderSubOptions(0, v1);
-        this.renderSubOptions(1, v2);
-    }
-
-    private updateDropdownOptions(select: HTMLSelectElement, forbidden: number) {
-        const current = select.value;
-        select.innerHTML = '';
-        DIRECTIONS.forEach(d => {
-            if (d.id === forbidden) return;
-            const opt = new Option(d.name, d.id.toString());
-            opt.selected = d.id.toString() === current;
-            select.add(opt);
-        });
-    }
-
-    private renderSubOptions(groupIndex: number, mainDir: number) {
-        const container = this.parent.querySelectorAll('.sub-options')[groupIndex];
-        container.innerHTML = '';
-
-        // On exclut l'opposé pour les directions relatives (ex: si UP, on propose RIGHT, LEFT, FRONT)
-        const relatives = [
-            { bit: 1, label: 'FRONT' },
-            { bit: 2, label: 'RIGHT' },
-            { bit: 4, label: 'LEFT' }
-        ];
-
-        const currentValue = direction.getSide(this.currentData, mainDir);
-
-        relatives.forEach(rel => {
-            const label = document.createElement('label');
-            const isChecked = (currentValue & rel.bit) || (currentValue === 7); // 7 = ALL
-            // Note: Le système de bit 1,2,4 correspond à la logique 0-7 demandée
-            
-            label.innerHTML = `
-                <input type="checkbox" data-bit="${rel.bit}" ${isChecked ? 'checked' : ''}>
-                ${rel.label}
-            `;
-            container.appendChild(label);
-        });
-    }
-
-    private handleConfirm() {
-        let newData = this.currentData;
-        const groups = this.parent.querySelectorAll('.input-group');
-
-        groups.forEach(group => {
-            const dir = parseInt((group.querySelector('.main-direction') as HTMLSelectElement).value);
-            const checks = group.querySelectorAll('input[type="checkbox"]:checked');
-            
-            let val = 0;
-            checks.forEach(c => val += parseInt((c as HTMLInputElement).dataset.bit!));
-            
-            // Si "All" (Front + Left + Right) est coché ou si val arrive à 7
-            if (val > 7) val = 7; 
-
-            newData = direction.setSide(newData, dir, val);
-        });
-
-        this.close(newData);
-    }
-
-    private close(result: number | null) {
-        this.parent.classList.add("hidden");
-        if (this.callback) this.callback(result);
-    }
+// Convert three booleans to the side enum value
+// 0=nothing 1=front 2=right 3=left 4=front-right 5=front-left 6=left-right 7=all
+function bitsToValue(front: boolean, right: boolean, left: boolean): number {
+	if (front && right && left) return 7;
+	if (right && left)		  return 6;
+	if (front && left)		  return 5;
+	if (front && right)		 return 4;
+	if (left)				   return 3;
+	if (right)				  return 2;
+	if (front)				  return 1;
+	return 0;
 }
 
+// Decompose a side enum value into three booleans
+function valueToBits(v: number): { front: boolean; right: boolean; left: boolean } {
+	return {
+		front: v === 1 || v === 4 || v === 5 || v === 7,
+		right: v === 2 || v === 4 || v === 6 || v === 7,
+		left:  v === 3 || v === 5 || v === 6 || v === 7,
+	};
+}
+
+// Find the two active directions in data, falling back to defaults if needed
+function findDirections(data: number): [number, number] {
+	const used: number[] = [];
+	for (const d of [0, 1, 2, 3]) {
+		if (direction_helper.getSide(data, d) !== 0) used.push(d);
+	}
+
+	const dir0 = used[0] ?? 0;
+	// Pick a second direction different from the first
+	const dir1 = used[1] ?? [0, 1, 2, 3].find(d => d !== dir0)!;
+	return [dir0, dir1];
+}
+
+export class TurnSelector {
+	parent: HTMLElement;
+	private callback: ((data: number | null) => void) | null = null;
+	private currentData = 0;
+
+	constructor(parent: HTMLElement) {
+		this.parent = parent;
+		this.parent.querySelector("#ts-ok")!
+			.addEventListener("click", () => this.confirm());
+		this.parent.querySelector("#ts-cancel")!
+			.addEventListener("click", () => this.cancel());
+	}
+
+	// Open the selector with the given data, call callback with updated data or null on cancel
+	take(data: number, callback: (data: number | null) => void): void {
+		this.currentData = data;
+		this.callback = callback;
+		this.parent.classList.remove("hidden");
+		this.buildUI(data);
+	}
+
+	// Build both rows from the current data
+	private buildUI(data: number): void {
+		const [dir0, dir1] = findDirections(data);
+		this.buildRow(0, dir0, dir1, data);
+		this.buildRow(1, dir1, dir0, data);
+	}
+
+	// Build a single direction row (select + checkboxes)
+	private buildRow(
+		rowIndex: 0 | 1,
+		direction: number,
+		otherDirection: number,
+		data: number
+	): void {
+		const row = this.parent.querySelector(`#ts-row-${rowIndex}`) as HTMLElement;
+		row.innerHTML = "";
+
+		// Row label
+		const lbl = document.createElement("label");
+		lbl.textContent = rowIndex === 0 ? "1st direction" : "2nd direction";
+		row.appendChild(lbl);
+
+		// Direction select — exclude the direction used by the other row
+		const select = document.createElement("select");
+		for (const d of DIRECTIONS) {
+			if (d.value === otherDirection) continue;
+			const opt = document.createElement("option");
+			opt.value = String(d.value);
+			opt.textContent = d.label;
+			opt.selected = d.value === direction;
+			select.appendChild(opt);
+		}
+		row.appendChild(select);
+
+		// Checkboxes for front / right / left
+		const checkDiv = document.createElement("div");
+		checkDiv.className = "ts-checkboxes";
+
+		const currentValue = direction_helper.getSide(data, direction);
+		const bits = valueToBits(currentValue);
+
+		for (const sub of SUB_OPTIONS) {
+			const lbl2 = document.createElement("label");
+			const cb = document.createElement("input");
+			cb.type = "checkbox";
+			cb.dataset.key = sub.key;
+			cb.checked = bits[sub.key];
+			lbl2.appendChild(cb);
+			lbl2.append(" " + sub.label);
+			checkDiv.appendChild(lbl2);
+		}
+
+		row.appendChild(checkDiv);
+
+		// Rebuild both rows when direction changes to avoid duplicates
+		select.addEventListener("change", () => this.onDirectionChange(rowIndex));
+	}
+
+	// Handle direction change: resolve conflicts and rebuild both rows
+	private onDirectionChange(changedRow: 0 | 1): void {
+		const otherRow = (changedRow === 0 ? 1 : 0) as 0 | 1;
+
+		const changedSelect = this.parent.querySelector(
+			`#ts-row-${changedRow} select`
+		) as HTMLSelectElement;
+		const otherSelect = this.parent.querySelector(
+			`#ts-row-${otherRow} select`
+		) as HTMLSelectElement;
+
+		const newDir	  = parseInt(changedSelect.value);
+		const currentOther = parseInt(otherSelect.value);
+
+		if (newDir === currentOther) {
+			// Conflict: assign the other row a free direction
+			const fallback = [0, 1, 2, 3].find(d => d !== newDir)!;
+			this.buildRow(changedRow, newDir,	 fallback, this.currentData);
+			this.buildRow(otherRow,   fallback,   newDir,   this.currentData);
+		} else {
+			this.buildRow(changedRow, newDir,		currentOther, this.currentData);
+			this.buildRow(otherRow,   currentOther,  newDir,	   this.currentData);
+		}
+	}
+
+	// Read the current state of both rows
+	private readRows(): { dir: number; value: number }[] {
+		return ([0, 1] as const).map(rowIndex => {
+			const select = this.parent.querySelector(
+				`#ts-row-${rowIndex} select`
+			) as HTMLSelectElement;
+			const checkDiv = this.parent.querySelector(
+				`#ts-row-${rowIndex} .ts-checkboxes`
+			) as HTMLElement;
+
+			const dir = parseInt(select.value);
+
+			let front = false, right = false, left = false;
+			checkDiv.querySelectorAll<HTMLInputElement>("input[type=checkbox]").forEach(cb => {
+				if (cb.dataset.key === "front") front = cb.checked;
+				if (cb.dataset.key === "right") right = cb.checked;
+				if (cb.dataset.key === "left")  left  = cb.checked;
+			});
+
+			return { dir, value: bitsToValue(front, right, left) };
+		});
+	}
+
+	// Apply the selected values to data and call the callback
+	private confirm(): void {
+		const rows = this.readRows();
+		let data = this.currentData;
+
+		// Clear directions not selected in either row
+		for (const d of [0, 1, 2, 3]) {
+			if (d !== rows[0].dir && d !== rows[1].dir) {
+				const result = direction_helper.setSide(data, d, 0);
+				if (result !== 0) data = result;
+			}
+		}
+
+		// Write the two selected directions
+		for (const { dir, value } of rows) {
+			const result = direction_helper.setSide(data, dir, value);
+			if (result !== 0) data = result;
+		}
+
+		this.close(data);
+	}
+
+	private cancel(): void {
+		this.close(null);
+	}
+
+	private close(result: number | null): void {
+		this.parent.classList.add("hidden");
+		if (this.callback) {
+			this.callback(result);
+			this.callback = null;
+		}
+	}
+}
 
 export const turnSelector = new TurnSelector(
 	document.getElementById("turnSelector")!
