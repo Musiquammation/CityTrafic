@@ -33,6 +33,14 @@ enum class CellType {
      * +15: (taken)
      */
     LINK,
+
+    /**
+     * +00: (type)
+     * +04: reserved?
+     * +05: (empty)
+     * +15: (taken)
+     */
+    PARKING,
     
     COUNT
 };

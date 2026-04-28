@@ -157,7 +157,10 @@ char* makePedestranPath(const Map& map, int startX, int startY, int destX, int d
 
 
 
-bool makeCarPath(const Map& map, int startX, int startY, int destX, int destY) {
+bool makeCarPath(
+    const Map& map, PathHandler<true>& path,
+    int startX, int startY, int destX, int destY
+) {
     return false;
 }
 

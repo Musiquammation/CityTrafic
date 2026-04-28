@@ -78,6 +78,7 @@ public:
 	BuildingInfo getWorkBuilding(const Map& map) const;
 	BuildingInfo getHomeBuilding(const Map& map) const;
 	bool orientBuilding(Game& game, BuildingInfo info);
+	bool locateBuilding(Game& game, BuildingInfo info);
 
 	void frame(Game& game);
 	int takeRandomPointId(int modulo);

@@ -99,7 +99,6 @@ ActionCode Character::walk(Game& game) {
 	this->x = (float)this->data.walk.anchor.x + .5f + DELTAS[dir].x * this->data.walk.step;
 	this->y = (float)this->data.walk.anchor.y + .5f + DELTAS[dir].y * this->data.walk.step;
 
-	printf("(%.3f, %3f | %d)\n", this->x, this->y, this->data.walk.position);
 
 	return ActionCode::PENDING;
 }
@@ -160,12 +159,6 @@ bool Character::makeWalk(Game& game, int destX, int destY) {
 	}
 
 
-	printf("Path (%d %d -> %d %d):", (int)this->x, (int)this->y, destX, destY);
-	for (char* p = path; *p != 8; p++) {
-		printf("%d ", *p);
-	}
-	printf("\n");
-
 	this->setState(CharacterState::WALK);
 	this->data.walk.path = path;
 	this->data.walk.position = 0;
@@ -178,7 +171,7 @@ bool Character::makeDrive(Game& game, int destX, int destY) {
 	if (!this->car)
 		return false;
 
-	if (!this->car->drive(this, destX, destY))
+	if (!this->car->drive(this, destX, destY, game.getMap()))
 		return false;
 		
 	this->state = CharacterState::DRIVE;
@@ -229,6 +222,20 @@ bool Character::orientBuilding(Game& game, BuildingInfo info) {
 	return this->makeWalk(game, info.x + point.x, info.y + point.y);
 }
 
+bool Character::locateBuilding(Game& game, BuildingInfo info) {
+	int largeLength = info.building->getBufferLargeLength();
+	
+	Vector<int> point;
+	{
+		int largeLength = info.building->getBufferLargeLength();
+		Vector<int> leaveList[largeLength];
+		int length = info.building->fillLeaveList(leaveList);
+		point = leaveList[this->takeRandomPointId(length)];
+	}
+
+	return this->makeDrive(game, info.x + point.x, info.y + point.y);
+}
+
 
 
 
@@ -259,12 +266,7 @@ bool Character::setCar(Car* car) {
 
 	default:
 	{
-		auto prev = this->car;
-		if (prev)
-			prev->removeDriver(this);
-	
-		this->car = car;
-	
+		this->car = car;	
 		return true;
 	}
 	}

@@ -74,6 +74,12 @@ public:
     BuildingInfo getBuilding(int x, int y) const;
     bool addBuilding(int x, int y, Building* building, Game& game);
     bool removeBuilding(int x, int y, Game& game);
+
+    Vector<int> searchParkingSpot(
+        int cx, int cy,
+        int lx, int ly,
+        int radius
+    ) const;
 };
 
 

@@ -34,7 +34,6 @@ static inline float frac(float x) {
 	run(orientCar);\
 	run(orientWork);\
 	run(orientHome);\
-	run(locateCar);\
 	run(locateWork);\
 	run(locateHome);\
 	run(enter);\
@@ -100,22 +99,22 @@ struct CharacterFriend {
 		auto info = c->getHomeBuilding(map);
 		bool r = c->orientBuilding(game, info);
 		return ActionCode_get(r);
-		return ActionCode::PENDING;
-	}
-
-	def(locateCar) {
-		printf("locateCar\n");
-		return ActionCode::PENDING;
 	}
 
 	def(locateWork) {
-		printf("locateWork\n");
-		return ActionCode::PENDING;
+		setCharacter();
+		auto& map = game.getMap();
+		auto info = c->getWorkBuilding(map);
+		bool r = c->locateBuilding(game, info);
+		return ActionCode_get(r);
 	}
 
 	def(locateHome) {
-		printf("locateHome\n");
-		return ActionCode::PENDING;
+		setCharacter();
+		auto& map = game.getMap();
+		auto info = c->getHomeBuilding(map);
+		bool r = c->locateBuilding(game, info);
+		return ActionCode_get(r);
 	}
 
 	def(enter) {
@@ -159,7 +158,7 @@ struct CharacterFriend {
 
 	def(passWork) {
 		printf("passWork\n");
-		return ActionCode::PENDING;
+		return ActionCode::SUCCESS;
 	}
 
 

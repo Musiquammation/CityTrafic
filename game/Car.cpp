@@ -5,6 +5,7 @@
 #include "getDanger.hpp"
 #include "Game.hpp"
 #include "Cell.hpp"
+#include "pathfinder.hpp"
 #include "debugFile.hpp"
 
 
@@ -138,22 +139,43 @@ void Car::setSpeed(float speed) {
 }
 
 
-bool Car::drive(Character* driver, int destX, int destY) {
-	if (this->driver)
+bool Car::drive(Character* driver, int destX, int destY, const Map& map) {
+	// Check previous driver and position
+	if (this->driver ||
+		(int)driver->x != this->x ||
+		(int)driver->y != this->y
+	) {
 		return false;
+	}
 
-	this->driver = driver;
+	
 
+	
+	auto spot = map.searchParkingSpot(
+		destX, destY,
+		this->x, this->y,
+		Car::PARKING_RADIUS
+	);
+	
+	if (spot.x = INT32_MIN)
+		return false; // no spots
+	
+	
+	printf("start driving\n");
+
+	bool r = makeCarPath(
+		map, this->pathHandler,
+		this->x, this->y, spot.x, spot.y
+	);
 	/// TODO: find path according to driver aim
 
-	return true;
+	if (r) {
+		this->driver = driver;
+	}
+
+	return r;
 }
 
-void Car::removeDriver(Character* driver) {
-	if (this->driver == driver) {
-		this->driver = nullptr;
-	}
-}
 
 void Car::finishDriving() {
 	this->driver->notifyDrive();

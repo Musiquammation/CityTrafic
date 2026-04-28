@@ -34,6 +34,7 @@ public:
 	static constexpr float FRONT_DECELERATION = .009f;
 	static constexpr float MAX_ACCELERATION = .02f;
 	static constexpr int SPEED_FACTOR = 30;
+	static constexpr int PARKING_RADIUS = 16;
 	static constexpr float WIDTH = .9f;
 	static constexpr float HEIGHT = .6f;
 
@@ -59,6 +60,6 @@ public:
 
 	void setSpeed(float speed);
 
-	bool drive(Character* driver, int destX, int destY);
-	void removeDriver(Character* driver);
+	bool drive(Character* driver,
+		int destX, int destY, const Map& map);
 };

@@ -305,14 +305,14 @@ BuildingInfo Map::getBuilding(int x, int y) const {
 }
 
 bool Map::addBuilding(int x, int y, Building* building, Game& game) {
-    if (!building) return false;
+	if (!building) return false;
 
-    const auto size = building->getSize();
+	const auto size = building->getSize();
 
 	// Check bounds
-    if (!checkBounds(x, y, size.x, size.y)) {
-        return false;
-    }
+	if (!checkBounds(x, y, size.x, size.y)) {
+		return false;
+	}
 
 	cell_t tmpArea[size.y * size.x];
 	// Edit tmpArea and check if it can be editedW
@@ -384,20 +384,20 @@ bool Map::addBuilding(int x, int y, Building* building, Game& game) {
 	// Add building to map
 	this->buildings[Vector<int>{x,y}] = building;
 
-    return true;
+	return true;
 }
 
 
 bool Map::removeBuilding(int x, int y, Game& game) {
 	auto info = this->getBuilding(x, y);
-    if (!info.building) {return false;}
+	if (!info.building) {return false;}
 
-    const auto size = info.building->getSize();
+	const auto size = info.building->getSize();
 
 	// Check bounds
-    if (!checkBounds(x, y, size.x, size.y)) {
-        return false;
-    }
+	if (!checkBounds(x, y, size.x, size.y)) {
+		return false;
+	}
 
 	for (int dy = 0; dy < size.y; dy++) {
 		for (int dx = 0; dx < size.x; dx++) {
@@ -413,4 +413,64 @@ bool Map::removeBuilding(int x, int y, Game& game) {
 
 
 	return true;
+}
+
+Vector<int> Map::searchParkingSpot(
+    int cx, int cy,
+    int lx, int ly,
+    int radius
+) const {
+    Vector<int> bestPos = {INT32_MIN, INT32_MIN};
+    // Using squared distance to avoid expensive sqrt() calls
+    int minDistanceToL = INT32_MAX;
+
+    // Iterate through concentric square layers (i is the "radius" or half-side)
+    for (int i = 0; i <= radius; ++i) {
+        bool foundInLayer = false;
+
+        // Define the boundaries for the current square layer
+        int xMin = cx - i;
+        int xMax = cx + i;
+        int yMin = cy - i;
+        int yMax = cy + i;
+
+        for (int x = xMin; x <= xMax; ++x) {
+            for (int y = yMin; y <= yMax; ++y) {
+                // Only check the perimeter of the square.
+                // If we are inside the inner area (already scanned in previous i),
+				// then skip.
+                if (i > 0 && (x > xMin && x < xMax && y > yMin && y < yMax)) {
+                    continue; 
+                }
+
+                // Retrieve the cell at the current coordinates
+                auto cell = this->getCell(x, y);
+                
+                // Check if the cell is a parking spot and is currently unoccupied
+                if (cell->getType() == CellType::PARKING && !cell->hasCar()) {
+                    // Calculate squared distance to the secondary point (lx, ly)
+					int dx = x-lx;
+					int dy = y-ly;
+                    int distL = dx*dx + dy*dy;
+
+                    if (distL < minDistanceToL) {
+                        minDistanceToL = distL;
+                        bestPos = {x, y};
+                        foundInLayer = true;
+                    }
+                }
+            }
+        }
+
+        // If at least one valid spot was found in the current layer,
+		// return the best one.
+        // This ensures we return the spot closest to (cx, cy) first.
+        if (foundInLayer) {
+            return bestPos;
+        }
+    }
+
+    // Return {INT32_MIN, INT32_MIN} if no parking spot
+	// was found within the given radius
+    return bestPos;
 }
