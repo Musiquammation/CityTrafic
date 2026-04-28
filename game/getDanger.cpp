@@ -522,7 +522,17 @@ getDanger_t getDanger(
 		// Check if we need to turn
 		if (spy.x == pathPoint.x && spy.y == pathPoint.y) {
 			spy.dir = pathHandler.seekDirection();
-			pathHandler.next();
+			// Move and check if path is finished
+			if (!pathHandler.next()) {
+				appendStopDist(
+					(float)dist - car->step + (1 - Car::WIDTH/2),
+					Car::FRONT_DECELERATION,
+					{spy.x, spy.y}
+				);
+				goto finishUpdate;
+
+
+			}
 			pathPoint = pathHandler.seek();
 
 		}

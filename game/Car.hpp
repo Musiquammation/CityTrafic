@@ -24,6 +24,7 @@ private:
 	float realSpeed = 0;
 	float publicSpeed = 0;
 	Character* driver = nullptr;
+	bool pathIsFinished = false;
 
 	friend class Api;
 

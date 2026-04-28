@@ -66,11 +66,13 @@ Direction PathHandler<freeArray>::seekDirection() {
 }
 
 template<bool freeArray>
-void PathHandler<freeArray>::next() {
+bool PathHandler<freeArray>::next() {
 	if (this->step < this->length-1) {
 		this->step++;
+		return true;
 	} else {
 		this->step = -1;
+		return false;
 	}
 }
 
@@ -78,11 +80,11 @@ void PathHandler<freeArray>::next() {
 template PathHandler<false>::PathHandler(const PathHandler<true>&);
 template Vector<int> PathHandler<false>::seek();
 template Direction PathHandler<false>::seekDirection();
-template void PathHandler<false>::next();
+template bool PathHandler<false>::next();
 
 template Vector<int> PathHandler<true>::seek();
 template Direction PathHandler<true>::seekDirection();
-template void PathHandler<true>::next();
+template bool PathHandler<true>::next();
 
 
 

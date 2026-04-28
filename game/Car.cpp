@@ -19,7 +19,7 @@ Car::Car(int x, int y, Direction direction)
 
 void Car::update(Game* game, std::vector<PriorityNode>& prioritiesBuffer) {
 	if (this->driver == nullptr)
-			return; // no driver
+		return; // no driver
 
 	auto danger = getDanger(this, game, prioritiesBuffer);
 
@@ -47,6 +47,13 @@ void Car::move() {
 	this->publicSpeed = this->realSpeed;
 	this->publicTargetPoint = this->realTargetPoint;
 	
+	// Check path ending
+	if (this->realSpeed <= 0 && this->pathIsFinished) {
+		// Stop the car
+		this->finishDriving();
+	}
+
+
 	// Move
 	this->step += this->realSpeed;
 	if (this->step >= 1) {
@@ -71,7 +78,10 @@ void Car::move() {
 				this->state = CarState::FRONT;
 				break;
 			}
-			this->pathHandler.next();
+			
+			if (this->pathHandler.next()) {
+				this->pathIsFinished = true;
+			}
 		
 		} else {
 			this->state = CarState::FRONT;
@@ -94,6 +104,7 @@ void Car::move() {
 		this->x += Direction_getVector(this->direction).x;
 		this->y += Direction_getVector(this->direction).y;
 	}
+
 }
 
 Vector<float> Car::calcPosition() const {
@@ -191,24 +202,26 @@ bool Car::drive(Character* driver, int destX, int destY, const Map& map) {
 	
 	
 
-	bool r = makeCarPath(
+	bool success = makeCarPath(
 		map, this->pathHandler,
 		this->x, this->y, spot.x, spot.y,
 		this->direction
 	);
 	/// TODO: find path according to driver aim
 
-	printf("path found: %d\n", r);
+	printf("path found: %d", success);
 
-	if (r) {
+	if (success) {
 		this->driver = driver;
+		this->pathIsFinished = false;
 	}
 
-	return r;
+	return success;
 }
 
 
 void Car::finishDriving() {
 	this->driver->notifyDrive();
 	this->driver = nullptr;
+	this->pathIsFinished = false;
 }

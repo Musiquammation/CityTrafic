@@ -36,7 +36,7 @@ public:
 	 */
 	Direction seekDirection();
 
-	void next();
+	bool next();
 };
 
 
