@@ -67,6 +67,11 @@ struct CharacterFriend {
 
 	def(drive) {
 		setCharacter();
+		if (c->data.drive.state == ActionCode::PENDING) {
+			return ActionCode::PENDING;
+		}
+
+		c->setState(CharacterState::OUTSIDE);
 		return c->data.drive.state;
 	}
 

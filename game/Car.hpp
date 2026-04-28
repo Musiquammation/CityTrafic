@@ -28,7 +28,6 @@ private:
 
 	friend class Api;
 
-	void finishDriving();
 
 public:
 	static constexpr float SOFT_DECELERATION = .002f;
@@ -63,4 +62,6 @@ public:
 
 	bool drive(Character* driver,
 		int destX, int destY, Map& map);
+
+	void finishDriving(Character* driver);
 };

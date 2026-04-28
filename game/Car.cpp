@@ -50,7 +50,7 @@ void Car::move() {
 	// Check path ending
 	if (this->realSpeed <= 0 && this->pathIsFinished) {
 		// Stop the car
-		this->finishDriving();
+		this->finishDriving(this->driver);
 	}
 
 
@@ -233,8 +233,12 @@ bool Car::drive(Character* driver, int destX, int destY, Map& map) {
 }
 
 
-void Car::finishDriving() {
-	this->driver->notifyDrive();
+void Car::finishDriving(Character* driver) {
+	Character* d = this->driver;
+	if (d != driver)
+		return;
+
 	this->driver = nullptr;
 	this->pathIsFinished = false;
+	d->notifyDrive();
 }

@@ -31,7 +31,9 @@ void Character::cleanupState() {
 		break;
 
 	case CharacterState::DRIVE:
-		/// TODO: notify car?
+		this->x = (float)this->car->x + .5f;
+		this->y = (float)this->car->y + .5f;
+		this->car->finishDriving(this);
 		break;
 
 	}
@@ -175,6 +177,7 @@ bool Character::makeDrive(Map& map, int destX, int destY) {
 		return false;
 		
 	this->state = CharacterState::DRIVE;
+	this->data.drive.state = ActionCode::PENDING;
 	return true;
 }
 

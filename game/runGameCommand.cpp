@@ -22,21 +22,21 @@ static const void* test(Game& game, const void* ptr) {
 	int h = take(int32_t);
 
 
-	game.map.getEditCell(2, 14)->setType(CellType::ROAD, game, 0);
-	game.map.getEditCell(2, 13)->setType(CellType::ROAD, game, 0);
-	game.map.getEditCell(2, 12)->setType(CellType::ROAD, game, 0);
-	game.map.getEditCell(2, 11)->setType(CellType::DIRECTION, game,
+	game.map.getEditCell(4, 14)->setType(CellType::ROAD, game, 0);
+	game.map.getEditCell(4, 13)->setType(CellType::ROAD, game, 0);
+	game.map.getEditCell(4, 12)->setType(CellType::ROAD, game, 0);
+	game.map.getEditCell(4, 11)->setType(CellType::DIRECTION, game,
 		direction::setSide(0, 1, 2));
 
-	game.map.getEditCell(3, 11)->setType(CellType::ROAD, game, 0);
-	game.map.getEditCell(4, 11)->setType(CellType::DIRECTION, game,
+	game.map.getEditCell(5, 11)->setType(CellType::ROAD, game, 0);
+	game.map.getEditCell(6, 11)->setType(CellType::DIRECTION, game,
 		direction::setSide(0, 0, 3));
 
-	game.map.getEditCell(4, 10)->setType(CellType::ROAD, game, 0);
-	game.map.getEditCell(4, 9)->setType(CellType::ROAD, game, 0);
-	game.map.getEditCell(4, 8)->setType(CellType::PARKING, game, 0);
+	game.map.getEditCell(6, 10)->setType(CellType::ROAD, game, 0);
+	game.map.getEditCell(6, 9)->setType(CellType::ROAD, game, 0);
+	game.map.getEditCell(6, 8)->setType(CellType::PARKING, game, 0);
 
-	Car* car = game.spawnCar(2, 14, Direction::UP);
+	Car* car = game.spawnCar(4, 14, Direction::UP);
 
 	auto home = Building::create_home(3);
 	game.map.addBuilding(10, 12, home, game);

@@ -33,7 +33,7 @@ enum class CellType {
      * +08: dy
      * +12: jumpX?
      * +13: jumpY?
-     * +14: entry?
+     * +14: (empty)
      * +15: (taken)
      */
     LINK,

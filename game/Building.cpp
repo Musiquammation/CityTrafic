@@ -56,7 +56,7 @@ int Building::fillEntryList(Vector<int> list[]) const {
 	Vector<int>* ptr = list;
 	switch (this->type) {
 	case BuildingType::HOME:
-		*ptr++ = {2, 1};
+		*ptr++ = {3, 0};
 		break;
 	}
 
@@ -68,7 +68,7 @@ int Building::fillLeaveList(Vector<int> list[]) const {
 	Vector<int>* ptr = list;
 	switch (this->type) {
 	case BuildingType::HOME:
-		*ptr++ = {2, 2};
+		*ptr++ = {3, 1};
 		break;
 	}
 

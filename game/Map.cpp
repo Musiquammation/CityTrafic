@@ -371,16 +371,6 @@ bool Map::addBuilding(int x, int y, Building* building, Game& game) {
 	}
 	
 	
-	Vector<int> edits[size.y * size.x];
-	int editsLength = building->fillEntryList(edits);
-
-	// Apply entry list
-	mfor(edits, editsLength, i) {
-		auto cell = this->getEditCell(x + i->x, y + i->y);
-		cell->data |= 1 << 14;
-	}
-
-
 	// Add building to map
 	this->buildings[Vector<int>{x,y}] = building;
 
