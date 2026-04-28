@@ -66,6 +66,20 @@ static const void* placeSingleRoad(Game& game, const void* ptr) {
 	return ptr;
 }
 
+static const void* parking(Game& game, const void* ptr) {
+	int x = take(int32_t);
+	int y = take(int32_t);
+
+	if (!game.checkBounds(x,y,1,1))
+		return ptr;
+
+	Cell* cell = game.getEditCell(x,y);
+	cell->setType(CellType::PARKING, game);
+	return ptr;
+
+}
+
+
 
 
 };
@@ -95,6 +109,9 @@ const void* runGameCommand(Game& game, const void* ptr) {
 
 	case CommandCode::PLACE_SINGLE_ROAD:
 		return GameCommand::placeSingleRoad(game, ptr);
+
+	case CommandCode::PARKING:
+		return GameCommand::parking(game, ptr);
 	}
 
 	return ptr;

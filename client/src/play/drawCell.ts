@@ -19,5 +19,9 @@ export function drawCell(data: number, ctx: OffscreenCanvasRenderingContext2D) {
 		ctx.fillRect(0, 0, 1, 1);
 		break;
 
+	case 4: // parking
+		ctx.fillStyle = "pink";
+		ctx.fillRect(0, 0, 1, 1);
+		break;
 	}
 }

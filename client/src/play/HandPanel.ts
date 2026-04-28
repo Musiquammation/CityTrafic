@@ -2,14 +2,25 @@ import { ImageLoader } from "../handler/ImageLoader";
 import { sendCommand } from "../net/sendCommand";
 import { COMMAND_CODES } from "../shared/CommandCode";
 import { handlist } from "./hands/handlist";
-import { HandButton, HandObject } from "./hands/handtypes";
+import { HandButton, HandList, HandObject } from "./hands/handtypes";
 
 
 
 
-
-
-
+function setElementAsBackground(
+	element: HTMLCanvasElement | HTMLImageElement,
+	div: HTMLElement
+) {
+	if (element instanceof HTMLCanvasElement) {
+		element.toBlob(blob => {
+			if (!blob) return;
+			const url = URL.createObjectURL(blob);
+			div.style.backgroundImage = `url(${url})`;
+		});
+	} else {
+		div.style.backgroundImage = `url(${element.src})`;
+	}
+}
 
 
 
@@ -40,36 +51,46 @@ export class HandPanel {
 		this.initialized = 1; // loading
 
 
-		const promises: Promise<void>[] = [];
 
-		const pushButton = async (btn: HandButton) => {
-			
+		const pushButton = (btn: HandButton) => {
 			const parentDiv = document.createElement("div");
 			const div = document.createElement("div");
 			const idx = this.list.length;
 			this.list.push(btn);
 
 			parentDiv.onclick = () => {
-				console.log(idx);
-				this.select(idx);
+				this.select(idx, loader);
 			};
 
 			parentDiv.appendChild(div);
 			this.div.appendChild(parentDiv);
+
+			// Load texture
+			const icons = btn.getIcons();
+			loader.load(icons.list).then(() => {
+				setElementAsBackground(loader.get(icons.first), div);
+			});
 		}	
 
-		const pushPanel = async () => {
+		const pushPanel = (list: HandList) => {
+			const parentDiv = document.createElement("div");
+			const div = document.createElement("div");
+			const idx = this.list.length;
+			this.list.push(list);
+			parentDiv.appendChild(div);
+			this.div.appendChild(parentDiv);
+
+			// Load texture
 
 		}
 
-		promises.push(pushButton(handlist.erase));
-		promises.push(pushButton(handlist.road));
+		pushButton(handlist.erase);
+		pushButton(handlist.road);
 
 
 
-		await Promise.all(promises);
 
-		this.select(0);
+		this.select(0, loader);
 
 		this.initialized = 2; // done
 		
@@ -84,14 +105,22 @@ export class HandPanel {
 	}
 
 
-	select(idx: number) {
+	select(idx: number, loader: ImageLoader | null) {
 		this.div.children[this.selected].classList.remove('selected');
 		this.div.children[idx].classList.add('selected');
 		
 		this.list[this.selected].diseable();
-		this.list[idx].enable();
+		const icon = this.list[idx].enable();
 
 		this.selected = idx;
+
+
+		if (loader && icon) {
+			setElementAsBackground(
+				loader.get(icon),
+				this.div.children[idx].children[0] as HTMLElement
+			);
+		}
 	}
 
 	getButton() {

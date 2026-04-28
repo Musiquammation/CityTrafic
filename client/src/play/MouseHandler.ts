@@ -26,13 +26,11 @@ export class MouseHandler {
 
 		const action = this.playState.handPanel.getButton();
 		if (leftDown) {
-			const cell = this.playState.getCell(Math.floor(x), Math.floor(y));
-			action.mouseDown(x, y, HandPanel.LEFT_BTN, cell);
+			action.mouseDown(x, y, HandPanel.LEFT_BTN, this.playState);
 		}
 
 		if (rightDown) {
-			const cell = this.playState.getCell(Math.floor(x), Math.floor(y));
-			action.mouseDown(x, y, HandPanel.RIGHT_BTN, cell);
+			action.mouseDown(x, y, HandPanel.RIGHT_BTN, this.playState);
 		}
 
 
@@ -71,13 +69,13 @@ export class MouseHandler {
 		
 		const prev = this.getMousePosition(this.lastScreenX, this.lastScreenY);
 		if (leftDown) {
-			const cell = this.playState.getCell(Math.floor(pos.x), Math.floor(pos.y));
-			action.mouseMove(prev.x, prev.y, pos.x, pos.y, HandPanel.LEFT_BTN, cell);
+			action.mouseMove(prev.x, prev.y, pos.x, pos.y,
+				HandPanel.LEFT_BTN, this.playState);
 		}
 
 		if (rightDown) {
-			const cell = this.playState.getCell(Math.floor(pos.x), Math.floor(pos.y));
-			action.mouseMove(prev.x, prev.y, pos.x, pos.y, HandPanel.RIGHT_BTN, cell);
+			action.mouseMove(prev.x, prev.y, pos.x, pos.y,
+				HandPanel.RIGHT_BTN, this.playState);
 		}
 
 
