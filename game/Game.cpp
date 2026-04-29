@@ -3,6 +3,7 @@
 #include "Car.hpp"
 #include "Character.hpp"
 #include "Cell.hpp"
+#include "Job.hpp"
 #include "Map.hpp"
 
 #include <stdio.h>
@@ -65,6 +66,25 @@ BuildingInfo Game::getBuilding(int x, int y) {
 	return this->map.getBuilding(x, y);
 }
 
+int Game::appendJob(Job* job) {
+	// Search empty slots
+	int size = (int)this->jobs.size();
+	for (int i = 0; i < size; i++) {
+		if (this->jobs[i] == nullptr) {
+			this->jobs[i] = job;
+			return i;
+		}
+	}
+
+	// No empty slots, so add job to the end
+	this->jobs.push_back(job);
+	return size - 1;
+}
+
+void Game::removeJob(int job) {
+	delete this->jobs[job];
+	this->jobs[job]	= nullptr;
+}
 
 
 
@@ -75,4 +95,12 @@ int Game::getFrame() const {
 
 bool Game::checkBounds(int x, int y, int width, int height) const {
 	return this->map.checkBounds(x,y,width,height);
+}
+
+
+Game::~Game() {
+	// Delete jobs
+	for (Job* job: this->jobs)
+		if (job)
+			delete job;
 }

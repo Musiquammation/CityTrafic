@@ -93,8 +93,10 @@ struct CharacterFriend {
 
 	def(orientWork) {
 		setCharacter();
-		auto& map = game.getMap();
-		auto info = c->getWorkBuilding(map);
+		if (!c->getJob())
+			return ActionCode::FAILURE; // no job
+			
+		auto info = c->getWorkBuilding(game);
 		bool r = c->orientBuilding(game, info);
 		return ActionCode_get(r);
 	}
@@ -109,9 +111,11 @@ struct CharacterFriend {
 
 	def(locateWork) {
 		setCharacter();
-		auto& map = game.getMap();
-		auto info = c->getWorkBuilding(map);
-		bool r = c->locateBuilding(map, info);
+		if (!c->getJob())
+			return ActionCode::FAILURE; // no job
+
+		auto info = c->getWorkBuilding(game);
+		bool r = c->locateBuilding(game.getMap(), info);
 		return ActionCode_get(r);
 	}
 

@@ -14,6 +14,7 @@ private:
 	CarHandler carHandler{};
 	CharacterHandler characterHandler{};
 	Calendar calendar;
+	std::vector<Job*> jobs;
 	int frameCount = 0;
 	void test();
 
@@ -43,8 +44,12 @@ public:
 	Map& getMap() {return this->map;}
 	const Calendar& getCalendar() const {return this->calendar;}
 
+	int appendJob(Job* job);
+	void removeJob(int job);
 
 	int getFrame() const;
 	bool checkBounds(int x, int y, int width, int height) const;
+
+	~Game();
 
 };

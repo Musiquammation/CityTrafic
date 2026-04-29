@@ -1,5 +1,6 @@
 #include "Character.hpp"
 
+#include "Job.hpp"
 #include "pathfinder.hpp"
 #include "Car.hpp"
 #include "Game.hpp"
@@ -7,6 +8,7 @@
 
 #include "actions/action_character.hpp"
 
+#include <stdio.h>
 
 Character::Character():
 	executor(actionNodes::character::init(), this, nullptr)
@@ -241,13 +243,19 @@ void Character::notifyDrive() {
 }
 
 BuildingInfo Character::getHomeBuilding(const Map& map) const {
-	/// TODO: rework getWorkBuilding
+	/// TODO: rework getHomeBuilding
 	return map.getBuilding(10, 12);
 }
 
-BuildingInfo Character::getWorkBuilding(const Map& map) const {
+BuildingInfo Character::getWorkBuilding(Game& game) const {
 	/// TODO: rework getWorkBuilding
-	return map.getBuilding(1, 5);
+	if (this->job) {
+		auto site = this->job->getEmployeeSite(this, game.getCalendar());
+		printf("site %d %d\n", site.x, site.y);
+		return game.getMap().getBuilding(site.x, site.y);
+	}
+
+	return {INT32_MIN, INT32_MIN, nullptr};
 }
 
 bool Character::orientBuilding(Game& game, BuildingInfo info) {
@@ -312,8 +320,31 @@ bool Character::setCar(Car* car) {
 		return true;
 	}
 	}
-
 }
+
+
+bool Character::takeJob(Job* job) {
+	if (this->job) {
+		this->leaveJob();
+	}
+
+	if (job->hire(this)) {
+		this->job = job;
+		return true;
+	}
+
+	return false;
+}
+
+void Character::leaveJob() {
+	this->job->fire(this);
+	this->job = nullptr;
+}
+
+Job* Character::getJob() {
+	return this->job;
+}
+
 
 
 

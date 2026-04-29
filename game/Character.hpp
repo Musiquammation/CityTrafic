@@ -19,10 +19,11 @@ enum class CharacterState {
 };
 
 class Character {
-	CharacterState state;
 	Car* car = nullptr;
 	ActionExecutor executor;
+	Job* job = nullptr;
 	Vector<int> home;
+	CharacterState state;
 	unsigned int pointId;
 
 
@@ -75,7 +76,7 @@ public:
 
 	void notifyDrive();
 
-	BuildingInfo getWorkBuilding(const Map& map) const;
+	BuildingInfo getWorkBuilding(Game& game) const;
 	BuildingInfo getHomeBuilding(const Map& map) const;
 	bool orientBuilding(Game& game, BuildingInfo info);
 	bool locateBuilding(Map& map, BuildingInfo info);
@@ -87,6 +88,10 @@ public:
 
 	Car* getCar() const;
 	bool setCar(Car* car);
+
+	bool takeJob(Job* job);
+	void leaveJob();
+	Job* getJob();
 
 	~Character();
 };

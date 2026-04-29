@@ -7,6 +7,7 @@
 #include "Cell.hpp"
 #include "CellType.hpp"
 #include "direction.hpp"
+#include "jobs/OilFieldJob.hpp"
 
 #include <stdio.h>
 
@@ -41,13 +42,18 @@ static const void* test(Game& game, const void* ptr) {
 	auto home = Building::create_home(3);
 	game.map.addBuilding(10, 11, home, game);
 	
-	auto shop = Building::create_home(3);
-	game.map.addBuilding(1, 5, home, game);
+	auto shop = Building::create_oilField(1000.0f, 50000, 4);
+	game.map.addBuilding(1, 5, shop, game);
+
+
+	Job* job = new OilFieldJob{{1,5}, 5.0f};
+	game.appendJob(job);
 
 	auto character = Character::spawnCharacter(game.getMap(), 10, 11);
 	if (character) {
 		character->setCar(car);
 		game.characterHandler.pushCharacter(character);
+		character->takeJob(job);
 	}
 
 	return ptr;

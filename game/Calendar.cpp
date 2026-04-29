@@ -17,51 +17,60 @@ const int Calendar::MONTH_DAYS[12] = {
 };
 
 const char* const Calendar::WEEK_DAYS[7] = {
-    "Monday",
-    "Tuesday",
-    "Wednesday",
-    "Thursday",
-    "Friday",
-    "Saturday",
-    "Sunday"
+	"Monday",
+	"Tuesday",
+	"Wednesday",
+	"Thursday",
+	"Friday",
+	"Saturday",
+	"Sunday"
 };
 
 
 void Calendar::move() {
-    // Get rest
-    static constexpr float MINUTES_PER_FRAME =
-        (float)DAYS_PER_HOUR * (1440.0f / (3600.0f * 60.0f));
+	// Get rest
+	static constexpr float MINUTES_PER_FRAME =
+		DAYS_PER_HOUR * (1440.0f / (3600.0f * 60.0f));
 
-    rest += MINUTES_PER_FRAME;
+	rest += MINUTES_PER_FRAME;
 
-    // One minute
-    while (rest >= 1.0f) {
-        rest -= 1.0f;
-        minute++;
+	// One minute
+	while (rest >= 1.0f) {
+		rest -= 1.0f;
+		minute++;
+		indicator++;
 
-        if (minute < 60) continue;
-        minute = 0;
-        hour++;
+		if (minute < 60) continue;
+		minute = 0;
+		hour++;
 
-        if (hour < 24) continue;
-        hour = 0;
-        day++;
-        weekDay = (weekDay + 1) % 7;
-        totalDay++;
+		if (hour < 24) continue;
+		hour = 0;
+		day++;
+		weekDay = (weekDay + 1) % 7;
+		totalDay++;
+		dayIndicator = indicator;
 
-        // Months
-        int daysInMonth = MONTH_DAYS[month];
-        if (daysInMonth == -1) {
-            // February
-            daysInMonth = ((year % 4 == 0 && year % 100 != 0) || (year % 400 == 0)) ? 29 : 28;
-        }
+		// Months
+		int daysInMonth = MONTH_DAYS[month];
+		if (daysInMonth == -1) {
+			// February
+			daysInMonth = ((year % 4 == 0 && year % 100 != 0) || (year % 400 == 0)) ? 29 : 28;
+		}
 
-        if (day < daysInMonth) continue;
-        day = 0;
-        month++;
+		if (day < daysInMonth) continue;
+		day = 0;
+		month++;
 
-        if (month < 12) continue;
-        month = 0;
-        year++;
-    }
+		if (month < 12) continue;
+		month = 0;
+		year++;
+	}
+}
+
+calendar_t Calendar::getTime(int days, int hour, int mn) {
+	return this->dayIndicator
+		+ days * (24*60)
+		+ hour * 60 
+		+ mn;
 }

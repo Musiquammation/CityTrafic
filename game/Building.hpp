@@ -5,6 +5,7 @@
 
 enum class BuildingType: int {
 	HOME,
+	OIL_FIELD,
 };
 
 
@@ -18,10 +19,20 @@ struct Building {
 			int left;
 			int capacity;	
 		} home;
+
+		struct {
+			float crude;
+			float refined;
+			float factor;
+			int left;
+			int size;
+		} oilField;
 	};
 	
 	
 	static Building* create_home(int capacity);
+	static Building* create_oilField(
+		float crude, int factor, int size);
 
 
 

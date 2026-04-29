@@ -13,5 +13,8 @@ struct PriorityNode;
 struct Cell;
 struct ActionNode;
 
+class Calendar;
+class Job;
+
 template<bool freeArray>
 class PathHandler;
