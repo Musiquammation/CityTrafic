@@ -82,10 +82,11 @@ static const void* test(
 
 	Job* job = new OilFieldJob{{1,5}, 5.0f};
 	game.appendJob(job);
-	job->earn(10000);
+	job->give(10000);
 
 	auto character = Character::spawnCharacter(game.getMap(), 10, 11);
 	if (character) {
+		character->give(2000);
 		character->setCar(car);
 		game.characterHandler.pushCharacter(character);
 		character->takeJob(job, game.calendar);

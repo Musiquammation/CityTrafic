@@ -95,7 +95,7 @@ public:
 	void leaveJob();
 	Job* getJob();
 
-	void earn(int money);
+	void give(int money);
 	int pay(int money);
 
 	~Character();

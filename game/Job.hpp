@@ -18,7 +18,7 @@ protected:
 public:
 	static constexpr int NO_LOCATION = INT32_MIN;
 
-	void earn(int money);
+	void give(int money);
 	int pay(int money);
 
 	virtual calendar_t getNextEnterHour(

@@ -366,7 +366,7 @@ Job* Character::getJob() {
 	return this->job;
 }
 
-void Character::earn(int money) {
+void Character::give(int money) {
 	this->money += money;
 }
 

@@ -2,7 +2,7 @@
 
 #include "Character.hpp"
 
-void Job::earn(int money) {
+void Job::give(int money) {
 	this->money += money;
 }
 
