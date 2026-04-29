@@ -1,5 +1,10 @@
 #include "Calendar.hpp"
 
+#include <stdio.h>
+
+// constexpr float DAYS_PER_HOUR = 365.0f/(24*7);
+constexpr float DAYS_PER_HOUR = 365.0f/4;
+
 // Number of days per month (-1 = February, handled separately)
 const int Calendar::MONTH_DAYS[12] = {
 	31, // January
@@ -24,6 +29,16 @@ const char* const Calendar::WEEK_DAYS[7] = {
 	"Friday",
 	"Saturday",
 	"Sunday"
+};
+
+const int Calendar::WORKING_DAYS[6] = {
+	0, 1, 2, 3, 4, -1
+};
+const int Calendar::DECALED_DAYS[6] = {
+	1, 2, 3, 4, 5, -1
+};
+const int Calendar::EXTENDED_DAYS[7] = {
+	0, 1, 2, 3, 4, 5, -1
 };
 
 
@@ -68,9 +83,40 @@ void Calendar::move() {
 	}
 }
 
-calendar_t Calendar::getTime(int days, int hour, int mn) {
-	return this->dayIndicator
-		+ days * (24*60)
-		+ hour * 60 
-		+ mn;
+calendar_t Calendar::getTime(calendar_t day, instant_t instant) {
+	return 
+		+ day * (24*60)
+		+ instant.hour * 60 
+		+ instant.minute;
+}
+
+
+calendar_t Calendar::getFutureInstant(instant_t time, const int* days) const {
+    calendar_t targetToday = getTime(totalDay, time);
+
+    for (int offset = 0; offset < 7; offset++) {
+        int targetWeekDay = (this->weekDay + offset) % 7;
+        
+        bool isAllowed = false;
+        for (int i = 0; days[i] != -1; i++) {
+            if (days[i] == targetWeekDay) {
+                isAllowed = true;
+                break;
+            }
+        }
+
+        if (isAllowed) {
+            calendar_t potentialIndicator = getTime(totalDay + offset, time);
+            
+            if (offset == 0) {
+                if (potentialIndicator > this->indicator) {
+                    return potentialIndicator;
+                }
+            } else {
+                return potentialIndicator;
+            }
+        }
+    }
+
+    return NOTIME;
 }

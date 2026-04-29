@@ -6,6 +6,7 @@
 #include "../Game.hpp"
 #include "../Map.hpp"
 #include "../Car.hpp"
+#include "../Job.hpp"
 #include "../Building.hpp"
 #include "../Character.hpp"
 
@@ -22,7 +23,7 @@ static inline float frac(float x) {
 	all(result);\
 		fst(runDayJob);\
 			all(workSection);\
-				run(isWorkDay);\
+				run(mustWork);\
 				all(workDay);\
 					/* A lot of tasks */ \
 			all(chillSection);\
@@ -38,6 +39,8 @@ static inline float frac(float x) {
 	run(locateHome);\
 	run(enter);\
 	run(leave);\
+	run(enterWork);\
+	run(leaveWork);\
 	run(passWork);\
 			
 		
@@ -52,8 +55,18 @@ declList();
 #define setCharacter() Character* c = (Character*)_data;
 
 struct CharacterFriend {
-	def(isWorkDay) {
-		return ActionCode::SUCCESS;
+	def(mustWork) {
+		setCharacter();
+		Job* job = c->getJob();
+		if (!job) {
+			// No job so no need to work
+			return ActionCode::FAILURE;
+		}
+
+		auto& calendar = game.getCalendar();
+		auto hour = job->getNextEnterHour(c, calendar);
+
+		return ActionCode_get(calendar.indicator > hour);
 	}
 	
 	def(isChillDay) {
@@ -132,8 +145,7 @@ struct CharacterFriend {
 		bool r = c->makeInside(game);
 		return ActionCode_get(r);
 	}
-
-
+	
 	def(leave) {
 		setCharacter();
 
@@ -141,9 +153,43 @@ struct CharacterFriend {
 		return ActionCode::SUCCESS;
 	}
 
-	def(passWork) {
-		printf("passWork\n");
+
+	def(enterWork) {
+		setCharacter();
+		if (!c->job)
+			return ActionCode::FAILURE;
+
+		c->job->onEnter(c, game.getCalendar());
 		return ActionCode::SUCCESS;
+	}
+
+	def(leaveWork) {
+		setCharacter();
+		Job* job = c->getJob();
+
+		if (!job)
+			return ActionCode::FAILURE;
+
+		job->onLeave(c, game.getCalendar());
+		return ActionCode::SUCCESS;
+	}
+
+	def(passWork) {
+		setCharacter();
+		Job* job = c->getJob();
+		if (!job) {
+			// No job so no need to work
+			return ActionCode::FAILURE;
+		}
+
+		auto& calendar = game.getCalendar();
+		auto hour = job->getNextLeaveHour(c, calendar);
+
+		if (calendar.indicator > hour) 
+			return ActionCode::SUCCESS;
+
+		job->work(c, game);
+		return ActionCode::PENDING;
 	}
 
 
@@ -156,7 +202,7 @@ give(result, &runDayJob);
 
 give(runDayJob, &workSection, &chillSection);
 
-give(workSection, &isWorkDay, &workDay);
+give(workSection, &mustWork, &workDay);
 
 give(workDay,
 	&leave,
@@ -167,7 +213,9 @@ give(workDay,
 	&orientWork,
 	&walk,
 	&enter,
+	&enterWork,
 	&passWork,
+	&leaveWork,
 	&leave,
 	&orientCar,
 	&walk,

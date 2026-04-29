@@ -36,118 +36,188 @@ struct Pos {
 
 struct PosHash {
 	std::size_t operator()(const Pos& p) const {
-		return std::hash<int>{}(p.x) ^ (std::hash<int>{}(p.y) << 1);
+		std::size_t h1 = std::hash<int>{}(p.x);
+		std::size_t h2 = std::hash<int>{}(p.y);
+		// Boost-style hash_combine
+		return h1 ^ (h2 * 2654435761ULL + 0x9e3779b9 + (h1 << 6) + (h1 >> 2));
 	}
 };
 
+
+// Finds the nearest walkable cell (NONE or ROAD) to (x, y) using expanding square rings.
+// Returns {INT_MIN, INT_MIN} if no walkable cell is found.
+static Pos findNearestWalkable(const Map& map, int x, int y) {
+	const Cell* c = map.getCell(x, y);
+	if (c && (c->getType() == CellType::NONE || c->getType() == CellType::ROAD))
+		return {x, y};
+
+	constexpr int RADIUS = 12;
+	for (int radius = 1; radius < RADIUS; ++radius) {
+		for (int ox = -radius; ox <= radius; ++ox) {
+			for (int oy = -radius; oy <= radius; ++oy) {
+				if (std::abs(ox) != radius && std::abs(oy) != radius)
+					continue;
+				const Cell* nc = map.getCell(x + ox, y + oy);
+				if (nc && (nc->getType() == CellType::NONE || nc->getType() == CellType::ROAD))
+					return {x + ox, y + oy};
+			}
+		}
+	}
+	return {INT_MIN, INT_MIN};
+}
+
 char* makePedestranPath(const Map& map, int startX, int startY, int destX, int destY) {
-	// Directions: 0:R, 1:UR, 2:U, 3:UL, 4:L, 5:DL, 6:D, 7:DR
-	const int dx[] = {1,  1,  0, -1, -1, -1,  0,  1};
-	const int dy[] = {0, -1, -1, -1,  0,  1,  1,  1};
-	// Base movement costs (10 for straight, 14 for diagonal)
+	const int dx[]        = { 1,  1,  0, -1, -1, -1,  0,  1};
+	const int dy[]        = { 0, -1, -1, -1,  0,  1,  1,  1};
 	const int baseCosts[] = {10, 14, 10, 14, 10, 14, 10, 14};
+	const int ROAD_MULT   = 3;
 
-	const int ROAD_COST = 5;
-	const int FULL_COST = 100;
+	Pos src = findNearestWalkable(map, startX, startY);
+	Pos dst = findNearestWalkable(map, destX,  destY);
 
-	// Initial boundary check
-	if (!map.getCell(startX, startY)) return nullptr;
+	printf("[PATH] Request: (%d,%d) -> (%d,%d)\n", startX, startY, destX, destY);
+	printf("[PATH] Snapped: src=(%d,%d) dst=(%d,%d)\n", src.x, src.y, dst.x, dst.y);
+
+	if (src.x == INT_MIN || dst.x == INT_MIN) {
+		printf("[PATH] ERROR: could not find walkable cell near src or dst\n");
+		return nullptr;
+	}
+
+	auto getH = [&](int x, int y) -> int {
+		int dX = std::abs(x - dst.x);
+		int dY = std::abs(y - dst.y);
+		return 10 * (dX + dY) - 6 * std::min(dX, dY);
+	};
+
+	struct Node {
+		int x, y, g, f;
+		int parentX, parentY;
+		char dir;
+		bool operator>(const Node& o) const { return f > o.f; }
+	};
 
 	std::priority_queue<Node, std::vector<Node>, std::greater<Node>> openList;
 	std::unordered_map<Pos, Node, PosHash> closedList;
 
-	// Octile distance heuristic
-	auto getH = [&](int x, int y) {
-		int dX = std::abs(x - destX);
-		int dY = std::abs(y - destY);
-		return 10 * (dX + dY) + (14 - 20) * std::min(dX, dY);
-	};
+	openList.push({src.x, src.y, 0, getH(src.x, src.y), INT_MIN, INT_MIN, 8});
+	printf("[PATH] Start node pushed: (%d,%d) g=0 h=%d\n", src.x, src.y, getH(src.x, src.y));
 
-	// Starting node (dir 8 signifies the start)
-	openList.push({startX, startY, 0, getH(startX, startY), -1, -1, 8});
-
-	bool found = false;
-	Pos finalPos = {startX, startY};
+	int iterations = 0;
 
 	while (!openList.empty()) {
 		Node current = openList.top();
 		openList.pop();
+		iterations++;
 
 		Pos curPos = {current.x, current.y};
-		
-		// Standard A* check for shorter paths to already visited nodes
-		if (closedList.count(curPos)) {
-			if (current.g < closedList[curPos].g) {
-				closedList[curPos] = current;
-			} else {
-				continue;
-			}
-		}
-		closedList[curPos] = current;
 
-		// Destination reached
-		if (current.x == destX && current.y == destY) {
-			finalPos = curPos;
-			found = true;
-			break;
+		auto it = closedList.find(curPos);
+		if (it != closedList.end() && it->second.g <= current.g) {
+			printf("[PATH]   iter=%d skip (%d,%d) already closed with g=%d <= current g=%d\n",
+				iterations, current.x, current.y, it->second.g, current.g);
+			continue;
 		}
+
+		closedList[curPos] = current;
+		printf("[PATH]   iter=%d settle (%d,%d) g=%d f=%d parent=(%d,%d) dir=%d\n",
+			iterations, current.x, current.y, current.g, current.f,
+			current.parentX, current.parentY, (int)current.dir);
+
+		if (current.x == dst.x && current.y == dst.y) {
+			std::vector<char> tempPath;
+
+			// 1) Chemin A* : dst -> src (reconstruction normale)
+			Pos bt = curPos;
+			while (closedList[bt].parentX != INT_MIN) {
+				Node& n = closedList[bt];
+				tempPath.push_back(n.dir);
+				bt = {n.parentX, n.parentY};
+			}
+			// tempPath est dst->src, on va le reverser plus bas
+
+			// 2) Tronçon snap dst->destX/destY (ajouté en tête, avant inversion)
+			//    On marche de dst vers (destX, destY) en direction opposée
+			{
+				int cx = dst.x, cy = dst.y;
+				while (cx != destX || cy != destY) {
+					int stepX = (destX > cx) ? 1 : (destX < cx) ? -1 : 0;
+					int stepY = (destY > cy) ? 1 : (destY < cy) ? -1 : 0;
+					// Trouve la direction correspondant à (stepX, stepY)
+					for (int i = 0; i < 8; ++i) {
+						if (dx[i] == stepX && dy[i] == stepY) {
+							// Ce tronçon va APRÈS le chemin A* (donc inséré avant inversion)
+							tempPath.insert(tempPath.begin(), (char)i);
+							break;
+						}
+					}
+					cx += stepX;
+					cy += stepY;
+				}
+			}
+
+			// 3) Tronçon startX/startY->src (ajouté en queue, après inversion)
+			std::vector<char> prefixPath;
+			{
+				int cx = startX, cy = startY;
+				while (cx != src.x || cy != src.y) {
+					int stepX = (src.x > cx) ? 1 : (src.x < cx) ? -1 : 0;
+					int stepY = (src.y > cy) ? 1 : (src.y < cy) ? -1 : 0;
+					for (int i = 0; i < 8; ++i) {
+						if (dx[i] == stepX && dy[i] == stepY) {
+							prefixPath.push_back((char)i);
+							break;
+						}
+					}
+					cx += stepX;
+					cy += stepY;
+				}
+			}
+
+			// Assemblage final : prefix (start->src) + A* inversé (src->dst) + suffix (dst->dest)
+			size_t totalSize = prefixPath.size() + tempPath.size() + 1;
+			char* result = (char*)malloc(totalSize);
+			if (!result) return nullptr;
+
+			size_t idx = 0;
+			// prefix : déjà dans le bon sens
+			for (char c : prefixPath)
+				result[idx++] = c;
+			// A* inversé
+			for (size_t i = tempPath.size(); i-- > 0; )
+				result[idx++] = tempPath[i];
+			result[idx] = 8;
+
+			return result;
+		}
+
 
 		for (int i = 0; i < 8; ++i) {
 			int nx = current.x + dx[i];
 			int ny = current.y + dy[i];
-			
+
 			const Cell* nextCell = map.getCell(nx, ny);
 			if (!nextCell) continue;
 
-			// Determine weight based on terrain type
-			int multiplier = 1;
 			CellType type = nextCell->getType();
-			
-			if (type == CellType::ROAD) {
-				multiplier = ROAD_COST;
-			} else if (type != CellType::NONE) {
-				// Buildings, obstacles, etc.
-				multiplier = FULL_COST;
-			}
-
-			int moveCost = baseCosts[i] * multiplier;
-			int gScore = current.g + moveCost;
-
-			// Skip if a cheaper path to this neighbor already exists
-			if (closedList.count({nx, ny}) && gScore >= closedList[{nx, ny}].g) {
+			if (type != CellType::NONE && type != CellType::ROAD)
 				continue;
-			}
 
-			openList.push({nx, ny, gScore, getH(nx, ny), current.x, current.y, (char)i});
+			int mult   = (type == CellType::ROAD) ? ROAD_MULT : 1;
+			int gScore = current.g + baseCosts[i] * mult;
+
+			Pos nPos = {nx, ny};
+			auto nit = closedList.find(nPos);
+			if (nit != closedList.end() && nit->second.g <= gScore) continue;
+
+			printf("[PATH]     push neighbor (%d,%d) dir=%d g=%d f=%d\n",
+				nx, ny, i, gScore, gScore + getH(nx, ny));
+			openList.push({nx, ny, gScore, gScore + getH(nx, ny), current.x, current.y, (char)i});
 		}
 	}
 
-	if (!found) return nullptr;
-
-	// Path Reconstruction
-	std::vector<char> tempPath;
-	Pos backtrack = finalPos;
-	while (backtrack.x != startX || backtrack.y != startY) {
-		Node& n = closedList[backtrack];
-		tempPath.push_back(n.dir);
-		backtrack = {n.parentX, n.parentY};
-	}
-
-	// Allocate buffer: size + 1 for the termination byte '8'
-	char* result = (char*)malloc(tempPath.size() + 1);
-	if (!result) return nullptr;
-
-	for (size_t i = 0; i < tempPath.size(); ++i) {
-		// Reverse order (from start to end)
-		result[i] = tempPath[tempPath.size() - 1 - i];
-	}
-	result[tempPath.size()] = 8; 
-
-	return result;
+	printf("[PATH] No path found after %d iterations\n", iterations);
+	return nullptr;
 }
-
-
-
 
 
 

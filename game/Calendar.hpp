@@ -3,7 +3,6 @@
 #include "calendar_t.hpp"
 
 class Calendar {
-	static constexpr float DAYS_PER_HOUR = 365.0f/(24*7);
 	static const int MONTH_DAYS[12];
 
 	float rest = 0;
@@ -11,7 +10,12 @@ class Calendar {
 
 public:
 	static const char* const WEEK_DAYS[7];
+	static const int WORKING_DAYS[6]; // Monday-Friday
+	static const int DECALED_DAYS[6]; // Tuesday-Friday
+	static const int EXTENDED_DAYS[7]; // Monday-Saturday
+
 	static constexpr calendar_t NOTIME = (calendar_t)(-1);
+	static calendar_t getTime(calendar_t day, instant_t time);
 
 	int minute = 0;
 	int hour = 0;
@@ -20,12 +24,14 @@ public:
 	int month = 0;
 	int year = 0;
 	calendar_t indicator = 0;
-	long long totalDay;
+	calendar_t totalDay;
 
 	void move();
 
-	// Get time relative to today 0am
-	calendar_t getTime(int days, int hour, int mn);
 
-
+	calendar_t getFutureInstant(
+		instant_t time,
+		const int* days
+	) const;
+	
 };

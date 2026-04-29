@@ -17,11 +17,34 @@ OilFieldJob::~OilFieldJob() {
 	this->fireEveryone();
 }
 
-calendar_t OilFieldJob::getNextHour(
+calendar_t OilFieldJob::getNextEnterHour(
 	worker_t worker,
 	const Calendar& calendar
 ) {
-	return Calendar::NOTIME;
+	auto it = this->workers.find((Character*)worker);
+
+	if (it == this->workers.end()) {
+		return Calendar::NOTIME;
+	}
+
+	if (!it->second.willWork)
+		return Calendar::NOTIME;
+
+	return it->second.meeting;
+}
+
+calendar_t OilFieldJob::getNextLeaveHour(
+	worker_t worker,
+	const Calendar& calendar
+) {
+	auto it = this->workers.find((Character*)worker);
+	if (it == this->workers.end())
+		return Calendar::NOTIME;
+	
+	if (it->second.willWork)
+		return Calendar::NOTIME;
+
+	return it->second.meeting;
 }
 
 int OilFieldJob::getSalary(
@@ -41,7 +64,6 @@ Vector<int> OilFieldJob::getEmployeeSite(
 
 void OilFieldJob::work(
 	worker_t worker,
-	const Calendar& calendar,
 	Game& game
 ) {
 	auto building = game.getBuilding(
@@ -68,14 +90,56 @@ void OilFieldJob::work(
 	building->oilField.crude = n;
 }
 
+void OilFieldJob::onEnter(
+	worker_t worker,
+	const Calendar& calendar
+) {
+	auto it = this->workers.find((Character*)worker);
+	if (it == this->workers.end())
+		return;
+	
+	it->second.meeting = calendar.getFutureInstant(
+		this->finishTime,
+		Calendar::WORKING_DAYS
+	);
 
-bool OilFieldJob::hire(Character* worker) {
+	printf("willRest: %ld\n", it->second.meeting/60);
+	it->second.willWork = false;
+}
+
+void OilFieldJob::onLeave(
+	worker_t worker,
+	const Calendar& calendar
+) {
+	auto it = this->workers.find((Character*)worker);
+	if (it == this->workers.end())
+		return;
+	
+	it->second.meeting = calendar.getFutureInstant(
+		this->startTime,
+		Calendar::WORKING_DAYS
+	);
+
+	printf("willWork: %ld\n", it->second.meeting/60);
+
+	it->second.willWork = true;
+
+}
+
+bool OilFieldJob::hire(Character* worker, const Calendar& calendar) {
 	// Check if worker is already in workers
 	if (this->workers.find(worker) != this->workers.end()) {
 		return false; // Worker is already hired
 	}
 	// Add worker to the list with initial data
-	this->workers[worker] = WorkerData{0.0f};
+	this->workers[worker] = WorkerData{
+		0.0f,
+		true,
+		calendar.getFutureInstant(
+			this->startTime,
+			Calendar::WORKING_DAYS
+		)
+	};
 	return true;
 }
 

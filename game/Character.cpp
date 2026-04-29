@@ -150,7 +150,11 @@ Character* Character::spawnCharacter(const Map& map, int x, int y) {
 }
 
 
+#include <chrono>
+#include <iostream>
 bool Character::makeWalk(Game& game, int destX, int destY) {
+	auto start = std::chrono::high_resolution_clock::now();
+
 	auto path = makePedestranPath(
 		game.getMap(),
 		(int)this->x,
@@ -158,6 +162,13 @@ bool Character::makeWalk(Game& game, int destX, int destY) {
 		destX,
 		destY
 	);
+
+	auto end = std::chrono::high_resolution_clock::now();
+
+    auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
+
+    std::cout << "Execution time: " << duration.count() << " µs\n";
+
 
 
 	if (!path) {
@@ -293,7 +304,9 @@ void Character::frame(Game& game) {
 	if (this->state == CharacterState::CLIENT)
 		return;
 		
-	this->executor.run(game, this);
+	if (this->executor.run(game, this)) {
+		this->executor.restart();
+	}
 }
 
 int Character::takeRandomPointId(int modulo) {
@@ -323,12 +336,12 @@ bool Character::setCar(Car* car) {
 }
 
 
-bool Character::takeJob(Job* job) {
+bool Character::takeJob(Job* job, const Calendar& calendar) {
 	if (this->job) {
 		this->leaveJob();
 	}
 
-	if (job->hire(this)) {
+	if (job->hire(this, calendar)) {
 		this->job = job;
 		return true;
 	}

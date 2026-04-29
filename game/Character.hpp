@@ -89,7 +89,7 @@ public:
 	Car* getCar() const;
 	bool setCar(Car* car);
 
-	bool takeJob(Job* job);
+	bool takeJob(Job* job, const Calendar& calendar);
 	void leaveJob();
 	Job* getJob();
 

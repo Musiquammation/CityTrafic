@@ -22,6 +22,10 @@ static const void* test(Game& game, const void* ptr) {
 	int w = take(int32_t);
 	int h = take(int32_t);
 
+	// really bad practice
+	game.calendar.hour = 6;
+	game.calendar.indicator = 6*60;
+
 
 	game.map.getEditCell(4, 15)->setType(CellType::PARKING, game, 0);
 	game.map.getEditCell(4, 14)->setType(CellType::ROAD, game, 0);
@@ -79,7 +83,7 @@ static const void* test(Game& game, const void* ptr) {
 	if (character) {
 		character->setCar(car);
 		game.characterHandler.pushCharacter(character);
-		character->takeJob(job);
+		character->takeJob(job, game.calendar);
 	}
 
 	return ptr;
