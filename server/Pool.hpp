@@ -1,7 +1,7 @@
 #pragma once
 
 #include "declarations.hpp"
-#include "hash.hpp"
+#include <game/hash.hpp>
 
 #include <thread>
 #include <mutex>

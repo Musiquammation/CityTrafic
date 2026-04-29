@@ -4,7 +4,7 @@
 
 #include "MISSED_REGION_SIZE.hpp"
 #include "ClientId.hpp"
-#include "hash.hpp"
+#include <game/hash.hpp>
 #include "Pool.hpp"
 #include "Client.hpp"
 #include "Match.hpp"
