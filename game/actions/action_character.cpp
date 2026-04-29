@@ -10,6 +10,11 @@
 #include "../Building.hpp"
 #include "../Character.hpp"
 
+#include "../DebugLogger.hpp"
+
+static DebugLogger print{"Action", false};
+
+
 #include <stdio.h>
 #include <cmath>
 
@@ -50,8 +55,6 @@ static inline float frac(float x) {
 declList();
 
 
-#define printAction(name) 
-// #define printAction(name) printf("[Action] "  #name "\n")
 
 // Override setData
 #undef setData
@@ -59,7 +62,7 @@ declList();
 
 struct CharacterFriend {
 	def(mustWork) {
-		printAction(mustWork);
+		print("mustWork\n");
 		setCharacter();
 		Job* job = c->getJob();
 		if (!job) {
@@ -88,7 +91,7 @@ struct CharacterFriend {
 
 			int salary = job->getSalary(c, calendar);
 			int earned = job->pay(salary);
-			printf("earn %d | %d\n", earned, salary);
+			print("earn %d | %d\n", earned, salary);
 			c->money += earned;
 			salary -= earned;
 			if (salary > 0) {
@@ -101,18 +104,17 @@ struct CharacterFriend {
 	}
 	
 	def(isChillDay) {
-		printAction(isChillDay);
+		print("isChillDay\n");
 		return ActionCode::FAILURE;
 	}
 
 	def(chillDayTest) {
-		printAction(chillDayTest);
-		printf("chillDayTest\n");
+		print("chillDayTest\n");
 		return ActionCode::PENDING;
 	}
 
 	def(drive) {
-		printAction(drive);
+		print("drive\n");
 		setCharacter();
 		if (c->data.drive.state == ActionCode::PENDING) {
 			return ActionCode::PENDING;
@@ -123,25 +125,25 @@ struct CharacterFriend {
 	}
 
 	def(walk) {
-		printAction(walk);
+		print("walk\n");
 		setCharacter();
 		return c->walk(game);
 	}
 
 	def(orientCar) {
-		printAction(orientCar);
+		print("orientCar\n");
 		setCharacter();
 		if (!c->car)
 			return ActionCode::FAILURE;
 
 		
 		bool r = c->makeWalk(game, c->car->x, c->car->y);
-		printf("walk %d => %d %d\n", r, c->car->x, c->car->y);
+		print("walk %d => %d %d\n", r, c->car->x, c->car->y);
 		return ActionCode_get(r);
 	}
 
 	def(orientWork) {
-		printAction(orientWork);
+		print("orientWork\n");
 		setCharacter();
 		if (!c->getJob())
 			return ActionCode::FAILURE; // no job
@@ -152,7 +154,7 @@ struct CharacterFriend {
 	}
 
 	def(orientHome) {
-		printAction(orientHome);
+		print("orientHome\n");
 		setCharacter();
 		auto& map = game.getMap();
 		auto info = c->getHomeBuilding(map);
@@ -161,7 +163,7 @@ struct CharacterFriend {
 	}
 
 	def(locateWork) {
-		printAction(locateWork);
+		print("locateWork\n");
 		setCharacter();
 		if (!c->getJob())
 			return ActionCode::FAILURE; // no job
@@ -172,7 +174,7 @@ struct CharacterFriend {
 	}
 
 	def(locateHome) {
-		printAction(locateHome);
+		print("locateHome\n");
 		setCharacter();
 		auto& map = game.getMap();
 		auto info = c->getHomeBuilding(map);
@@ -181,15 +183,15 @@ struct CharacterFriend {
 	}
 
 	def(enter) {
-		printAction(enter);
+		print("enter\n");
 		setCharacter();
 		bool r = c->makeInside(game);
-		printf("  result=%d\n", r);
+		print("  result=%d\n", r);
 		return ActionCode_get(r);
 	}
 	
 	def(leave) {
-		printAction(leave);
+		print("leave\n");
 		setCharacter();
 
 		c->makeOutside(game);		
@@ -198,7 +200,7 @@ struct CharacterFriend {
 
 
 	def(enterWork) {
-		printf("[Action] enterWork\n");
+		print("enterWork\n");
 		setCharacter();
 		if (!c->job)
 			return ActionCode::FAILURE;
@@ -208,7 +210,7 @@ struct CharacterFriend {
 	}
 
 	def(leaveWork) {
-		printAction(leaveWork);
+		print("leaveWork\n");
 		setCharacter();
 		Job* job = c->getJob();
 
@@ -220,7 +222,7 @@ struct CharacterFriend {
 	}
 
 	def(passWork) {
-		printAction(passWork);
+		print("passWork\n");
 		setCharacter();
 		Job* job = c->getJob();
 		if (!job) {

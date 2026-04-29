@@ -8,12 +8,15 @@
 
 #include "actions/action_character.hpp"
 
+#include "DebugLogger.hpp"
+static DebugLogger printSpec{"Spec", false};
+static DebugLogger print{"Character", true};
+
 #include <stdio.h>
 
 Character::Character():
 	executor(actionNodes::character::init(), this, nullptr)
 {
-
 }
 
 
@@ -167,7 +170,8 @@ bool Character::makeWalk(Game& game, int destX, int destY) {
 
 	auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
 
-	std::cout << "Execution time: " << duration.count() << " µs\n";
+
+	printSpec("Execution time %ld µs\n", duration.count());
 
 
 
@@ -175,12 +179,12 @@ bool Character::makeWalk(Game& game, int destX, int destY) {
 		return false;
 	}
 
-	printf("Pedestran path from (%d %d) to (%d %d): ",
+	printSpec("Pedestran path from (%d %d) to (%d %d): ",
 		(int)this->x, (int)this->y, destX, destY);
 
 	for (char* i = path; *i != 8; i++)
-		printf("%d ", *i);
-	printf("\n");
+		printSpec("%d ", *i);
+	printSpec("\n");
 
 	this->setState(CharacterState::WALK);
 	this->data.walk.path = path;
@@ -244,7 +248,7 @@ void Character::makeOutside(Game& game) {
 
 		this->data.inside.index = -1; // Mark outside
 	} else {
-		printf("Warn: Trying to leave while not inside");
+		print("Warn: Trying to leave while not inside");
 	}
 
 
@@ -267,7 +271,6 @@ BuildingInfo Character::getWorkBuilding(Game& game) const {
 	/// TODO: rework getWorkBuilding
 	if (this->job) {
 		auto site = this->job->getEmployeeSite(this, game.getCalendar());
-		printf("site %d %d\n", site.x, site.y);
 		return game.getMap().getBuilding(site.x, site.y);
 	}
 
