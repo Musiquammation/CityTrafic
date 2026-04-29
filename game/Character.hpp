@@ -1,6 +1,7 @@
 #pragma once
 
 #include "declarations.hpp"
+#include "calendar_t.hpp"
 #include "Vector.hpp"
 #include "BuildingInfo.hpp"
 #include "ActionExecutor.hpp"

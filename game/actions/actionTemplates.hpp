@@ -53,7 +53,7 @@ constexpr ActionNode _makeFst(const std::array<const ActionNode*, N>& children) 
 #define makeList() LIST(makeAll, makeFst, makeFnc, makeLink)
 
 
-#define give(name, ...) auto list_##name = fillList(__VA_ARGS__);
+#define graph(name, ...) auto list_##name = fillList(__VA_ARGS__);
 
 
 #define startns(name) namespace actionNodes::name { bool initialized = false;

@@ -254,7 +254,7 @@ struct CharacterFriend {
 		}
 
 
-		
+
 		// No home
 		if (c->home.x == INT32_MIN) {
 			return ActionCode::FAILURE;
@@ -265,7 +265,7 @@ struct CharacterFriend {
 			game.getMap()).building;
 
 		// Check rent date
-		int m = c->nextRentPayMonth;
+		calendar_t m = c->nextRentPayMonth;
 		if ((m < calendar.totalMonth || (
 			m == calendar.totalMonth && calendar.day >= 9
 		))) {
@@ -302,13 +302,13 @@ struct CharacterFriend {
 };
 
 
-give(result, &runDayJob);
+graph(result, &runDayJob);
 
-give(runDayJob, &workSection, &chillSection);
+graph(runDayJob, &workSection, &chillSection);
 
-give(workSection, &mustWork, &workDay);
+graph(workSection, &mustWork, &workDay);
 
-give(workDay,
+graph(workDay,
 	&leave,
 	&orientCar,
 	&walk,
@@ -330,9 +330,9 @@ give(workDay,
 	&enter
 );
 
-give(chillSection, &isChillDay, &chillDay);
+graph(chillSection, &isChillDay, &chillDay);
 
-give(chillDay, &chillDayTest);
+graph(chillDay, &chillDayTest);
 
 
 
