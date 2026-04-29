@@ -14,6 +14,7 @@
 #include <limits>
 #include <vector>
 #include <math.h>
+#include <set>
 
 
 static constexpr float INFINITY_F = std::numeric_limits<float>::infinity();
@@ -128,9 +129,13 @@ struct Spy {
 		this->x += Direction_getVector(this->dir).x;
 		this->y += Direction_getVector(this->dir).y;
 	}
+
+	bool operator<(const Spy& other) const {
+		if (x != other.x) return x < other.x;
+		if (y != other.y) return y < other.y;
+		return dir < other.dir;
+	}
 };
-
-
 
 
 
@@ -141,12 +146,18 @@ int fillGraph(
 	bool addEmptyChild,
 	Game* game,
 	std::vector<PriorityNode>& priorities,
-	Spy spy
+	Spy spy,
+	std::set<Spy>& visited
 ) {
 	if (range <= 0)
 		return -1;
 		
 	
+	if (visited.contains(spy))
+		return -1;
+
+	visited.insert(spy);
+
 	auto cell = game->getCell(spy.x, spy.y);
 
 	
@@ -182,7 +193,7 @@ int fillGraph(
 			Spy fspy = spy;
 			fspy.move();
 			children[0] = fillGraph(frontDist, sideDist+1,
-				range-1, false, game, priorities, fspy);
+				range-1, false, game, priorities, fspy, visited);
 	
 	
 			// check to the right
@@ -191,7 +202,7 @@ int fillGraph(
 			rspy.move();
 	
 			children[1] = fillGraph(frontDist, sideDist+1,
-				range-1, false, game, priorities, rspy);
+				range-1, false, game, priorities, rspy, visited);
 	
 			
 			// Check to the left
@@ -200,7 +211,7 @@ int fillGraph(
 			lspy.move();
 	
 			children[2] = fillGraph(frontDist, sideDist+1,
-				range-1, false, game, priorities, lspy);
+				range-1, false, game, priorities, lspy, visited);
 		}
 
 		
@@ -480,8 +491,9 @@ getDanger_t getDanger(
 			checker.dir = Direction_getRight(spy.dir);
 			checker.move();
 			
+			std::set<Spy> visited;
 			int nodeIdx = fillGraph(dist, 0, SIDE_RANGE - dist,
-				true, game, priorities, checker);
+				true, game, priorities, checker, visited);
 
 			
 			if (nodeIdx >= 0) {

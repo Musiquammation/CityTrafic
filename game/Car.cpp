@@ -195,6 +195,7 @@ bool Car::drive(Character* driver, int destX, int destY, Map& map) {
 		this->x, this->y,
 		Car::PARKING_RADIUS
 	);
+
 	
 
 
@@ -208,7 +209,8 @@ bool Car::drive(Character* driver, int destX, int destY, Map& map) {
 		this->x, this->y, spot.x, spot.y,
 		this->direction
 	);
-	/// TODO: find path according to driver aim
+
+	
 
 	if (success) {
 		// Append driver

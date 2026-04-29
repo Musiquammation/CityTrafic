@@ -43,7 +43,7 @@ void CarHandler::moveCars() {
 
 	}
 
-	this->cars = std::move(newCars);
+	this->cars = newCars;
 }
 
 Car* CarHandler::getCar(int x, int y) {

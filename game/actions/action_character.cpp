@@ -174,6 +174,7 @@ give(workDay,
 	&locateHome,
 	&drive,
 	&orientHome,
+	&walk,
 	&enter
 );
 
