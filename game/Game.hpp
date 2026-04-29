@@ -54,6 +54,7 @@ public:
 	bool checkBounds(int x, int y, int width, int height) const;
 
 	Player* getPlayer(int id);
+	int getPlayerId(Player* player);
 
 	~Game();
 

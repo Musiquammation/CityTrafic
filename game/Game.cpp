@@ -117,6 +117,13 @@ Player* Game::getPlayer(int id) {
 	return &this->players[id];
 }
 
+int Game::getPlayerId(Player* player) {
+	if (player == nullptr)
+		return -1;
+
+	return int(player - this->players.data());
+}
+
 
 Game::~Game() {
 	// Delete jobs

@@ -7,11 +7,17 @@ const Vector<int> SIZES[] = {
 	{-1,-1}
 };
 
-Building* Building::create_home(int capacity) {
+Building* Building::create_home(
+	int owner,
+	int capacity,
+	int rent
+) {
 	auto b = new Building;
+	b->owner = owner;
 	b->type = BuildingType::HOME;
 	b->home.left = capacity;
 	b->home.capacity = capacity;
+	b->home.rent = rent;
 	b->home.characters = new Character*[capacity];
 	for (int i = 0; i < capacity; i++) {
 		b->home.characters[i] = nullptr;
@@ -20,9 +26,13 @@ Building* Building::create_home(int capacity) {
 }
 
 Building* Building::create_oilField(
-	float crude, int factor, int size
+	int owner,
+	float crude,
+	int factor,
+	int size
 ) {
 	auto b = new Building;
+	b->owner = owner;
 	b->type = BuildingType::OIL_FIELD;
 	b->oilField.crude = crude;
 	b->oilField.refined = 0;

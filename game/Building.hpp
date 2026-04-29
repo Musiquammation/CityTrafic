@@ -11,13 +11,14 @@ enum class BuildingType: int {
 
 struct Building {
 	BuildingType type;
-
+	int owner;
 
 	union {
 		struct {
 			Character** characters;
 			int left;
-			int capacity;	
+			int capacity;
+			int rent;
 		} home;
 
 		struct {
@@ -30,9 +31,18 @@ struct Building {
 	};
 	
 	
-	static Building* create_home(int capacity);
+	static Building* create_home(
+		int owner,
+		int capacity,
+		int rent
+	);
+
 	static Building* create_oilField(
-		float crude, int factor, int size);
+		int owner,
+		float crude,
+		int factor,
+		int size
+	);
 
 
 

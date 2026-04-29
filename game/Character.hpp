@@ -26,6 +26,7 @@ class Character {
 	CharacterState state;
 	int money = 0;
 	int waitingJoyMoney = 0;
+	calendar_t nextRentPayMonth = 0;
 	unsigned int pointId;
 
 

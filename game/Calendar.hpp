@@ -25,6 +25,7 @@ public:
 	int year = 0;
 	calendar_t indicator = 0;
 	calendar_t totalDay;
+	calendar_t totalMonth;
 
 	void move();
 

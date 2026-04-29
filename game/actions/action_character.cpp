@@ -12,6 +12,7 @@
 
 #include "../DebugLogger.hpp"
 
+static DebugLogger printStatus{"Status", false};
 static DebugLogger print{"Action", false};
 
 
@@ -47,6 +48,7 @@ static inline float frac(float x) {
 	run(enterWork);\
 	run(leaveWork);\
 	run(passWork);\
+	run(checkHomeOwnership);\
 			
 		
 
@@ -62,7 +64,7 @@ declList();
 
 struct CharacterFriend {
 	def(mustWork) {
-		print("mustWork\n");
+		printStatus("mustWork\n");
 		setCharacter();
 		Job* job = c->getJob();
 		if (!job) {
@@ -91,7 +93,7 @@ struct CharacterFriend {
 
 			int salary = job->getSalary(c, calendar);
 			int earned = job->pay(salary);
-			print("earn %d | %d\n", earned, salary);
+			printStatus("earn %d | %d\n", earned, salary);
 			c->money += earned;
 			salary -= earned;
 			if (salary > 0) {
@@ -104,17 +106,17 @@ struct CharacterFriend {
 	}
 	
 	def(isChillDay) {
-		print("isChillDay\n");
+		printStatus("isChillDay\n");
 		return ActionCode::FAILURE;
 	}
 
 	def(chillDayTest) {
-		print("chillDayTest\n");
+		printStatus("chillDayTest\n");
 		return ActionCode::PENDING;
 	}
 
 	def(drive) {
-		print("drive\n");
+		printStatus("drive\n");
 		setCharacter();
 		if (c->data.drive.state == ActionCode::PENDING) {
 			return ActionCode::PENDING;
@@ -125,25 +127,25 @@ struct CharacterFriend {
 	}
 
 	def(walk) {
-		print("walk\n");
+		printStatus("walk\n");
 		setCharacter();
 		return c->walk(game);
 	}
 
 	def(orientCar) {
-		print("orientCar\n");
+		printStatus("orientCar\n");
 		setCharacter();
 		if (!c->car)
 			return ActionCode::FAILURE;
 
 		
 		bool r = c->makeWalk(game, c->car->x, c->car->y);
-		print("walk %d => %d %d\n", r, c->car->x, c->car->y);
+		printStatus("walk %d => %d %d\n", r, c->car->x, c->car->y);
 		return ActionCode_get(r);
 	}
 
 	def(orientWork) {
-		print("orientWork\n");
+		printStatus("orientWork\n");
 		setCharacter();
 		if (!c->getJob())
 			return ActionCode::FAILURE; // no job
@@ -154,7 +156,7 @@ struct CharacterFriend {
 	}
 
 	def(orientHome) {
-		print("orientHome\n");
+		printStatus("orientHome\n");
 		setCharacter();
 		auto& map = game.getMap();
 		auto info = c->getHomeBuilding(map);
@@ -163,7 +165,7 @@ struct CharacterFriend {
 	}
 
 	def(locateWork) {
-		print("locateWork\n");
+		printStatus("locateWork\n");
 		setCharacter();
 		if (!c->getJob())
 			return ActionCode::FAILURE; // no job
@@ -174,7 +176,7 @@ struct CharacterFriend {
 	}
 
 	def(locateHome) {
-		print("locateHome\n");
+		printStatus("locateHome\n");
 		setCharacter();
 		auto& map = game.getMap();
 		auto info = c->getHomeBuilding(map);
@@ -183,15 +185,15 @@ struct CharacterFriend {
 	}
 
 	def(enter) {
-		print("enter\n");
+		printStatus("enter\n");
 		setCharacter();
 		bool r = c->makeInside(game);
-		print("  result=%d\n", r);
+		printStatus("  result=%d\n", r);
 		return ActionCode_get(r);
 	}
 	
 	def(leave) {
-		print("leave\n");
+		printStatus("leave\n");
 		setCharacter();
 
 		c->makeOutside(game);		
@@ -200,7 +202,7 @@ struct CharacterFriend {
 
 
 	def(enterWork) {
-		print("enterWork\n");
+		printStatus("enterWork\n");
 		setCharacter();
 		if (!c->job)
 			return ActionCode::FAILURE;
@@ -210,7 +212,7 @@ struct CharacterFriend {
 	}
 
 	def(leaveWork) {
-		print("leaveWork\n");
+		printStatus("leaveWork\n");
 		setCharacter();
 		Job* job = c->getJob();
 
@@ -222,7 +224,7 @@ struct CharacterFriend {
 	}
 
 	def(passWork) {
-		print("passWork\n");
+		printStatus("passWork\n");
 		setCharacter();
 		Job* job = c->getJob();
 		if (!job) {
@@ -238,6 +240,60 @@ struct CharacterFriend {
 
 		job->work(c, game);
 		return ActionCode::PENDING;
+	}
+
+	def(checkHomeOwnership) {
+		printStatus("checkHomeOwnership\n");
+		setCharacter();
+
+		if (c->state == CharacterState::INSIDE) {
+			throw std::runtime_error{
+				"Characters cannot check home "
+				"while being inside a building"
+			};
+		}
+
+
+		
+		// No home
+		if (c->home.x == INT32_MIN) {
+			return ActionCode::FAILURE;
+		}
+
+		auto& calendar = game.getCalendar();
+		Building* building = c->getHomeBuilding(
+			game.getMap()).building;
+
+		// Check rent date
+		int m = c->nextRentPayMonth;
+		if ((m < calendar.totalMonth || (
+			m == calendar.totalMonth && calendar.day >= 9
+		))) {
+			return ActionCode::SUCCESS;
+		}
+
+		if (building->type != BuildingType::HOME) {
+			throw std::runtime_error{
+				"Home must be of type BuildingType::HOME"};
+		}
+
+		int rent = building->home.rent;
+		// Pay rent
+		if (c->money >= rent) {
+			c->pay(rent);
+			Player* owner = game.getPlayer(building->owner);
+			if (owner) {
+				owner->money += rent;
+			}
+
+			// Mark rent as paid
+			c->nextRentPayMonth = calendar.totalMonth+1;
+			return ActionCode::SUCCESS;
+		}
+		
+		// Cannot pay rent, so character quits home
+		c->home.x = INT32_MIN; // no home
+		return ActionCode::FAILURE;
 	}
 
 

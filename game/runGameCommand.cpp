@@ -73,10 +73,11 @@ static const void* test(
 
 	Car* car = game.spawnCar(4, 14, Direction::UP);
 
-	auto home = Building::create_home(3);
+	int playerId = game.getPlayerId(player);
+	auto home = Building::create_home(playerId, 3, 500);
 	game.map.addBuilding(10, 11, home, game);
 	
-	auto shop = Building::create_oilField(1000.0f, 50000, 4);
+	auto shop = Building::create_oilField(playerId, 1000.0f, 50000, 4);
 	game.map.addBuilding(1, 5, shop, game);
 
 

@@ -10,7 +10,7 @@
 
 #include "DebugLogger.hpp"
 static DebugLogger printSpec{"Spec", false};
-static DebugLogger print{"Character", true};
+static DebugLogger printStatus{"Character", true};
 
 #include <stdio.h>
 
@@ -145,6 +145,7 @@ Character* Character::spawnCharacter(const Map& map, int x, int y) {
 
 	c->x = (float)x + .5f;
 	c->y = (float)y + .5f;
+	c->home = {x, y};
 	c->state = CharacterState::INSIDE;
 	c->data.inside.index = index;
 	c->pointId = 0;
@@ -264,7 +265,7 @@ void Character::notifyDrive() {
 
 BuildingInfo Character::getHomeBuilding(const Map& map) const {
 	/// TODO: rework getHomeBuilding
-	return map.getBuilding(10, 12);
+	return map.getBuilding(this->home.x, this->home.y);
 }
 
 BuildingInfo Character::getWorkBuilding(Game& game) const {
