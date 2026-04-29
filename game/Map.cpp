@@ -326,7 +326,7 @@ bool Map::addBuilding(int x, int y, Building* building, Game& game) {
 			argBase = (cell_t)(dy<<8); // direct
 		} else {
 			int decalage = dy / 4 - 1;
-			if (decalage>16) {decalage=16;}
+			if (decalage>15) {decalage=15;}
 			argBase = (cell_t)((1<<13) | (decalage<<8)); // jump
 		}
 		
@@ -345,7 +345,7 @@ bool Map::addBuilding(int x, int y, Building* building, Game& game) {
 					arg |= (cell_t)(dx<<4); // direct
 				} else {
 					int decalage = dx / 4 - 1;
-					if (decalage>16) {decalage=16;}
+					if (decalage>15) {decalage=15;}
 					arg |= (cell_t)((1<<12) | (decalage<<4)); // jump
 				}
 	
@@ -364,7 +364,7 @@ bool Map::addBuilding(int x, int y, Building* building, Game& game) {
 	for (int dy = 0; dy < size.y; dy++) {
 		memcpy(
 			&this->cells[(y+dy - this->y) * this->width + (x - this->x)],
-			&tmpArea[size.y*dy],
+			&tmpArea[size.x*dy],
 			size.x * sizeof(Cell)
 		);
 	}
