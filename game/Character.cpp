@@ -200,8 +200,8 @@ bool Character::makeInside(Game& game) {
 	if (place < 0)
 		return false;
 
-	this->data.inside.index = place;
 	this->setState(CharacterState::INSIDE);
+	this->data.inside.index = place;
 	return true;
 }
 

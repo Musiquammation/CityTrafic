@@ -6,7 +6,6 @@
 #include <cstdlib>
 #include <cstring>
 
-#include <stdio.h>
 #include "utils/mfor.hpp"
 
 #include <set>
@@ -324,11 +323,11 @@ bool Map::addBuilding(int x, int y, Building* building, Game& game) {
 	for (int dy = 0; dy < size.y; dy++) {
 		cell_t argBase;
 		if (dy < 16) {
-			argBase = (cell_t)(1<<13) | (cell_t)(dy<<8);
+			argBase = (cell_t)(dy<<8); // direct
 		} else {
 			int decalage = dy / 4 - 1;
 			if (decalage>16) {decalage=16;}
-			argBase = (cell_t)(decalage<<8);
+			argBase = (cell_t)((1<<13) | (decalage<<8)); // jump
 		}
 		
 		for (int dx = 0; dx < size.x; dx++) {
@@ -343,11 +342,11 @@ bool Map::addBuilding(int x, int y, Building* building, Game& game) {
 				// Fill arg
 				cell_t arg = argBase;
 				if (dx < 16) {
-					arg |= (cell_t)((1<<12) | (dx<<4));
+					arg |= (cell_t)(dx<<4); // direct
 				} else {
 					int decalage = dx / 4 - 1;
 					if (decalage>16) {decalage=16;}
-					arg |= (cell_t)(decalage<<4);
+					arg |= (cell_t)((1<<12) | (decalage<<4)); // jump
 				}
 	
 				next = src->editType(CellType::LINK, game, arg, &fail);
