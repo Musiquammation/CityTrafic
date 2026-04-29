@@ -15,7 +15,6 @@ int Job::pay(int money) {
 	int given = this->money;
 	this->money = 0;
 	return given;
-
 }
 
 void Job::fireEveryone() {

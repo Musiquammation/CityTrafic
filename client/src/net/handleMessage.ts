@@ -14,8 +14,10 @@ function net_joinCreated(reader: DataReader) {
 	reader.skip(3);
 	REGION_SIZE = reader.readUint32();
 	reader.skip(4);
-	const hash = reader.read256();
-	console.log(hash);
+	const sessionHash = reader.read256();
+	const playerHash = reader.read256();
+	console.log("Session hash:", sessionHash);
+	console.log("Player  hash:", playerHash);
 
 	getGameHandler().setState(new PlayState());
 	return null;
@@ -25,8 +27,11 @@ function net_joinAlive(reader: DataReader) {
 	reader.skip(3);
 	REGION_SIZE = reader.readUint32();
 	reader.skip(4);
-	const hash = reader.read256();
-	console.log(hash);
+
+	const sessionHash = reader.read256();
+	const playerHash = reader.read256();
+	console.log("Session hash:", sessionHash);
+	console.log("Player  hash:", playerHash);
 
 	getGameHandler().setState(new PlayState());
 	return null;

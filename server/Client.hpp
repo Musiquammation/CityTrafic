@@ -16,6 +16,7 @@ struct Client {
 	int viewW = 0;
 	int viewH = 0;
 	clientId_t id = 0;
+	int playerId = -1;
 	Match* match;
 
 	std::set<uint64_t> visitedRegions;

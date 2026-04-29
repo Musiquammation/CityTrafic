@@ -13,6 +13,18 @@ void Game::test() {
 	
 }
 
+int Game::searchPlayer(hash_t key) {
+	int size = (int)this->players.size();
+	for (int i = 0; i < size; i++) {
+		if (this->players[i].key == key)
+			return (int)i;
+	}
+
+	this->players.push_back(Player{hash_generate()});
+	return size;
+}
+
+
 void Game::frame() {
 	this->test();
 
@@ -95,6 +107,14 @@ int Game::getFrame() const {
 
 bool Game::checkBounds(int x, int y, int width, int height) const {
 	return this->map.checkBounds(x,y,width,height);
+}
+
+Player* Game::getPlayer(int id) {
+	if (id < 0) {
+		return nullptr;
+	}
+
+	return &this->players[id];
 }
 
 

@@ -15,16 +15,17 @@ export class HomeState extends GameState {
 	}
 
 	enter(data: any, input: InputHandler): void {
+		console.log(data);
 		document.getElementById("homeView")?.classList.remove("hidden");
 
 		document.getElementById("home-createSession")?.
-			addEventListener('click', () => this.createSession());
+			addEventListener('click', () => this.createSession("0000000000000000"));
 
 		document.getElementById("home-joinSession")?.
 			addEventListener('click', () => {
 				const code = prompt("Session");
 				if (code !== null)
-					this.joinSession(code);
+					this.joinSession(code, "0000000000000000");
 			}
 		);
 
@@ -53,19 +54,21 @@ export class HomeState extends GameState {
 		return null;
 	}
 
-	createSession() {
+	createSession(playerHash: string) {
 		const writer = new DataWriter();
 		writer.writeUint8(SERVER_IDS.CONNECT);
 		writer.skip(7);
 		writer.write256("0000000000000000");
+		writer.write256(playerHash);
 		sendSocket(writer.toArrayBuffer());
 	}
 	
-	joinSession(code: string) {
+	joinSession(code: string, playerHash: string) {
 		const writer = new DataWriter();
 		writer.writeUint8(SERVER_IDS.CONNECT);
 		writer.skip(7);
 		writer.write256(code);
+		writer.write256(playerHash);
 		sendSocket(writer.toArrayBuffer());
 	}
 }

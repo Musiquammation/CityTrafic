@@ -5,6 +5,7 @@
 #include "CarHandler.hpp"
 #include "CharacterHandler.hpp"
 #include "BuildingInfo.hpp"
+#include "Player.hpp"
 
 #include "declarations.hpp"
 
@@ -15,8 +16,10 @@ private:
 	CharacterHandler characterHandler{};
 	Calendar calendar;
 	std::vector<Job*> jobs;
+	std::vector<Player> players;
 	int frameCount = 0;
 	void test();
+	int searchPlayer(hash_t key);
 
 public:
 	friend struct GameCommand;
@@ -49,6 +52,8 @@ public:
 
 	int getFrame() const;
 	bool checkBounds(int x, int y, int width, int height) const;
+
+	Player* getPlayer(int id);
 
 	~Game();
 

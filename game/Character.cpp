@@ -248,7 +248,7 @@ void Character::makeOutside(Game& game) {
 
 		this->data.inside.index = -1; // Mark outside
 	} else {
-		print("Warn: Trying to leave while not inside");
+		printWarn("Trying to leave while not inside");
 	}
 
 
@@ -366,6 +366,21 @@ Job* Character::getJob() {
 	return this->job;
 }
 
+void Character::earn(int money) {
+	this->money += money;
+}
+
+int Character::pay(int money) {
+	if (this->money >= money) {
+		this->money -= money;
+		return money;
+	}
+
+	int given = this->money;
+	this->money = 0;
+	return given;
+
+}
 
 
 

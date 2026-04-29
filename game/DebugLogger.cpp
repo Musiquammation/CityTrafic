@@ -4,6 +4,9 @@
 #include <cstdio>
 #include <vector>
 
+DebugLogger printWarn{"Warn"};
+
+
 DebugLogger::DebugLogger(const char* prefix, bool enable)
 	: prefix(prefix), enable(enable) {}
 

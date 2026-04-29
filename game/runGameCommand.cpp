@@ -16,7 +16,11 @@
 #define align(ptr,n) {ptr += n;}
 
 struct GameCommand {
-static const void* test(Game& game, const void* ptr) {
+static const void* test(
+	Game& game,
+	const void* ptr,
+	Player* player
+) {
 	int x = take(int32_t);
 	int y = take(int32_t);
 	int w = take(int32_t);
@@ -87,11 +91,16 @@ static const void* test(Game& game, const void* ptr) {
 		character->takeJob(job, game.calendar);
 	}
 
+
 	return ptr;
 }
 
 
-static const void* erase(Game& game, const void* ptr) {
+static const void* erase(
+	Game& game,
+	const void* ptr,
+	Player* player
+) {
 	int x = take(int32_t);
 	int y = take(int32_t);
 
@@ -104,7 +113,11 @@ static const void* erase(Game& game, const void* ptr) {
 
 }
 
-static const void* placeSingleRoad(Game& game, const void* ptr) {
+static const void* placeSingleRoad(
+	Game& game,
+	const void* ptr,
+	Player* player
+) {
 	int x = take(int32_t);
 	int y = take(int32_t);
 
@@ -116,7 +129,11 @@ static const void* placeSingleRoad(Game& game, const void* ptr) {
 	return ptr;
 }
 
-static const void* parking(Game& game, const void* ptr) {
+static const void* parking(
+	Game& game,
+	const void* ptr,
+	Player* player
+) {
 	int x = take(int32_t);
 	int y = take(int32_t);
 
@@ -129,7 +146,11 @@ static const void* parking(Game& game, const void* ptr) {
 
 }
 
-static const void* direction(Game& game, const void* ptr) {
+static const void* direction(
+	Game& game,
+	const void* ptr,
+	Player* player
+) {
 	int x = take(int32_t);
 	int y = take(int32_t);
 	cell_t args = take(uint16_t);
@@ -161,24 +182,28 @@ static const void* direction(Game& game, const void* ptr) {
 
 
 
-const void* runGameCommand(Game& game, const void* ptr) {
+const void* runGameCommand(
+	Game& game,
+	const void* ptr,
+	Player* player
+) {
 	auto code = take(uint16_t);
 
 	switch ((CommandCode)code) {
 	case CommandCode::TEST:
-		return GameCommand::test(game, ptr);
+		return GameCommand::test(game, ptr, player);
 		
 	case CommandCode::ERASE:
-		return GameCommand::erase(game, ptr);
+		return GameCommand::erase(game, ptr, player);
 
 	case CommandCode::PLACE_SINGLE_ROAD:
-		return GameCommand::placeSingleRoad(game, ptr);
+		return GameCommand::placeSingleRoad(game, ptr, player);
 
 	case CommandCode::PARKING:
-		return GameCommand::parking(game, ptr);
+		return GameCommand::parking(game, ptr, player);
 
 	case CommandCode::DIRECTION:
-		return GameCommand::direction(game, ptr);
+		return GameCommand::direction(game, ptr, player);
 	}
 
 	return ptr;

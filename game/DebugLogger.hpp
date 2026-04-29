@@ -12,3 +12,4 @@ private:
 	bool enable;
 };
 
+extern DebugLogger printWarn;

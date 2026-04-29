@@ -38,7 +38,7 @@ Server::Server(int poolNum):
 
 
 uint8_t* Server::connect(Client* client, const uint8_t* ptr) {
-	static constexpr int BUFFER_LENGTH = 4+ 4+4+4+8;
+	static constexpr int BUFFER_LENGTH = 4+ 4+4+4+8+8;
 
 	uint8_t* const response = (uint8_t*)malloc(BUFFER_LENGTH);
 	uint8_t* res = response;
@@ -47,17 +47,18 @@ uint8_t* Server::connect(Client* client, const uint8_t* ptr) {
 	
 	Match* match;
 	align(ptr,7);
-	hash_t hash = take(hash_t);
+	hash_t sessionHash = take(hash_t);
+	hash_t playerHash = take(hash_t);
 
-	if (hash == 0) {
+	if (sessionHash == 0) {
 		// Create match
 		push(uint8_t, ClientId::JOIN_CREATED);
 		align(res,3);
 		push(uint32_t, MISSED_REGION_SIZE);
 		align(res,4);
 
-		hash = hash_generate();
-		match = this->createMatch(hash);
+		sessionHash = hash_generate();
+		match = this->createMatch(sessionHash);
 	
 	} else {
 		push(uint8_t, ClientId::JOIN_ALIVE);
@@ -65,16 +66,28 @@ uint8_t* Server::connect(Client* client, const uint8_t* ptr) {
 		push(uint32_t, MISSED_REGION_SIZE);
 		align(res,4);
 
-		match = this->getMatch(hash);
+		match = this->getMatch(sessionHash);
 	}
 
-	push(hash_t, hash);
+	push(hash_t, sessionHash);
+
+	// Add player
+	{
+		auto game = match->getGame<true>();
+		int id = game->searchPlayer(playerHash);
+		push(hash_t, game->players[id].key);
+		client->playerId = id;
+	}
 
 	if (!match) {
 		throw std::runtime_error{"Match not found"};
 	}
 
 	match->pushClient(client);
+
+	// Add client
+	
+
 	retRes();
 }
 
@@ -216,14 +229,15 @@ uint8_t* Server::listen(Client* client, const uint8_t* ptr) {
 
 uint8_t* Server::runCommand(Client* client, const uint8_t* ptr) {
 	Match* match = client->match;
-	Game& game = *match->getGame();
+	auto game = match->getGame();
 
+	Player* player = game->getPlayer(client->playerId);
 	auto count = take(uint8_t);
-	ptr = (uint8_t*)runGameCommand(game, ptr);
+	ptr = (uint8_t*)runGameCommand(*game, ptr, player);
 	
 	for (uint8_t i = 1; i < count; i++) {
 		align(ptr,2);
-		ptr = (uint8_t*)runGameCommand(game, ptr);
+		ptr = (uint8_t*)runGameCommand(*game, ptr, player);
 	}
 
 	return nullptr;

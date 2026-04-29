@@ -1,9 +1,9 @@
 #pragma once
 
-#include <game/hash.hpp>
+#include "hash.hpp"
 
 
 struct Player {
-    hash_t password = hash_generate();
+    hash_t key;
     int money = 0;
 };

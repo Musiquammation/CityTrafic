@@ -204,7 +204,7 @@ void* Api::take(int id, int datacode, void* args) {
 		case ApiTakeCode::GAME_COMMAND:
 		{
 			ApiGame& s = this->games[id];
-			runGameCommand(s.game, args);
+			runGameCommand(s.game, args, nullptr);
 			return nullptr;
 		}
 
