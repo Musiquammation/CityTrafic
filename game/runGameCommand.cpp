@@ -78,6 +78,7 @@ static const void* test(Game& game, const void* ptr) {
 
 	Job* job = new OilFieldJob{{1,5}, 5.0f};
 	game.appendJob(job);
+	job->earn(10000);
 
 	auto character = Character::spawnCharacter(game.getMap(), 10, 11);
 	if (character) {

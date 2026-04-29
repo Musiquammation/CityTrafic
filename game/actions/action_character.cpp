@@ -50,12 +50,16 @@ static inline float frac(float x) {
 declList();
 
 
+#define printAction(name) 
+// #define printAction(name) printf("[Action] "  #name "\n")
+
 // Override setData
 #undef setData
 #define setCharacter() Character* c = (Character*)_data;
 
 struct CharacterFriend {
 	def(mustWork) {
+		printAction(mustWork);
 		setCharacter();
 		Job* job = c->getJob();
 		if (!job) {
@@ -66,19 +70,49 @@ struct CharacterFriend {
 		auto& calendar = game.getCalendar();
 		auto hour = job->getNextEnterHour(c, calendar);
 
-		return ActionCode_get(calendar.indicator > hour);
+		// No need to wake up
+		if (calendar.indicator < hour)
+			return ActionCode::FAILURE;
+		
+		
+		// Day of the pay
+		if (calendar.day == 0) {
+			int waiting = c->waitingJoyMoney;
+			if (waiting > 0) {
+				int earn = job->pay(waiting);
+				c->money += earn;
+				waiting -= earn;
+				if (waiting > 0)
+					return ActionCode::FAILURE;
+			}
+
+			int salary = job->getSalary(c, calendar);
+			int earned = job->pay(salary);
+			printf("earn %d | %d\n", earned, salary);
+			c->money += earned;
+			salary -= earned;
+			if (salary > 0) {
+				c->waitingJoyMoney = waiting + salary;
+				return ActionCode::FAILURE;
+			}
+		}
+
+		return ActionCode::SUCCESS;
 	}
 	
 	def(isChillDay) {
+		printAction(isChillDay);
 		return ActionCode::FAILURE;
 	}
 
 	def(chillDayTest) {
+		printAction(chillDayTest);
 		printf("chillDayTest\n");
 		return ActionCode::PENDING;
 	}
 
 	def(drive) {
+		printAction(drive);
 		setCharacter();
 		if (c->data.drive.state == ActionCode::PENDING) {
 			return ActionCode::PENDING;
@@ -89,11 +123,13 @@ struct CharacterFriend {
 	}
 
 	def(walk) {
+		printAction(walk);
 		setCharacter();
 		return c->walk(game);
 	}
 
 	def(orientCar) {
+		printAction(orientCar);
 		setCharacter();
 		if (!c->car)
 			return ActionCode::FAILURE;
@@ -105,6 +141,7 @@ struct CharacterFriend {
 	}
 
 	def(orientWork) {
+		printAction(orientWork);
 		setCharacter();
 		if (!c->getJob())
 			return ActionCode::FAILURE; // no job
@@ -115,6 +152,7 @@ struct CharacterFriend {
 	}
 
 	def(orientHome) {
+		printAction(orientHome);
 		setCharacter();
 		auto& map = game.getMap();
 		auto info = c->getHomeBuilding(map);
@@ -123,6 +161,7 @@ struct CharacterFriend {
 	}
 
 	def(locateWork) {
+		printAction(locateWork);
 		setCharacter();
 		if (!c->getJob())
 			return ActionCode::FAILURE; // no job
@@ -133,6 +172,7 @@ struct CharacterFriend {
 	}
 
 	def(locateHome) {
+		printAction(locateHome);
 		setCharacter();
 		auto& map = game.getMap();
 		auto info = c->getHomeBuilding(map);
@@ -141,12 +181,15 @@ struct CharacterFriend {
 	}
 
 	def(enter) {
+		printAction(enter);
 		setCharacter();
 		bool r = c->makeInside(game);
+		printf("  result=%d\n", r);
 		return ActionCode_get(r);
 	}
 	
 	def(leave) {
+		printAction(leave);
 		setCharacter();
 
 		c->makeOutside(game);		
@@ -155,6 +198,7 @@ struct CharacterFriend {
 
 
 	def(enterWork) {
+		printf("[Action] enterWork\n");
 		setCharacter();
 		if (!c->job)
 			return ActionCode::FAILURE;
@@ -164,6 +208,7 @@ struct CharacterFriend {
 	}
 
 	def(leaveWork) {
+		printAction(leaveWork);
 		setCharacter();
 		Job* job = c->getJob();
 
@@ -175,6 +220,7 @@ struct CharacterFriend {
 	}
 
 	def(passWork) {
+		printAction(passWork);
 		setCharacter();
 		Job* job = c->getJob();
 		if (!job) {

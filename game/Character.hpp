@@ -24,6 +24,8 @@ class Character {
 	Job* job = nullptr;
 	Vector<int> home;
 	CharacterState state;
+	int money = 0;
+	int waitingJoyMoney = 0;
 	unsigned int pointId;
 
 

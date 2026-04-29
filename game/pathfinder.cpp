@@ -17,7 +17,8 @@
 #include <tuple>
 #include <functional>
 
-
+// #define printPath(fmt, ...) printf("[PATH] " fmt "\n", ##__VA_ARGS__)
+#define printPath(fmt, ...) 
 
 struct Node {
 	int x, y;
@@ -75,11 +76,11 @@ char* makePedestranPath(const Map& map, int startX, int startY, int destX, int d
 	Pos src = findNearestWalkable(map, startX, startY);
 	Pos dst = findNearestWalkable(map, destX,  destY);
 
-	printf("[PATH] Request: (%d,%d) -> (%d,%d)\n", startX, startY, destX, destY);
-	printf("[PATH] Snapped: src=(%d,%d) dst=(%d,%d)\n", src.x, src.y, dst.x, dst.y);
+	printPath("Request: (%d,%d) -> (%d,%d)\n", startX, startY, destX, destY);
+	printPath("Snapped: src=(%d,%d) dst=(%d,%d)\n", src.x, src.y, dst.x, dst.y);
 
 	if (src.x == INT_MIN || dst.x == INT_MIN) {
-		printf("[PATH] ERROR: could not find walkable cell near src or dst\n");
+		printPath("ERROR: could not find walkable cell near src or dst\n");
 		return nullptr;
 	}
 
@@ -100,7 +101,7 @@ char* makePedestranPath(const Map& map, int startX, int startY, int destX, int d
 	std::unordered_map<Pos, Node, PosHash> closedList;
 
 	openList.push({src.x, src.y, 0, getH(src.x, src.y), INT_MIN, INT_MIN, 8});
-	printf("[PATH] Start node pushed: (%d,%d) g=0 h=%d\n", src.x, src.y, getH(src.x, src.y));
+	printPath("Start node pushed: (%d,%d) g=0 h=%d\n", src.x, src.y, getH(src.x, src.y));
 
 	int iterations = 0;
 
@@ -113,13 +114,13 @@ char* makePedestranPath(const Map& map, int startX, int startY, int destX, int d
 
 		auto it = closedList.find(curPos);
 		if (it != closedList.end() && it->second.g <= current.g) {
-			printf("[PATH]   iter=%d skip (%d,%d) already closed with g=%d <= current g=%d\n",
+			printPath("  iter=%d skip (%d,%d) already closed with g=%d <= current g=%d\n",
 				iterations, current.x, current.y, it->second.g, current.g);
 			continue;
 		}
 
 		closedList[curPos] = current;
-		printf("[PATH]   iter=%d settle (%d,%d) g=%d f=%d parent=(%d,%d) dir=%d\n",
+		printPath("  iter=%d settle (%d,%d) g=%d f=%d parent=(%d,%d) dir=%d\n",
 			iterations, current.x, current.y, current.g, current.f,
 			current.parentX, current.parentY, (int)current.dir);
 
@@ -209,13 +210,13 @@ char* makePedestranPath(const Map& map, int startX, int startY, int destX, int d
 			auto nit = closedList.find(nPos);
 			if (nit != closedList.end() && nit->second.g <= gScore) continue;
 
-			printf("[PATH]     push neighbor (%d,%d) dir=%d g=%d f=%d\n",
+			printPath("     push neighbor (%d,%d) dir=%d g=%d f=%d\n",
 				nx, ny, i, gScore, gScore + getH(nx, ny));
 			openList.push({nx, ny, gScore, gScore + getH(nx, ny), current.x, current.y, (char)i});
 		}
 	}
 
-	printf("[PATH] No path found after %d iterations\n", iterations);
+	printPath("No path found after %d iterations\n", iterations);
 	return nullptr;
 }
 

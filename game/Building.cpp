@@ -10,6 +10,7 @@ const Vector<int> SIZES[] = {
 Building* Building::create_home(int capacity) {
 	auto b = new Building;
 	b->type = BuildingType::HOME;
+	b->home.left = capacity;
 	b->home.capacity = capacity;
 	b->home.characters = new Character*[capacity];
 	for (int i = 0; i < capacity; i++) {
@@ -87,7 +88,7 @@ int Building::fillLeaveList(Vector<int> list[]) const {
 	return (int)(ptr-list);
 }
 
-
+#include <stdio.h>
 int Building::enter(Character* c) {
 	switch (this->type) {
 	case BuildingType::HOME:
@@ -123,7 +124,6 @@ void Building::leave(int position) {
 	{
 		if (this->home.characters[position]) {
 			this->home.left++;
-			break;
 		}
 		this->home.characters[position] = nullptr;
 		break;
@@ -131,7 +131,7 @@ void Building::leave(int position) {
 
 	case BuildingType::OIL_FIELD:
 	{
-		this->oilField.left--;
+		this->oilField.left++;
 		break;
 	}
 	}

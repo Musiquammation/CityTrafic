@@ -5,6 +5,8 @@
 #include "../Calendar.hpp"
 #include "../Building.hpp"
 
+#include <math.h>
+
 OilFieldJob::OilFieldJob(
 	Vector<int> location,
 	float salaryPerUnit
@@ -51,7 +53,14 @@ int OilFieldJob::getSalary(
 	worker_t worker,
 	const Calendar& calendar
 ) {
-	return 0;
+	auto it = this->workers.find((Character*)worker);
+	if (it == this->workers.end())
+		return 0;
+
+	auto& data = it->second;
+	float f = std::floor(data.toPay);
+	data.toPay -= f;
+	return (int)f;
 }
 
 
@@ -103,7 +112,6 @@ void OilFieldJob::onEnter(
 		Calendar::WORKING_DAYS
 	);
 
-	printf("willRest: %ld\n", it->second.meeting/60);
 	it->second.willWork = false;
 }
 
@@ -120,7 +128,6 @@ void OilFieldJob::onLeave(
 		Calendar::WORKING_DAYS
 	);
 
-	printf("willWork: %ld\n", it->second.meeting/60);
 
 	it->second.willWork = true;
 

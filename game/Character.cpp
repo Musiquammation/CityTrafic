@@ -165,9 +165,9 @@ bool Character::makeWalk(Game& game, int destX, int destY) {
 
 	auto end = std::chrono::high_resolution_clock::now();
 
-    auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
+	auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
 
-    std::cout << "Execution time: " << duration.count() << " µs\n";
+	std::cout << "Execution time: " << duration.count() << " µs\n";
 
 
 
@@ -217,33 +217,38 @@ bool Character::makeInside(Game& game) {
 }
 
 void Character::makeOutside(Game& game) {
-	if (this->state != CharacterState::INSIDE)
-		throw std::runtime_error{"Trying to leave while not inside"};
+	// Leave place
+	if (this->state == CharacterState::INSIDE) {
+		auto info = game.getMap().getBuilding(
+			(int)this->x,
+			(int)this->y
+		);
 
+		if (!info.building) {
+			throw std::runtime_error{"Character is not placed on a building"};
+		}
 
-	auto info = game.getMap().getBuilding(
-		(int)this->x,
-		(int)this->y
-	);
+		info.building->leave(this->data.inside.index);
 
-	if (!info.building) {
-		throw std::runtime_error{"Character is not placed on a building"};
+		// Place character outside
+		Vector<int> point;
+		{
+			int largeLength = info.building->getBufferLargeLength();
+			Vector<int> leaveList[largeLength];
+			int length = info.building->fillLeaveList(leaveList);
+			point = leaveList[this->takeRandomPointId(length)];
+		}
+
+		this->x = (float)(info.x + point.x) + .5f;
+		this->y = (float)(info.y + point.y) + .5f;
+
+		this->data.inside.index = -1; // Mark outside
+	} else {
+		printf("Warn: Trying to leave while not inside");
 	}
 
-	info.building->leave(this->data.inside.index);
 
-	Vector<int> point;
-	{
-		int largeLength = info.building->getBufferLargeLength();
-		Vector<int> leaveList[largeLength];
-		int length = info.building->fillLeaveList(leaveList);
-		point = leaveList[this->takeRandomPointId(length)];
-	}
-
-	this->x = (float)(info.x + point.x) + .5f;
-	this->y = (float)(info.y + point.y) + .5f;
-
-	this->data.inside.index = -1; // Mark outside
+	
 	this->setState(CharacterState::OUTSIDE);
 
 }
