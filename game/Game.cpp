@@ -34,7 +34,7 @@ void Game::frame() {
 	}
 
 
-
+	this->calendar.move();
 	this->frameCount++;
 }
 

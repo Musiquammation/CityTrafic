@@ -162,7 +162,9 @@ bool Character::makeWalk(Game& game, int destX, int destY) {
 		return false;
 	}
 
-	printf("path from (%d %d) to (%d %d):", (int)this->x, (int)this->y, destX, destY);
+	printf("Pedestran path from (%d %d) to (%d %d): ",
+		(int)this->x, (int)this->y, destX, destY);
+
 	for (char* i = path; *i != 8; i++)
 		printf("%d ", *i);
 	printf("\n");

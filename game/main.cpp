@@ -154,14 +154,20 @@ int main() {
 #elif MAIN_TEST_ID == 2
 
 
-#include "direction.hpp"
+#include "Calendar.hpp"
 
 #include <stdio.h>
 #include <assert.h>
 #include <stdint.h>
 
 int main() {
-    
+	Calendar calendar;
+    for (int i = 0; i < 216000; i++) {
+		calendar.move();
+		printf("[%d] %02d:%02d, day=%02lld (as %s)\n", i,
+			calendar.hour, calendar.minute, calendar.totalDay, Calendar::WEEK_DAYS[calendar.weekDay]);
+
+	}
     printf("\nAll tests passed successfully!\n");
     return 0;
 }
