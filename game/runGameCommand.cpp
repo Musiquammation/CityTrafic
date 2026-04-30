@@ -185,7 +185,18 @@ const void* runGameCommand(
 	const void* ptr,
 	Player* player
 ) {
+	// Check 16bit aligment
+	auto offset16 = (uintptr_t)ptr;
+	offset16 = (offset16 + 1) & ~uintptr_t(1);
+	ptr = (const void*)offset16;
+
+
 	auto code = take(uint16_t);
+
+	// Check 32bit aligment
+	auto offset32 = (uintptr_t)ptr;
+	offset32 = (offset32 + 3) & ~uintptr_t(3);
+	ptr = (const void*)offset32;
 
 	switch ((CommandCode)code) {
 	case CommandCode::TEST:

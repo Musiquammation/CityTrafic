@@ -37,7 +37,7 @@ void Server::run(int port) {
 			}
 			
 			const uint8_t* ptr = (const uint8_t*)(message.data());
-			if ((size_t)ptr % 4)
+			if ((uintptr_t)ptr % (uintptr_t)4)
 				printf("received %p\n", ptr);
 
 			

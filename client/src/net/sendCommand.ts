@@ -34,12 +34,16 @@ function flushQueue() {
 	writer.writeUint8(batchSize);
 
 	for (let i = 0; i < batchSize; i++) {
-		if (i >= 1) {
-			writer.writeUint16(0);
-		}
-
 		const cmd = queue[i];
+
+		const offset16 = writer.getOffset() % 2;
+		if (offset16) {writer.skip(1);}
+
 		writer.writeUint16(cmd.command);
+
+		const offset32 = writer.getOffset() % 4;
+		if (offset32) {writer.skip(4 - offset32);}
+
 		cmd.fill(writer);
 	}
 
@@ -59,6 +63,7 @@ export function sendCommand(
 ) {
 	const writer = new DataWriter();
 	writer.writeUint16(command);
+	writer.skip(2); // align game
 	fill(writer);
 
 	const buffer = writer.toArrayBuffer();

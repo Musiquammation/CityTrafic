@@ -287,10 +287,8 @@ uint8_t* Server::runCommand(Client* client, const uint8_t* ptr) {
 
 	Player* player = game->getPlayer(client->playerId);
 	auto count = take(uint8_t);
-	ptr = (uint8_t*)runGameCommand(*game, ptr, player);
 	
-	for (uint8_t i = 1; i < count; i++) {
-		align(ptr,2);
+	for (uint8_t i = 0; i < count; i++) {
 		ptr = (uint8_t*)runGameCommand(*game, ptr, player);
 	}
 
