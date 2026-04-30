@@ -16,7 +16,6 @@ static DebugLogger printStatus{"Status", false};
 static DebugLogger print{"Action", false};
 
 
-#include <stdio.h>
 #include <cmath>
 
 startns(character)

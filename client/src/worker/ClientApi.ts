@@ -1,5 +1,3 @@
-import createModule from "../../wasm/api.js"
-
 import { Rectangle } from "../tools/Rectangle";
 
 import { ApiTakeCode } from "../shared/ApiTakeCode.ts"
@@ -36,25 +34,21 @@ export class ClientApi {
 	private map = new MapHandler();
 	private cameraTimeout = -1;
 
-	async init(wasmPath: string) {
-		this.module = await createModule({
-			locateFile(path: string) {
-				if (path.endsWith(".wasm")) {
-					return new URL(wasmPath, import.meta.url).href;
-				}
-				return path;
-			}
-		});
+	setModule(module: any) {
+		if (this.module) {
+			throw new Error("Module was already defined");
+		}
 
-
-		this.apiPtr = this.module._Api_createApi(0, 0);
-
-
-		// Create layer (at 0)
+		this.module = module;
+		this.apiPtr = module._Api_createApi(0, 0);
 		this.run(ApiTakeCode.PUSH_LAYER);
 
-
+		// Create layer (at 0)
 		this.createCellGrid();
+	}
+
+	isModuleMissing() {
+		return this.module === null;
 	}
 
 	cleanup() {
