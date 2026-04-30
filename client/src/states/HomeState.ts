@@ -15,7 +15,6 @@ export class HomeState extends GameState {
 	}
 
 	enter(data: any, input: InputHandler): void {
-		console.log(data);
 		document.getElementById("homeView")?.classList.remove("hidden");
 
 		document.getElementById("home-createSession")?.
