@@ -53,6 +53,7 @@ void Server::run(int port) {
                     get(LISTEN, listen);
                     get(GAME_COMMANDS, runCommand);
                     get(UPDATE, getUpdates);
+                    get(PANEL, getPanel);
                     get(ERROR, onerror);
                 }
     

@@ -2,10 +2,44 @@ import { sendCommand } from '../../net/sendCommand';
 import { COMMAND_CODES } from '../../shared/CommandCode';
 import { HandPanel } from '../HandPanel';
 import { PlayState } from '../PlayState';
+import { runPanel } from '../runPanel';
 import { HandButton } from './handtypes'
 import { turnSelector } from './turnSelector'
 
-function erase(x: number, y: number, btn: number, play: PlayState) {
+function applyDefaultRightClick(
+	x: number, y: number, current: number, play: PlayState
+) {
+	const cellType = (current & 0xf);
+	console.log(cellType);
+
+
+	// Turn direction
+	if (cellType === 5) {
+		turnSelector.take(current, next => {
+			if (next === null)
+				return;
+
+			sendCommand(COMMAND_CODES.DIRECTION, writer => {
+				writer.writeInt32(x);
+				writer.writeInt32(y);
+				writer.writeUint16(next);
+			});
+		})
+
+		return;
+	}
+
+	// Building
+	if (cellType === 2 || cellType === 3) {
+		runPanel({building: {x, y}});
+		return;
+	}
+}
+
+function erase(
+	x: number, y: number, btn: number,
+	play: PlayState, edit: boolean
+) {
 	x = Math.floor(x);
 	y = Math.floor(y);
 	const current = play.getCell(x, y);
@@ -18,10 +52,21 @@ function erase(x: number, y: number, btn: number, play: PlayState) {
 				writer.writeInt32(y);
 			});
 		}
+
+		return;
 	}
+
+	if (btn === HandPanel.RIGHT_BTN && edit && current !== null) {
+		applyDefaultRightClick(x, y, current, play);
+		return;
+	}
+
 }
 
-function placeRoad(x: number, y: number, btn: number, play: PlayState) {
+function placeRoad(
+	x: number, y: number, btn: number,
+	play: PlayState, edit: boolean
+) {
 	x = Math.floor(x);
 	y = Math.floor(y);
 	const current = play.getCell(x, y);
@@ -34,23 +79,43 @@ function placeRoad(x: number, y: number, btn: number, play: PlayState) {
 				writer.writeInt32(y);
 			});
 		}
+		
+		return;
 	}
+
+	if (btn === HandPanel.RIGHT_BTN && edit && current !== null) {
+		applyDefaultRightClick(x, y, current, play);
+		return;
+	}
+
 }
 
-function placeParking(x: number, y: number, btn: number, play: PlayState) {
+function placeParking(
+	x: number, y: number, btn: number,
+	play: PlayState, edit: boolean
+) {
 	x = Math.floor(x);
 	y = Math.floor(y);
 	const current = play.getCell(x, y);
 	
 	if (btn === HandPanel.LEFT_BTN) {
 		// Check if current is not a parking
-		if (current !== null && ((current & 0xf) != 4)) {
-			sendCommand(COMMAND_CODES.PARKING, writer => {
-				writer.writeInt32(x);
-				writer.writeInt32(y);
-			});
-		}
+		if (current === null || ((current & 0xf) === 4))
+			return;
+
+		sendCommand(COMMAND_CODES.PARKING, writer => {
+			writer.writeInt32(x);
+			writer.writeInt32(y);
+		});
+
+		return;
 	}
+
+	if (btn === HandPanel.RIGHT_BTN && edit && current !== null) {
+		applyDefaultRightClick(x, y, current, play);
+		return;
+	}
+
 }
 
 
@@ -67,21 +132,13 @@ function applyTurn(x: number, y: number, btn: number, play: PlayState, edit: boo
 			writer.writeUint16(0);
 		});
 
-	} else if (btn === HandPanel.RIGHT_BTN && edit) {
-		if (current === null || ((current & 0xf) != 5)) {
-			return; // nothing to do
-		}
+		return;
 
-		turnSelector.take(current, next => {
-			if (next === null)
-				return;
-
-			sendCommand(COMMAND_CODES.DIRECTION, writer => {
-				writer.writeInt32(x);
-				writer.writeInt32(y);
-				writer.writeUint16(next);
-			});
-		})
+	}
+	
+	if (btn === HandPanel.RIGHT_BTN && edit && current !== null) {
+		applyDefaultRightClick(x, y, current, play);
+		return;
 	}
 }
 
@@ -101,17 +158,17 @@ export const handlist = {
 
 		// mouseUp
 		(x, y, btn, play) => {
-			erase(x, y, btn, play);
+			erase(x, y, btn, play, false);
 		},
 
 		// mouseDown
 		(x, y, btn, play) => {
-			erase(x, y, btn, play);
+			erase(x, y, btn, play, true);
 		},
 
 		// mouseMove
 		(prevX, prevY, x, y, btn, play) => {
-			erase(x, y, btn, play);
+			erase(x, y, btn, play, false);
 		},
 	),
 
@@ -129,17 +186,17 @@ export const handlist = {
 
 		// mouseUp
 		(x, y, btn, play) => {
-			placeRoad(x, y, btn, play);
+			placeRoad(x, y, btn, play, false);
 		},
 
 		// mouseDown
 		(x, y, btn, play) => {
-			placeRoad(x, y, btn, play);
+			placeRoad(x, y, btn, play, true);
 		},
 
 		// mouseMove
 		(prevX, prevY, x, y, btn, play) => {
-			placeRoad(x, y, btn, play);
+			placeRoad(x, y, btn, play, false);
 		},
 	),
 
@@ -158,17 +215,17 @@ export const handlist = {
 
 		// mouseUp
 		(x, y, btn, play) => {
-			placeParking(x, y, btn, play);
+			placeParking(x, y, btn, play, false);
 		},
 
 		// mouseDown
 		(x, y, btn, play) => {
-			placeParking(x, y, btn, play);
+			placeParking(x, y, btn, play, true);
 		},
 
 		// mouseMove
 		(prevX, prevY, x, y, btn, play) => {
-			placeParking(x, y, btn, play);
+			placeParking(x, y, btn, play, false);
 		},
 	),
 

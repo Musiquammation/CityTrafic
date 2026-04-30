@@ -7,5 +7,6 @@ enum class ServerId {
 	LISTEN,
 	GAME_COMMANDS,
 	UPDATE,
+	PANEL,
 	ERROR,
 };

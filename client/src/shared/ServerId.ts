@@ -5,5 +5,6 @@ export enum SERVER_IDS {
 	LISTEN,
 	GAME_COMMANDS,
 	UPDATE,
+	PANEL,
 	ERROR,
 }

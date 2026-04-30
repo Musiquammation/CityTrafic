@@ -71,4 +71,9 @@ public:
 		std::function<void(Character*)>
 	) override;
 
+
+	uint32_t* getPanelData() override;
+	void setPanelData(const uint32_t* data) override;
+
+
 };

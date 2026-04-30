@@ -6,5 +6,6 @@ export enum CLIENT_IDS {
 	AREAS,
 	EDITS,
 	UPDATE,
+	PANEL,
 	ERROR,
 }

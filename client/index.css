@@ -211,6 +211,84 @@ canvas {
 
 
 
+.dataPanel {
+	position: fixed;
+	inset: 0;
+	background: rgba(0, 0, 0, 0.45);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	z-index: 1000;
+}
+
+.dataPanel > div {
+	background: #fff;
+	border-radius: 10px;
+	padding: 20px 24px;
+	min-width: 320px;
+	display: flex;
+	flex-direction: column;
+	gap: 16px;
+	box-shadow: 0 4px 24px rgba(0,0,0,0.18);
+}
+
+.dataPanel > div > div {
+	display: flex;
+	flex-direction: column;
+	gap: 16px;
+}
+
+.dataPanel > div > div > div {
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+}
+
+.dataPanel > div > div > div > div {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	align-items: center;
+	gap: 10px;
+}
+
+.dataPanel span {
+	text-align: right;
+}
+
+/* Done + Cancel */
+.dataPanel > div > div:nth-child(3),
+.dataPanel > div > div:nth-child(4) {
+	padding: 10px 16px;
+	border-radius: 6px;
+	text-align: center;
+	cursor: pointer;
+	user-select: none;
+}
+
+/* Done */
+.dataPanel > div > div:nth-child(3) {
+	background: #4CAF50;
+	color: white;
+}
+
+/* Cancel */
+.dataPanel > div > div:nth-child(4) {
+	background: #f44336;
+	color: white;
+}
+
+/* hover */
+.dataPanel > div > div:nth-child(3):hover,
+.dataPanel > div > div:nth-child(4):hover {
+	filter: brightness(0.9);
+}
+
+
+
+
+
+
+
 
 
 .sideGamePanel {

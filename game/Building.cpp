@@ -1,6 +1,13 @@
 #include "Building.hpp"
 
+#include "PanelId.hpp"
+
+#include "DebugLogger.hpp"
+DebugLogger print{"Building"};
+
+
 #include <math.h>
+#include <stdint.h>
 
 const Vector<int> SIZES[] = {
 	{3,2},
@@ -98,7 +105,7 @@ int Building::fillLeaveList(Vector<int> list[]) const {
 	return (int)(ptr-list);
 }
 
-#include <stdio.h>
+
 int Building::enter(Character* c) {
 	switch (this->type) {
 	case BuildingType::HOME:
@@ -159,6 +166,49 @@ bool Building::isFull() const {
 	}
 
 	return true;
+}
+
+
+
+
+uint32_t* Building::getPanelData() {
+	switch (this->type) {
+	case BuildingType::HOME:
+	{
+		auto result = (uint32_t*)malloc(sizeof(uint32_t)*4);
+		result[0] = 2; // length (as uint32_t)
+		result[1] = (uint32_t)PanelId::BUILDING_HOME;
+		result[2] = this->home.rent;
+		result[3] = this->home.capacity;
+		return result;
+	}
+
+	case BuildingType::OIL_FIELD:
+	{
+		auto result = (uint32_t*)malloc(sizeof(uint32_t)*4);
+		result[0] = 2; // length (as uint32_t)
+		result[1] = (uint32_t)PanelId::BUILDING_OIL_FIELD;
+		result[2] = *(uint32_t*)&this->oilField.crude;
+		result[3] = *(uint32_t*)&this->oilField.left;
+		return result;
+	}
+
+	}
+
+	return nullptr;
+}
+
+void Building::setPanelData(const uint32_t* data) {
+	switch (this->type) {
+	case BuildingType::HOME:
+		this->home.rent = data[0];
+		print("rent %d\n", data[0]);
+		break;
+
+	case BuildingType::OIL_FIELD:
+		// Edit nothing
+		break;
+	}
 }
 
 

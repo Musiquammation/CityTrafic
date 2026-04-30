@@ -164,3 +164,13 @@ void OilFieldJob::forAllWorkers(
 	}
 }
 
+
+
+uint32_t* OilFieldJob::getPanelData() {
+	throw std::runtime_error{"TODO"};
+}
+
+
+void OilFieldJob::setPanelData(const uint32_t* data) {
+
+}

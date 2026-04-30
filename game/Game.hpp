@@ -9,6 +9,7 @@
 
 #include "declarations.hpp"
 
+
 class Game {
 private:
 	Map map{32,32};
@@ -21,6 +22,7 @@ private:
 	void test();
 	int searchPlayer(hash_t key);
 
+	
 public:
 	friend struct GameCommand;
 	friend class Api;
@@ -42,7 +44,7 @@ public:
 	const Cell* getCell(int x, int y);
 	Car* spawnCar(int x, int y, Direction direction);
 	Car* getCar(int x, int y);
-	BuildingInfo getBuilding(int x, int y);
+	BuildingInfo getBuilding(int x, int y) const;
 
 	const Map& getMap() const {return this->map;}
 	Map& getMap() {return this->map;}
@@ -50,6 +52,7 @@ public:
 
 	int appendJob(Job* job);
 	void removeJob(int job);
+	Job* getJob(int idx) const;
 
 	int getFrame() const;
 	bool checkBounds(int x, int y, int width, int height) const;

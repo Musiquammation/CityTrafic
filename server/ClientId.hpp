@@ -8,5 +8,6 @@ enum class ClientId {
 	AREAS,
 	EDITS,
 	UPDATE,
+	PANEL,
 	ERROR,
 };

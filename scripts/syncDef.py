@@ -10,7 +10,7 @@ class Translation:
 		self.hppFile = os.path.abspath(hppFile)
 		self.tsFile = os.path.abspath(tsFile)
 
-def translation(name, NAME):
+def servTranslation(name, NAME):
 	# Generates the object with the requested relative paths
 	return Translation(
 		name, 
@@ -20,17 +20,23 @@ def translation(name, NAME):
 		f"client/src/shared/{name}.ts"
 	)
 
+def gameTranslation(name, NAME):
+	# Generates the object with the requested relative paths
+	return Translation(
+		name, 
+		NAME,
+		f"def/{NAME}.def", 
+		f"game/{name}.hpp", 
+		f"client/src/shared/{name}.ts"
+	)
+
 # --- File configuration ---
 translations = [
-	translation("ServerId", "SERVER_IDS"),
-	translation("ClientId", "CLIENT_IDS"),
-	Translation(
-		"CommandCode",
-		"COMMAND_CODES",
-		"def/COMMAND_CODES.def", 
-		"game/CommandCode.hpp", 
-		"client/src/shared/CommandCode.ts"
-	)
+	servTranslation("ServerId", "SERVER_IDS"),
+	servTranslation("ClientId", "CLIENT_IDS"),
+	gameTranslation("CommandCode", "COMMAND_CODES"),
+	gameTranslation("PanelId", "PANEL_IDS"),
+	
 ]
 
 def generate_files(t: Translation):

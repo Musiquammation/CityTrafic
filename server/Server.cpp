@@ -4,13 +4,15 @@
 
 #include "MISSED_REGION_SIZE.hpp"
 #include "ClientId.hpp"
-#include <game/hash.hpp>
 #include "Pool.hpp"
 #include "Client.hpp"
 #include "Match.hpp"
 
+#include <game/hash.hpp>
 #include <game/Game.hpp>
 #include <game/Map.hpp>
+#include <game/Building.hpp>
+#include <game/Job.hpp>
 #include <game/runGameCommand.hpp>
 #include <game/updateNet_helper.hpp>
 
@@ -18,7 +20,63 @@
 #include <iostream>
 #include <vector>
 #include <stdint.h>
+#include <string.h>
 #include <cmath>
+
+
+enum PanelVariantType {
+	BUILDING,
+	JOB
+};
+
+struct PanelVariant {
+	PanelVariantType type;
+	const uint8_t* ptr;
+	union {
+		Building* building;
+		Job* job;
+	};
+};
+
+
+
+#define take(T) ({ T _v = *(T*)ptr; ptr = (uint8_t*)ptr + sizeof(T); _v; })
+#define push(T, val) {*(T*)res = (T)val; res += sizeof(T);}
+#define align(ptr,n) {ptr += n;}
+#define retRes() {*(uint32_t*)response =  (uint32_t)(res - response - 4); return response;}
+
+
+PanelVariant getVariant(const Game& game, const uint8_t* ptr) {
+	// Recognize object
+	auto x = take(int32_t);
+	if (x == (int)-0x80000000) {
+		// Job
+		auto jobIdx = take(int32_t);
+		Job* job = game.getJob(jobIdx);
+		if (!job) {
+			throw std::runtime_error{"Cannot find job asked by panel"};
+		}
+
+		return {
+			PanelVariantType::JOB,
+			ptr,
+			{.job = job}
+		};
+
+	}
+
+	auto y = take(int32_t);
+	auto info = game.getBuilding(x, y);
+	if (!info.building) {
+		throw std::runtime_error{"Cannot find building asked by panel"};
+	}
+
+	return {
+		PanelVariantType::BUILDING,
+		ptr,
+		{.building = info.building}
+	};
+}
 
 
 
@@ -30,10 +88,6 @@ Server::Server(int poolNum):
 
 
 
-#define take(T) ({ T _v = *(T*)ptr; ptr = (uint8_t*)ptr + sizeof(T); _v; })
-#define push(T, val) {*(T*)res = (T)val; res += sizeof(T);}
-#define align(ptr,n) {ptr += n;}
-#define retRes() {*(uint32_t*)response =  (uint32_t)(res - response - 4); return response;}
 
 
 
@@ -264,6 +318,71 @@ uint8_t* Server::getUpdates(Client* client, const uint8_t* ptr) {
 	return nullptr;
 
 }
+
+
+uint8_t* Server::getPanel(Client* client, const uint8_t* ptr) {
+	Match* match = client->match;
+	auto game = match->getGame();
+
+	auto writeMode = take(uint8_t);
+
+	if (writeMode) {
+		auto requestId = take(uint16_t);
+		auto v = getVariant(*game, ptr);
+		ptr = v.ptr;
+
+		switch (v.type) {
+		case PanelVariantType::BUILDING:
+			v.building->setPanelData((uint32_t*)ptr);
+			break;
+
+		case PanelVariantType::JOB:
+			v.job->setPanelData((uint32_t*)ptr);
+			break;
+		}
+
+
+		return nullptr;
+	}
+
+
+	auto requestId = take(uint16_t);
+	auto v = getVariant(*game, ptr);
+	ptr = v.ptr;
+
+	uint32_t* data;
+	switch (v.type) {
+	case PanelVariantType::BUILDING:
+		data = v.building->getPanelData();
+		break;
+
+	case PanelVariantType::JOB:
+		data = v.job->getPanelData();
+		break;
+	}
+
+	auto msgLength = data[0];
+	auto panelId = data[1];
+
+
+	uint8_t* const response = (uint8_t*)malloc(
+		sizeof(uint32_t) * (3+msgLength)
+	);
+	uint8_t* res = response;
+	align(res,4); // for final size
+
+	push(uint8_t, ClientId::PANEL);
+	align(res,1);
+	push(uint16_t, requestId);
+	push(uint32_t, panelId);
+	memcpy(res, &data[2], msgLength * sizeof(uint32_t));
+	res += msgLength * sizeof(uint32_t);
+	free(data);
+
+	retRes();
+}
+
+
 
 uint8_t* Server::onerror(Client* client, const uint8_t* ptr) {
 	return nullptr;

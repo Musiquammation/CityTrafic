@@ -2,6 +2,7 @@
 
 #include "Vector.hpp"
 #include "declarations.hpp"
+#include <stdint.h>
 
 enum class BuildingType: int {
 	HOME,
@@ -54,6 +55,9 @@ struct Building {
 	int getBufferLargeLength() const;
 	int fillEntryList(Vector<int> list[]) const;
 	int fillLeaveList(Vector<int> list[]) const;
+
+	uint32_t* getPanelData();
+	void setPanelData(const uint32_t* data);
 
 	~Building();
 };

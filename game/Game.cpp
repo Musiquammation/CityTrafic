@@ -74,7 +74,7 @@ Car* Game::getCar(int x, int y) {
 	return this->carHandler.getCar(x, y);
 }
 
-BuildingInfo Game::getBuilding(int x, int y) {
+BuildingInfo Game::getBuilding(int x, int y) const {
 	return this->map.getBuilding(x, y);
 }
 
@@ -91,6 +91,14 @@ int Game::appendJob(Job* job) {
 	// No empty slots, so add job to the end
 	this->jobs.push_back(job);
 	return size - 1;
+}
+
+Job* Game::getJob(int idx) const {
+	if (idx < 0 || idx >= (int)this->jobs.size()) {
+		return nullptr;
+	}
+
+	return this->jobs[idx];
 }
 
 void Game::removeJob(int job) {

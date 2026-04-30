@@ -5,6 +5,7 @@ import { getGameHandler } from "../gameHandler"
 import { Car } from "../play/Car";
 import { Character } from "../play/Character";
 import { PlayState } from "../play/PlayState";
+import { resolvePanel } from "../play/runPanel";
 import { askWorker, postWorker } from "../worker/askWorker";
 import { ENTITY_ASK_COULDOWN } from "./ENTITY_ASK_COULDOWN";
 
@@ -141,7 +142,11 @@ async function net_getUpdate(reader: DataReader) {
 
 }
 
-
+function net_panel(reader: DataReader) {
+	reader.skip(1);
+	const id = reader.readUint16();
+	resolvePanel(id, reader);
+}
 
 export function handleMessage(reader: DataReader): DataWriter | null {
 	const action = reader.readUint8();
@@ -161,6 +166,10 @@ export function handleMessage(reader: DataReader): DataWriter | null {
 
 	case CLIENT_IDS.UPDATE:
 		net_getUpdate(reader);
+		return null;
+
+	case CLIENT_IDS.PANEL:
+		net_panel(reader);
 		return null;
 		
 	default:

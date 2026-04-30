@@ -249,7 +249,7 @@ void Character::makeOutside(Game& game) {
 
 		this->data.inside.index = -1; // Mark outside
 	} else {
-		printWarn("Trying to leave while not inside");
+		printWarn("Trying to leave while not inside\n");
 	}
 
 
