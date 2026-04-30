@@ -22,6 +22,8 @@ class Server {
 	uint8_t* getPanel(Client* client, const uint8_t* args);
 	uint8_t* onerror(Client* client, const uint8_t* args);
 
+	void disconnect(Client* client);
+
 	Match* createMatch(hash_t hash);
 	void deleteMatch(hash_t hash);
 	Match* getMatch(hash_t hash);

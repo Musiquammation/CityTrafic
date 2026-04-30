@@ -11,6 +11,10 @@
 #include <set>
 #include <unordered_map>
 
+#ifndef MAP_PRECISION
+#define MAP_PRECISION 0
+#endif
+
 const Cell _outCellBuffer = {.data = 0};
 
 Map::Map(int width, int height)
@@ -21,6 +25,12 @@ Map::Map(int width, int height)
 
 Map::~Map() {
 	free(this->cells);
+
+	for (auto line : this->editedCells) {
+		if (line) {
+			delete line;
+		}
+	}
 }
 
 void Map::expand(int x, int y, int right, int bottom) {
@@ -56,8 +66,13 @@ Cell* Map::getEditCell(int x, int y) {
 	}
 	#endif
 
-	for (auto& line : this->editedCells) {
-		line.insert(Vector<int>{x,y});
+	for (auto line : this->editedCells) {
+		if (line) {
+			line->insert(Vector<int>{
+				x>>MAP_PRECISION,
+				y>>MAP_PRECISION
+			});
+		}
 	}
 	return &this->cells[(y - this->y) * this->width + (x - this->x)];
 }
@@ -87,13 +102,17 @@ void Map::resetCarMarks() const {
 uint32_t* Map::collectEditedCells(
 	int x, int y, int width, int height, int layer
 ) {
+	#if MAP_PRECISION != 0
+		throw std::runtime_error{"collectedEditedCells compiled with map precision"};
+	#endif
+
 	struct Region {
 		int32_t x;
 		int32_t y;
 		std::set<uint32_t> cells;
 	};
 
-	auto& edited = this->editedCells[layer];
+	auto& edited = *this->editedCells[layer];
 	// Group in regions
 	std::unordered_map<uint64_t, Region> regions;
 
@@ -101,7 +120,7 @@ uint32_t* Map::collectEditedCells(
 		return (uint64_t(uint32_t(x)) << 32) | uint32_t(y);
 	};
 
-	for (const auto& pos : edited) {
+	for (const auto pos : edited) {
 		if (pos.x < x || pos.y < y || pos.x > x+width || pos.y > y+height)
 			continue;
 
@@ -115,8 +134,8 @@ uint32_t* Map::collectEditedCells(
 		region.x = rx;
 		region.y = ry;
 
-		uint8_t dx = static_cast<uint8_t>(pos.x - rx);
-		uint8_t dy = static_cast<uint8_t>(pos.y - ry);
+		uint8_t dx = uint8_t(pos.x - rx);
+		uint8_t dy = uint8_t(pos.y - ry);
 
 		const Cell* cell = getCell(pos.x, pos.y);
 		uint16_t data = cell->data;
@@ -125,7 +144,6 @@ uint32_t* Map::collectEditedCells(
 			(uint32_t(dx) << 24) |
 			(uint32_t(dy) << 16) |
 			uint32_t(data);
-
 		region.cells.insert(packed);
 	}
 
@@ -170,7 +188,7 @@ uint32_t* Map::collectEditedCells(
 
 
 uint32_t* Map::collectEditedCells(int layer) {
-	auto& edited = this->editedCells[layer];
+	auto& edited = *this->editedCells[layer];
 
 
 	// Count how many edited cells are inside the requested region
@@ -237,14 +255,31 @@ void Map::applyEdits(const uint32_t* edits) {
 
 
 int Map::addEditedCellsLayer() {
-	this->editedCells.emplace_back();
-	return (int)this->editedCells.size() - 1;
+	int len = (int)this->editedCells.size();
+
+	// Search empty slot
+	for (int i = 0; i < len; i++) {
+		if (!this->editedCells[i]) {
+			this->editedCells[i] = new std::unordered_set<Vector<int>>;
+			return i;
+		}
+	}
+
+	// No empty slot, add new one
+	this->editedCells.push_back(new std::unordered_set<Vector<int>>);
+	return len;
 }
 
 void Map::removeEditedCellsLayer(int layer) {
-	if (layer >= 0 && layer < (int)this->editedCells.size()) {
-		this->editedCells.erase(this->editedCells.begin() + layer);
-	}
+	delete this->editedCells[layer];
+	this->editedCells[layer] = nullptr;
+}
+
+std::unordered_set<Vector<int>>* Map::getEditLayer(int idx) {
+	if (idx < 0)
+		return nullptr;
+		
+	return this->editedCells[idx];
 }
 
 

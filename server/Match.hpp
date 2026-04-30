@@ -25,7 +25,7 @@ public:
 	int pushClient(Client* client);
 	bool popClient(Client* client);
 
-	template<bool serv = false>
+	template<bool serv>
 	GameOwner<serv> getGame();
 
 	Match(Pool* pool, hash_t hash);

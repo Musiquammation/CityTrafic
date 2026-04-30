@@ -35,7 +35,7 @@ export class PlayState extends GameState {
 	private camY = 0;
 	private camZ = 50;
 	private frameCount = 0;
-	private cameraTimeout = -1;
+	private cameraUpdates = 0;
 	private mouseHandler = new MouseHandler(this);
 	private viewBox_x = 0;
 	private viewBox_y = 0;
@@ -77,6 +77,9 @@ export class PlayState extends GameState {
 		this.updateCamera(this.camX, this.camY, this.camZ);
 		this.sendAskEntities();
 
+
+		// To send camera update
+		this.updateCamera(0, 0, 50);
 
 		// Load
 		this.handPanel.init(imageLoader);
@@ -222,8 +225,6 @@ export class PlayState extends GameState {
 
 		document.getElementById("gameView")?.classList.add("hidden");
 
-		if (this.cameraTimeout >= 0)
-			clearTimeout(this.cameraTimeout);
 
 		(window as any).playState = null;
 		askWorker<void>('shutdown', []);
@@ -232,6 +233,7 @@ export class PlayState extends GameState {
 
 
 	sendCameraUpdate() {
+		console.log("cam");
 		const writer = new DataWriter();
 		writer.writeUint8(SERVER_IDS.LISTEN);
 		writer.skip(3);
@@ -263,13 +265,23 @@ export class PlayState extends GameState {
 		this.viewBox_h = Math.floor(height);
 
 
-		if (this.cameraTimeout < 0) {
-			this.cameraTimeout = setTimeout(() => {
-				this.sendCameraUpdate();
-				this.cameraTimeout = -1;
-			}, 1000);
+		if (this.cameraUpdates === 0) {
+			this.sendCameraUpdate();
 		}
+
+		this.cameraUpdates++;
 	}
+
+	resetCameraUpdates() {
+		if (this.cameraUpdates === 1) {
+			this.cameraUpdates = 0; // update resolved
+			return;
+		}
+
+		this.sendCameraUpdate();
+		this.cameraUpdates = 1; // waiting
+	}
+
 
 	getCamera() {
 		return {x: this.camX, y: this.camY, z: this.camZ};

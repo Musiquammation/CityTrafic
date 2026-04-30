@@ -54,6 +54,11 @@ function net_areas(reader: DataReader) {
 		postWorker('setArea', [x0, y0, REGION_SIZE, REGION_SIZE, list], [list.buffer]);
 	}
 
+	// Notify game camera
+	const state = getGameHandler().getState();
+	if (state instanceof PlayState) {
+		state.resetCameraUpdates();
+	}
 
 	return null;
 }

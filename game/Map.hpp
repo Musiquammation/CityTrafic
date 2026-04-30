@@ -31,7 +31,7 @@ typedef struct {
 class Map {
     Cell* cells;
 
-    std::vector<std::unordered_set<Vector<int>>> editedCells{};
+    std::vector<std::unordered_set<Vector<int>>*> editedCells{};
     std::map<Vector<int>, Building*> buildings;
 
     int x;
@@ -66,6 +66,7 @@ public:
 
     int addEditedCellsLayer();
     void removeEditedCellsLayer(int layer);
+    std::unordered_set<Vector<int>>* getEditLayer(int idx);
 
     bool checkBounds(int x, int y, int width, int height) const;
 

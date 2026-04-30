@@ -2,7 +2,6 @@
 
 #include "declarations.hpp"
 
-#include "MISSED_REGION_SIZE.hpp"
 #include "ClientId.hpp"
 #include "Pool.hpp"
 #include "Client.hpp"
@@ -23,6 +22,13 @@
 #include <string.h>
 #include <cmath>
 
+
+
+
+#ifndef MAP_PRECISION
+	#warning "MAP_PRECISION is requires for server"
+	#define MAP_PRECISION 8 /* for vscode */
+#endif
 
 enum PanelVariantType {
 	BUILDING,
@@ -108,7 +114,7 @@ uint8_t* Server::connect(Client* client, const uint8_t* ptr) {
 		// Create match
 		push(uint8_t, ClientId::JOIN_CREATED);
 		align(res,3);
-		push(uint32_t, MISSED_REGION_SIZE);
+		push(uint32_t, MAP_PRECISION);
 		align(res,4);
 
 		sessionHash = hash_generate();
@@ -117,7 +123,7 @@ uint8_t* Server::connect(Client* client, const uint8_t* ptr) {
 	} else {
 		push(uint8_t, ClientId::JOIN_ALIVE);
 		align(res,3);
-		push(uint32_t, MISSED_REGION_SIZE);
+		push(uint32_t, MAP_PRECISION);
 		align(res,4);
 
 		match = this->getMatch(sessionHash);
@@ -131,6 +137,7 @@ uint8_t* Server::connect(Client* client, const uint8_t* ptr) {
 		int id = game->searchPlayer(playerHash);
 		push(hash_t, game->players[id].key);
 		client->playerId = id;
+		client->cellsLayerId = game->map.addEditedCellsLayer();
 	}
 
 	if (!match) {
@@ -155,9 +162,6 @@ uint8_t* Server::listen(Client* client, const uint8_t* ptr) {
 
 	Match* match = client->match;
 
-	// TODO: fill missedRegions
-	std::vector<uint64_t> missedRegions;
-
 
 	align(ptr,3);
 
@@ -171,22 +175,22 @@ uint8_t* Server::listen(Client* client, const uint8_t* ptr) {
 	// Compute region bounds
 	int rx0 = (int)std::floor(
 		(float)clamp(x, match->mapX, match->mapX + match->mapW - 1)
-		/ MISSED_REGION_SIZE
+		/ MAP_PRECISION
 	);
 
 	int ry0 = (int)std::floor(
 		(float)clamp(y, match->mapY, match->mapY + match->mapH - 1)
-		/ MISSED_REGION_SIZE
+		/ MAP_PRECISION
 	);
 
 	int rx1 = (int)std::floor(
 		(float)clamp(x + w - 1, match->mapX, match->mapX + match->mapW - 1)
-		/ MISSED_REGION_SIZE
+		/ MAP_PRECISION
 	);
 
 	int ry1 = (int)std::floor(
 		(float)clamp(y + h - 1, match->mapY, match->mapY + match->mapH - 1)
-		/ MISSED_REGION_SIZE
+		/ MAP_PRECISION
 	);
 
 	// Collect new regions
@@ -197,6 +201,7 @@ uint8_t* Server::listen(Client* client, const uint8_t* ptr) {
 
 	std::vector<Region> newRegions;
 
+	/// TODO: [optimization] loop on match->visitedPoints and check bounds
 	for (int ry = ry0; ry <= ry1; ++ry) {
 		for (int rx = rx0; rx <= rx1; ++rx) {
 			uint64_t key = (uint64_t(rx) << 32) | uint32_t(ry);
@@ -206,13 +211,28 @@ uint8_t* Server::listen(Client* client, const uint8_t* ptr) {
 		}
 	}
 
+
+
 	// missed regions inside view
 	std::vector<Region> missedInView;
+	auto game = match->getGame<true>();
 
-	for (uint64_t key : missedRegions) {
-		int32_t rx = int32_t(key >> 32);
-		int32_t ry = int32_t(uint32_t(key));
-		missedInView.push_back({key, rx, ry});
+	auto& editedCells = *(game->map.getEditLayer(client->cellsLayerId));
+	for (auto it = editedCells.begin(); it != editedCells.end(); ) {
+		const auto& i = *it;
+
+		if (i.x >= rx0 && i.y >= ry0 && i.x <= rx1 && i.y <= ry1) {
+			uint64_t key = (uint64_t(i.x) << 32) | uint64_t(i.y);
+
+			if (match->visitedPoints.find(key) != match->visitedPoints.end()) {
+				missedInView.push_back({key, i.x, i.y});
+
+				it = editedCells.erase(it);
+				continue;
+			}
+		}
+
+		it++;
 	}
 
 	// total count
@@ -224,7 +244,7 @@ uint8_t* Server::listen(Client* client, const uint8_t* ptr) {
 		+4            // totalCount
 		+totalCount*( // content
 			4+4+
-			2*MISSED_REGION_SIZE*MISSED_REGION_SIZE
+			2*MAP_PRECISION*MAP_PRECISION
 		)
 	);
 	uint8_t* res = response;
@@ -233,7 +253,6 @@ uint8_t* Server::listen(Client* client, const uint8_t* ptr) {
 	align(res,3);
 	push(uint32_t, totalCount);
 
-	auto game = match->getGame();
 
 	// Send new (unvisited) regions
 	for (auto r: newRegions) {
@@ -241,14 +260,14 @@ uint8_t* Server::listen(Client* client, const uint8_t* ptr) {
 		push(int32_t, r.ry);
 		game->map.copyCells(
 			(Cell*)res,
-			r.rx * MISSED_REGION_SIZE,
-			r.ry * MISSED_REGION_SIZE,
-			MISSED_REGION_SIZE,
-			MISSED_REGION_SIZE
+			r.rx * MAP_PRECISION,
+			r.ry * MAP_PRECISION,
+			MAP_PRECISION,
+			MAP_PRECISION
 		);
 
 		// move
-		res += MISSED_REGION_SIZE*MISSED_REGION_SIZE*2;
+		res += MAP_PRECISION*MAP_PRECISION*2;
 
 		client->visitedRegions.insert(r.key);
 	}
@@ -259,14 +278,14 @@ uint8_t* Server::listen(Client* client, const uint8_t* ptr) {
 		push(int32_t, r.ry);
 		game->map.copyCells(
 			(Cell*)res,
-			r.rx * MISSED_REGION_SIZE,
-			r.ry * MISSED_REGION_SIZE,
-			MISSED_REGION_SIZE,
-			MISSED_REGION_SIZE
+			r.rx * MAP_PRECISION,
+			r.ry * MAP_PRECISION,
+			MAP_PRECISION,
+			MAP_PRECISION
 		);
 
 		// move
-		res += MISSED_REGION_SIZE*MISSED_REGION_SIZE*2;
+		res += MAP_PRECISION*MAP_PRECISION*2;
 	}
 
 
@@ -283,7 +302,7 @@ uint8_t* Server::listen(Client* client, const uint8_t* ptr) {
 
 uint8_t* Server::runCommand(Client* client, const uint8_t* ptr) {
 	Match* match = client->match;
-	auto game = match->getGame();
+	auto game = match->getGame<true>();
 
 	Player* player = game->getPlayer(client->playerId);
 	auto count = take(uint8_t);
@@ -297,7 +316,7 @@ uint8_t* Server::runCommand(Client* client, const uint8_t* ptr) {
 
 uint8_t* Server::getUpdates(Client* client, const uint8_t* ptr) {
 	Match* match = client->match;
-	auto game = match->getGame();
+	auto game = match->getGame<true>();
 
 	auto player = game->getPlayer(client->playerId);
 	bool updateClientJobs =
@@ -329,7 +348,7 @@ uint8_t* Server::getUpdates(Client* client, const uint8_t* ptr) {
 
 uint8_t* Server::getPanel(Client* client, const uint8_t* ptr) {
 	Match* match = client->match;
-	auto game = match->getGame();
+	auto game = match->getGame<true>();
 
 	auto writeMode = take(uint8_t);
 
@@ -394,6 +413,12 @@ uint8_t* Server::getPanel(Client* client, const uint8_t* ptr) {
 uint8_t* Server::onerror(Client* client, const uint8_t* ptr) {
 	return nullptr;
 }
+
+void Server::disconnect(Client* client) {
+	auto game = client->match->getGame<true>();
+	game->map.removeEditedCellsLayer(client->cellsLayerId);
+}
+
 
 
 Match* Server::createMatch(hash_t hash) {

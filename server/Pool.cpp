@@ -19,7 +19,7 @@ void runThread(Pool* pool) {
 		{
 			std::lock_guard<std::mutex> structureLock{pool->structureMutex};
 			for (auto& match : pool->matchs) {
-				auto game = match.second->getGame<true>();
+				auto game = match.second->getGame<false>();
 				game->frame();
 			}
 		}

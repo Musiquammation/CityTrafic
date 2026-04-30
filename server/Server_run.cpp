@@ -5,6 +5,7 @@
 
 #include <uWebSockets/src/App.h>
 #include <thread>
+#include <stdlib.h>
 
 
 void Server::run(int port) {
@@ -36,9 +37,18 @@ void Server::run(int port) {
 				throw std::runtime_error{"Requires binary message"};
 			}
 			
-			const uint8_t* ptr = (const uint8_t*)(message.data());
-			if ((uintptr_t)ptr % (uintptr_t)4)
-				printf("received %p\n", ptr);
+			
+			size_t size = message.size();
+			static constexpr size_t ALIGN = 8; // 64-bit = 8 bytes
+
+			uint8_t* const srcPtr = (uint8_t*) aligned_alloc(
+				ALIGN,
+				((size*1000 + ALIGN - 1) / ALIGN) * ALIGN
+			);
+
+			memcpy(srcPtr, message.data(), size);
+
+			const uint8_t* ptr = srcPtr;
 
 			
             try {
@@ -69,14 +79,14 @@ void Server::run(int port) {
                 std::cerr << e.what() << std::endl;
             }
 
-
+			free(srcPtr);
 			
 		},
 
 		.close = [this](auto* ws, int code, std::string_view message) {
 			Client* client = ws->getUserData();
 
-
+			this->disconnect(client);
 
 			this->clients.erase(client->id);
 

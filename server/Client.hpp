@@ -16,6 +16,7 @@ struct Client {
 	int viewW = 0;
 	int viewH = 0;
 	clientId_t id = 0;
+	int cellsLayerId = -1;
 	int playerId = -1;
 	uint64_t updateJobsDate = 0;
 	Match* match;

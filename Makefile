@@ -1,4 +1,5 @@
 PORT ?= 3000
+SERV_MAP_PRECISION ?= 8
 
 # =========================
 # Compilateurs
@@ -84,12 +85,12 @@ $(SERVER_BIN_DIR)/server: $(SERVER_OBJ) $(GAME_SERVER_OBJ)
 # compile server sources
 $(SERVER_BIN_DIR)/%.o: $(SERVER_SRC_DIR)/%.cpp
 	@mkdir -p $(dir $@)
-	$(CXX) $(CXXFLAGS_NATIVE) $(UWS_INC) -I. -DCOMPILE_SERVER=1 -c $< -o $@
+	$(CXX) $(CXXFLAGS_NATIVE) $(UWS_INC) -I. -DCOMPILE_SERVER=1 -DMAP_PRECISION=$(SERV_MAP_PRECISION) -c $< -o $@
 
 # compile game for server
 $(SERVER_BIN_DIR)/game/%.o: $(GAME_SRC_DIR)/%.cpp
 	@mkdir -p $(dir $@)
-	$(CXX) $(CXXFLAGS_NATIVE) -I. -DCOMPILE_SERVER=1 -c $< -o $@
+	$(CXX) $(CXXFLAGS_NATIVE) -I. -DCOMPILE_SERVER=1 -DMAP_PRECISION=$(SERV_MAP_PRECISION) -c $< -o $@
 
 # =========================
 # TEST (game uniquement)

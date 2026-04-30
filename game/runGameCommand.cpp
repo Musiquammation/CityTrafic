@@ -26,6 +26,8 @@ static const void* test(
 	int w = take(int32_t);
 	int h = take(int32_t);
 
+	printf("RUN_TEST_COMMAND\n");
+
 
 	game.map.getEditCell(4, 15)->setType(CellType::PARKING, game, 0);
 	game.map.getEditCell(4, 14)->setType(CellType::ROAD, game, 0);
