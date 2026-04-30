@@ -213,6 +213,30 @@ canvas {
 
 
 
+.sideGamePanel {
+	position: absolute;
+	top: 0;
+	color: white;
+	padding: 10px;
+	font-size: 3vmin;
+	font-family: 'Courier New', Courier, monospace;
+}
+
+.sideGamePanel > * {
+	background-color: black;
+	display: block;
+	width: fit-content;
+}
+
+#gameCalendar {
+	left: 0px;
+}
+
+#gameMoney {
+	right: 0px;
+	text-align: right;
+}
+
 
 
 
