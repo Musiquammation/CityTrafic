@@ -18,7 +18,7 @@ class Server {
 	uint8_t* connect(Client* client, const uint8_t* args);
 	uint8_t* listen(Client* client, const uint8_t* args);
 	uint8_t* runCommand(Client* client, const uint8_t* args);
-	uint8_t* getEntities(Client* client, const uint8_t* args);
+	uint8_t* getUpdates(Client* client, const uint8_t* args);
 	uint8_t* onerror(Client* client, const uint8_t* args);
 
 	Match* createMatch(hash_t hash);

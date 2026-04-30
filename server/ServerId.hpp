@@ -6,6 +6,6 @@ enum class ServerId {
 	CONNECT,
 	LISTEN,
 	GAME_COMMANDS,
-	GET_ENTITIES,
+	UPDATE,
 	ERROR,
 };

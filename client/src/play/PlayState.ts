@@ -18,11 +18,17 @@ import { drawCharacter } from "./drawCharacter";
 import { HandPanel } from "./HandPanel";
 import { ImageLoader } from "../handler/ImageLoader";
 import { loadAssets } from "./loadAssets";
+import { evalCalendar } from "./evalCalendar";
 
 function modulo(a: number, n: number) {
 	return (a % n + n) % n;
 }
 
+
+const html_day = document.getElementById("gameDay")!;
+const html_year = document.getElementById("gameYear")!;
+const html_hour = document.getElementById("gameHour")!;
+const html_money = document.getElementById("gameMoney")!;
 
 export class PlayState extends GameState {
 	private camX = 0;
@@ -101,6 +107,19 @@ export class PlayState extends GameState {
 
 		this.frameCount++;
 		return null;
+	}
+
+
+	setCalendar(n: bigint) {
+		const obj = evalCalendar(n);
+		html_day.textContent = obj.day;
+		html_year.textContent = obj.year;
+		html_hour.textContent = obj.hour;
+
+	}
+
+	setMoney(money: number) {
+		html_money.textContent = money + "$";
 	}
 
 
@@ -274,7 +293,7 @@ export class PlayState extends GameState {
 	
 	sendAskEntities() {
 		const writer = new DataWriter();
-		writer.writeUint8(SERVER_IDS.GET_ENTITIES);
+		writer.writeUint8(SERVER_IDS.UPDATE);
 		sendSocket(writer.toArrayBuffer());
 	}
 }

@@ -7,6 +7,6 @@ enum class ClientId {
 	JOIN_ALIVE,
 	AREAS,
 	EDITS,
-	GET_ENTITIES,
+	UPDATE,
 	ERROR,
 };

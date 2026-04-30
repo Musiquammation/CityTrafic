@@ -7,7 +7,7 @@
 
 void runThread(Pool* pool) {
 	using clock = std::chrono::steady_clock;
-	const auto FRAME_TIME = std::chrono::microseconds(16667/16); // make x16 faster
+	const auto FRAME_TIME = std::chrono::microseconds(16667/32); // make x32 faster
 	// const auto FRAME_TIME = std::chrono::microseconds(16667);
 
 	auto next = clock::now();

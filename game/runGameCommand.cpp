@@ -26,10 +26,6 @@ static const void* test(
 	int w = take(int32_t);
 	int h = take(int32_t);
 
-	// really bad practice
-	game.calendar.hour = 6;
-	game.calendar.indicator = 6*60;
-
 
 	game.map.getEditCell(4, 15)->setType(CellType::PARKING, game, 0);
 	game.map.getEditCell(4, 14)->setType(CellType::ROAD, game, 0);

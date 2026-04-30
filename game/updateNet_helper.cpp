@@ -1,4 +1,4 @@
-#include "entities_helper.hpp"
+#include "updateNet_helper.hpp"
 
 #include "Game.hpp"
 #include "CarHandler.hpp"
@@ -7,13 +7,15 @@
 
 #include <stdint.h>
 
-/**
- * @warning This function use the prefix `prefix`
- */
-uint32_t* entities_helper_make(
+
+#define push64(val) {*(uint64_t*)ptr = (val); ptr += 2;}
+#define push(val) {*ptr++ = val;}
+
+uint32_t* updateNet_helper_write(
 	Game& game,
 	int x, int y, int w, int h,
-	uint8_t prefix
+	uint8_t clientRequestId,
+	int money
 ) {
     float fx0 = (float)x;
 	float fy0 = (float)y;
@@ -44,18 +46,31 @@ uint32_t* entities_helper_make(
 	}
 
 
-	uint32_t fullSize = sizeof(uint32_t) *
-		(carsCount*5 + charactersCount*2 + 3);
+	uint32_t fullSize = sizeof(uint32_t) * (
+		+ 1 // money
+		+ 1 // buffer
+		+ 2 // date
+		+ carsCount*5 // cars
+		+ charactersCount*2 + 3 // characters
+	);
 
 	uint32_t* const buffer = (uint32_t*)malloc(fullSize + sizeof(uint32_t));
-	*(uint8_t*)buffer = prefix;
+	*(uint8_t*)buffer = clientRequestId;
 
 	uint32_t* ptr = buffer + 1;
 	
-	*ptr++ = fullSize;
+	push(fullSize);
+	*((int32_t*)ptr++) = money;
+	ptr++; // buffer
+
+
+	// Send date and money
+	push64(game.calendar.indicator);
+	
+
 
 	// Send cars
-	*ptr++ = carsCount;
+	push(carsCount);
 
 	for (auto [_, car]: game.carHandler) {
 		if (car->x >= x && car->x < x+w
@@ -65,16 +80,16 @@ uint32_t* entities_helper_make(
 			uint32_t flag = (uint32_t)car->state |
 				((uint32_t)car->direction << 8);
 
-			*ptr++ = car->x;
-			*ptr++ = car->y;
-			*ptr++ = *(uint32_t*)&car->step;
-			*ptr++ = *(uint32_t*)&speed;
-			*ptr++ = flag;
+			push(car->x);
+			push(car->y);
+			push(*(uint32_t*)&car->step);
+			push(*(uint32_t*)&speed);
+			push(flag);
 		}
 	}
 
 	// Send characters
-	*ptr++ = charactersCount;
+	push(charactersCount);
 	for (auto character: game.characterHandler) {
 		auto state = character->getState();
 		if ((state == CharacterState::WALK ||
@@ -82,18 +97,25 @@ uint32_t* entities_helper_make(
 			&& character->x >= fx0 && character->x < fx1
 			&& character->y >= fy0 && character->y < fy1
 		) {
-			*ptr++ = *(uint32_t*)&character->x;
-			*ptr++ = *(uint32_t*)&character->y;
+			push(*(uint32_t*)&character->x);
+			push(*(uint32_t*)&character->y);
 		}
 	}
 
 
 	return buffer;
 }
-#include <stdio.h>
 
-void entities_helper_read(Game& game, void* args) {
+#undef push64
+
+
+
+
+void updateNet_helper_read(Game& game, void* args) {
     uint32_t* ptr = (uint32_t*)args;
+
+	// Skip money, buffer and calendar
+	ptr += 4;
 
     game.map.resetCarMarks();
     game.carHandler.clear();
@@ -124,3 +146,4 @@ void entities_helper_read(Game& game, void* args) {
         game.characterHandler.pushCharacter(character);
     }
 }
+

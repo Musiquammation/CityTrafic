@@ -52,7 +52,7 @@ void Server::run(int port) {
                     get(CONNECT, connect);
                     get(LISTEN, listen);
                     get(GAME_COMMANDS, runCommand);
-                    get(GET_ENTITIES, getEntities);
+                    get(UPDATE, getUpdates);
                     get(ERROR, onerror);
                 }
     

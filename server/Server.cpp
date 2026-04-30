@@ -12,7 +12,7 @@
 #include <game/Game.hpp>
 #include <game/Map.hpp>
 #include <game/runGameCommand.hpp>
-#include <game/entities_helper.hpp>
+#include <game/updateNet_helper.hpp>
 
 
 #include <iostream>
@@ -243,20 +243,18 @@ uint8_t* Server::runCommand(Client* client, const uint8_t* ptr) {
 	return nullptr;
 }
 
-uint8_t* Server::getEntities(Client* client, const uint8_t* ptr) {
+uint8_t* Server::getUpdates(Client* client, const uint8_t* ptr) {
 	Match* match = client->match;
-	Game& game = *match->getGame();
+	auto game = match->getGame();
 
-	
-
-
-	uint32_t* msg = entities_helper_make(
-		game,
+	uint32_t* msg = updateNet_helper_write(
+		*game,
 		client->viewX,
 		client->viewY,
 		client->viewW,
 		client->viewH,
-		(uint8_t)ClientId::GET_ENTITIES
+		(uint8_t)ClientId::UPDATE,
+		game->getPlayer(client->playerId)->money
 	);
 
 	uint32_t fullSize = msg[1];

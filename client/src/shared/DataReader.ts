@@ -46,6 +46,18 @@ export class DataReader {
 		return val;
 	}
 
+	readInt64(littleEndian: boolean = true) {
+		const val = this.view.getBigInt64(this.offset, littleEndian);
+		this.offset += 8;
+		return val;
+	}
+
+	readUint64(littleEndian: boolean = true) {
+		const val = this.view.getBigUint64(this.offset, littleEndian);
+		this.offset += 8;
+		return val;
+	}
+
 	readFloat32(littleEndian: boolean = true): number {
 		const val = this.view.getFloat32(this.offset, littleEndian);
 		this.offset += 4;

@@ -3,7 +3,7 @@
 #include "Car.hpp"
 #include "Character.hpp"
 #include "runGameCommand.hpp"
-#include "entities_helper.hpp"
+#include "updateNet_helper.hpp"
 
 #include <stdint.h>
 #include <string.h>
@@ -217,7 +217,7 @@ void* Api::take(int id, int datacode, void* args) {
 		case ApiTakeCode::READ_ENTITIES:
 		{
 			ApiGame& s = this->games[id];
-			entities_helper_read(s.game, args);
+			updateNet_helper_read(s.game, args);
 			return nullptr;
 		}
 	

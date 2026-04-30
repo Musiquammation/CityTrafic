@@ -69,7 +69,7 @@ function net_edits(reader: DataReader) {
 let lastEntityAsk = -Infinity;
 
 
-async function net_getEntities(reader: DataReader) {
+async function net_getUpdate(reader: DataReader) {
 	reader.skip(3);
 
 	const msgSize = reader.readUint32(); // msg size
@@ -80,6 +80,10 @@ async function net_getEntities(reader: DataReader) {
 	await askWorker('readEntities', [buffer], [buffer.buffer]);
 
 	reader.setOffset(prevOffset);
+
+	const money = reader.readInt32();
+	reader.skip(4);
+	const calendar = reader.readUint64();
 
 	// Read cars
 	const carsCount = reader.readUint32();
@@ -112,6 +116,9 @@ async function net_getEntities(reader: DataReader) {
 		return;
 
 
+	// Update state
+	state.setCalendar(calendar);
+	state.setMoney(money);
 	state.cars = cars;
 	state.characters = characters;
 
@@ -152,8 +159,8 @@ export function handleMessage(reader: DataReader): DataWriter | null {
 	case CLIENT_IDS.EDITS:
 		return net_edits(reader);
 
-	case CLIENT_IDS.GET_ENTITIES:
-		net_getEntities(reader);
+	case CLIENT_IDS.UPDATE:
+		net_getUpdate(reader);
 		return null;
 		
 	default:
