@@ -60,6 +60,8 @@ ActionCode Character::walk(Game& game) {
 	}
 
 	char dir = this->data.walk.path[this->data.walk.position];
+	if (dir == 8)
+		return ActionCode::SUCCESS;
 
 	static constexpr float SQRT2 = 1.41421356f;
 	static constexpr float INV_SQRT2 = 0.70710678f;
@@ -145,8 +147,9 @@ Character* Character::spawnCharacter(const Map& map, int x, int y) {
 
 	c->x = (float)x + .5f;
 	c->y = (float)y + .5f;
-	c->home = {x, y};
+	c->home = {info.x, info.y};
 	c->state = CharacterState::INSIDE;
+	c->money = 0;
 	c->data.inside.index = index;
 	c->pointId = 0;
 
@@ -159,13 +162,27 @@ Character* Character::spawnCharacter(const Map& map, int x, int y) {
 bool Character::makeWalk(Game& game, int destX, int destY) {
 	auto start = std::chrono::high_resolution_clock::now();
 
-	auto path = makePedestranPath(
-		game.getMap(),
-		(int)this->x,
-		(int)this->y,
-		destX,
-		destY
-	);
+	int x = (int)this->x;
+	int y = (int)this->y;
+	
+	char* path;
+	// Character already placed
+	if (x == destX && y == destY) {
+		path = (char*)malloc(1);
+		path[0] = 8;
+
+	} else {
+		path = makePedestranPath(
+			game.getMap(),
+			x,
+			y,
+			destX,
+			destY
+		);
+	}
+
+	handlePath:
+
 
 	auto end = std::chrono::high_resolution_clock::now();
 
@@ -181,7 +198,7 @@ bool Character::makeWalk(Game& game, int destX, int destY) {
 	}
 
 	printSpec("Pedestran path from (%d %d) to (%d %d): ",
-		(int)this->x, (int)this->y, destX, destY);
+		x, y, destX, destY);
 
 	for (char* i = path; *i != 8; i++)
 		printSpec("%d ", *i);
@@ -191,7 +208,7 @@ bool Character::makeWalk(Game& game, int destX, int destY) {
 	this->data.walk.path = path;
 	this->data.walk.position = 0;
 	this->data.walk.step = 0;
-	this->data.walk.anchor = {(int)this->x, (int)this->y};
+	this->data.walk.anchor = {x, y};
 	return true;
 }
 

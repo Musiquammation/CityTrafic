@@ -95,6 +95,7 @@ async function net_getUpdate(reader: DataReader) {
 			const y = reader.readInt32();
 			jobs[i] = {type, x, y};
 		}
+		
 		console.log(jobs);
 		reader.setOffset(offset + jobSize*4);
 	}

@@ -7,7 +7,7 @@
 #include <functional>
 
 class Job {
-	int money;
+	int money = 0;
 	int prevPayMonth = -1;
 	
 protected:

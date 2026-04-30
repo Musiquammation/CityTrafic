@@ -26,29 +26,36 @@ static inline float frac(float x) {
 }
 
 #define LIST(all, fst, run, link)\
-	all(result);\
-		fst(runDayJob);\
-			all(workSection);\
-				run(mustWork);\
-				all(workDay);\
-					/* A lot of tasks */ \
-			all(chillSection);\
-				run(isChillDay);\
-				all(chillDay);\
-					run(chillDayTest);\
-	run(drive);\
-	run(walk);\
-	run(orientCar);\
-	run(orientWork);\
-	run(orientHome);\
-	run(locateWork);\
-	run(locateHome);\
-	run(enter);\
-	run(leave);\
-	run(enterWork);\
-	run(leaveWork);\
-	run(passWork);\
-	run(checkHomeOwnership);\
+	fst(result)\
+		all(work)\
+		all(outWorkActivities)\
+			fst(enshureLargeCarFuel)\
+			fst(restAtHome)\
+	fst(enshureCarFuel)\
+	all(collectFuel)\
+	all(walkToCar)\
+	all(goHome)\
+	\
+	run(drive)\
+	run(walk)\
+	run(mustWork)\
+	run(orientCar)\
+	run(orientWork)\
+	run(orientHome)\
+	run(locateWork)\
+	run(locateHome)\
+	run(enter)\
+	run(leave)\
+	run(enterWork)\
+	run(leaveWork)\
+	run(passWork)\
+	run(checkHomeOwnership)\
+	run(checkFuelLarge)\
+	run(isAtHome)\
+	run(locateFuelStation)\
+	run(orientFuelStation)\
+	run(fillCarFuel)\
+	run(checkFuel)\
 			
 		
 
@@ -129,6 +136,7 @@ struct CharacterFriend {
 	def(walk) {
 		printStatus("walk\n");
 		setCharacter();
+
 		return c->walk(game);
 	}
 
@@ -246,6 +254,7 @@ struct CharacterFriend {
 		printStatus("checkHomeOwnership\n");
 		setCharacter();
 
+
 		if (c->state == CharacterState::INSIDE) {
 			throw std::runtime_error{
 				"Characters cannot check home "
@@ -296,22 +305,68 @@ struct CharacterFriend {
 		return ActionCode::FAILURE;
 	}
 
+	def(checkFuelLarge) {
+		setCharacter();
+		printStatus("checkFuelLarge\n");
+
+		return ActionCode::SUCCESS;
+	}
+	def(isAtHome) {
+		setCharacter();
+		printStatus("isAtHome\n");
+		printStatus("Money %d\n", c->money);
+
+
+		auto info = game.getBuilding((int)c->x, (int)c->y);
+		return ActionCode_get(info.x == c->home.x && info.y == c->home.y);
+	}
+
+	def(locateFuelStation) {
+		setCharacter();
+		printStatus("locateFuelStation\n");
+
+		return ActionCode::FAILURE;
+	}
+	def(orientFuelStation) {
+		setCharacter();
+		printStatus("orientFuelStation\n");
+
+		return ActionCode::FAILURE;
+	}
+	def(fillCarFuel) {
+		setCharacter();
+		printStatus("fillCarFuel\n");
+
+		return ActionCode::FAILURE;
+	}
+	def(checkFuel) {
+		setCharacter();
+		printStatus("checkFuel\n");
+
+		return ActionCode::SUCCESS;
+	}
+
 
 	
 	
 };
 
 
-graph(result, &runDayJob);
+graph(result,
+	&work,
+	&outWorkActivities
+);
 
-graph(runDayJob, &workSection, &chillSection);
+graph(outWorkActivities,
+	&enshureLargeCarFuel,
+	&restAtHome
+);
 
-graph(workSection, &mustWork, &workDay);
-
-graph(workDay,
+graph(work,
+	&mustWork,
 	&leave,
-	&orientCar,
-	&walk,
+	&enshureCarFuel,
+	&walkToCar,
 	&locateWork,
 	&drive,
 	&orientWork,
@@ -320,21 +375,53 @@ graph(workDay,
 	&enterWork,
 	&passWork,
 	&leaveWork,
+	&leave
+);
+
+graph(enshureLargeCarFuel,
+	&checkFuelLarge,
+	&collectFuel
+);
+
+
+graph(enshureCarFuel,
+	&checkFuel,
+	&collectFuel
+);
+
+graph(collectFuel,
+	&walkToCar,
+	&locateFuelStation,
+	&drive,
+	&leave,
+	&orientFuelStation,
+	&walk,
+	&enter,
+	&fillCarFuel,
+	&leave
+);
+
+graph(walkToCar,
 	&leave,
 	&orientCar,
-	&walk,
+	&walk
+);
+
+graph(restAtHome,
+	&isAtHome,
+	&goHome
+);
+
+graph(goHome,
+	&checkHomeOwnership,
+	&enshureCarFuel,
+	&walkToCar,
 	&locateHome,
 	&drive,
 	&orientHome,
 	&walk,
 	&enter
 );
-
-graph(chillSection, &isChillDay, &chillDay);
-
-graph(chillDay, &chillDayTest);
-
-
 
 
 
