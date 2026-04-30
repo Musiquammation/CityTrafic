@@ -70,6 +70,7 @@ public:
 	virtual uint32_t* getPanelData() = 0;
 	virtual void setPanelData(const uint32_t* data) = 0;
 
+	virtual int getJobType() const {return 0;}
 
 	virtual ~Job() = default;
 

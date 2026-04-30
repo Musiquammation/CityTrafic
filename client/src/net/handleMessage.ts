@@ -5,6 +5,7 @@ import { getGameHandler } from "../gameHandler"
 import { Car } from "../play/Car";
 import { Character } from "../play/Character";
 import { PlayState } from "../play/PlayState";
+import { Job } from "../play/Job";
 import { resolvePanel } from "../play/runPanel";
 import { askWorker, postWorker } from "../worker/askWorker";
 import { ENTITY_ASK_COULDOWN } from "./ENTITY_ASK_COULDOWN";
@@ -83,7 +84,20 @@ async function net_getUpdate(reader: DataReader) {
 	reader.setOffset(prevOffset);
 
 	const money = reader.readInt32();
-	reader.skip(4);
+	const jobSize = reader.readInt32();
+	if (jobSize) {
+		const offset = reader.getOffset();
+		const jobLength = Math.floor(jobSize/3);
+		const jobs = new Array<Job>(jobLength);
+		for (let i = 0; i < jobLength; i++) {
+			const type = reader.readUint32();
+			const x = reader.readInt32();
+			const y = reader.readInt32();
+			jobs[i] = {type, x, y};
+		}
+		console.log(jobs);
+		reader.setOffset(offset + jobSize*4);
+	}
 	const calendar = reader.readUint64();
 
 	// Read cars

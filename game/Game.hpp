@@ -19,6 +19,7 @@ private:
 	std::vector<Job*> jobs;
 	std::vector<Player> players;
 	int frameCount = 0;
+	uint64_t updateJobsDate = 0;
 	void test();
 	int searchPlayer(hash_t key);
 
@@ -31,7 +32,8 @@ public:
 		Game& game,
 		int x, int y, int w, int h,
 		uint8_t clientRequestId,
-		int money
+		int money,
+		bool updateClientJobs
 	);
 	friend void updateNet_helper_read(Game& game, void* args);
 
@@ -61,5 +63,4 @@ public:
 	int getPlayerId(Player* player);
 
 	~Game();
-
 };

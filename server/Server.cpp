@@ -301,6 +301,14 @@ uint8_t* Server::getUpdates(Client* client, const uint8_t* ptr) {
 	Match* match = client->match;
 	auto game = match->getGame();
 
+	auto player = game->getPlayer(client->playerId);
+	bool updateClientJobs =
+		(client->updateJobsDate != game->updateJobsDate);
+	
+	if (updateClientJobs) {
+		client->updateJobsDate = game->updateJobsDate;
+	}
+
 	uint32_t* msg = updateNet_helper_write(
 		*game,
 		client->viewX,
@@ -308,7 +316,8 @@ uint8_t* Server::getUpdates(Client* client, const uint8_t* ptr) {
 		client->viewW,
 		client->viewH,
 		(uint8_t)ClientId::UPDATE,
-		game->getPlayer(client->playerId)->money
+		player->money,
+		updateClientJobs
 	);
 
 	uint32_t fullSize = msg[1];

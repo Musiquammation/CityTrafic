@@ -79,6 +79,8 @@ BuildingInfo Game::getBuilding(int x, int y) const {
 }
 
 int Game::appendJob(Job* job) {
+	this->updateJobsDate = this->calendar.indicator;
+
 	// Search empty slots
 	int size = (int)this->jobs.size();
 	for (int i = 0; i < size; i++) {
@@ -102,6 +104,8 @@ Job* Game::getJob(int idx) const {
 }
 
 void Game::removeJob(int job) {
+	this->updateJobsDate = this->calendar.indicator;
+
 	delete this->jobs[job];
 	this->jobs[job]	= nullptr;
 }
