@@ -1,0 +1,10 @@
+draft
+bin
+node_modules
+client/dist
+client/wasm
+server/wasm
+.vscode
+uWebSockets
+ts-server
+venv
