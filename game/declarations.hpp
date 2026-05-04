@@ -16,7 +16,7 @@ struct ActionNode;
 
 class Calendar;
 class Job;
-class JobOffer;
+struct JobOffer;
 
 template<bool freeArray>
 class PathHandler;

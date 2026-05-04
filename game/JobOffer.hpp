@@ -1,5 +1,10 @@
 #pragma once
 
-class JobOffer {
+enum class JobOfferType {
+    OIL_RAFFINER
+};
 
+struct JobOffer {
+    JobOfferType type;
+    int salaryEstimation;
 };

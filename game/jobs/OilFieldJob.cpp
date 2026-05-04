@@ -1,5 +1,6 @@
 #include "OilFieldJob.hpp"
 
+#include "../JobOffer.hpp"
 #include "../Game.hpp"
 #include "../Map.hpp"
 #include "../Calendar.hpp"
@@ -166,7 +167,17 @@ void OilFieldJob::forAllWorkers(
 	}
 }
 
-void OilFieldJob::getJobOffers(std::vector<JobOffer>& offers) const {
+bool OilFieldJob::searchJobOffer(
+	const Character* candidate,
+	JobOffer& offer
+) const {
+	if (this->employeesCounters.raffiners.canHire()) {
+		offer.type = JobOfferType::OIL_RAFFINER;
+		offer.salaryEstimation = int(this->salaryPerLiter * 200);
+		return true;
+	}
+
+	return false;
 	/// TODO: get job offers
 }
 

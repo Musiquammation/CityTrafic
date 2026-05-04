@@ -1,5 +1,7 @@
 #pragma once
 
+#include "EmployeesCounter.hpp"
+
 #include "../Job.hpp"
 #include "../calendar_t.hpp"
 
@@ -20,6 +22,10 @@ class OilFieldJob: public Job {
 	float salaryPerLiter;
 	float pricePerLiter;
 	std::map<Character*, WorkerData> workers;
+
+	struct {
+		EmployeesCounter raffiners;
+	} employeesCounters;
 	
 
 public:
@@ -74,7 +80,8 @@ public:
 		std::function<void(Character*)>
 	) override;
 
-	void getJobOffers(std::vector<JobOffer>& offers) const override;
+	bool searchJobOffer(const Character* candidate,
+		JobOffer& offer) const override;
 
 	uint32_t* getPanelData() override;
 	void setPanelData(const uint32_t* data) override;
