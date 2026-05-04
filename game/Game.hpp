@@ -62,5 +62,7 @@ public:
 	Player* getPlayer(int id);
 	int getPlayerId(Player* player);
 
+	Job* searchJob(Character* c, JobOffer& bestOffer);
+
 	~Game();
 };

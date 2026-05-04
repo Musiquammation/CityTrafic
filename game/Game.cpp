@@ -1,5 +1,6 @@
 #include "Game.hpp"
 
+#include "JobOffer.hpp"
 #include "Car.hpp"
 #include "Character.hpp"
 #include "Cell.hpp"
@@ -7,6 +8,7 @@
 #include "Map.hpp"
 
 #include <stdio.h>
+#include <math.h>
 
 
 void Game::test() {
@@ -134,6 +136,46 @@ int Game::getPlayerId(Player* player) {
 		return -1;
 
 	return int(player - this->players.data());
+}
+
+
+Job* Game::searchJob(Character* c, JobOffer& bestOffer) {
+	static constexpr float MAX_RADIUS = 64.0f;
+
+	auto home = c->getHome();
+	if (home.x == INT32_MIN) {
+		home = c->getPos();
+	}
+	
+
+	float bestScore = 0;
+	Job* bestJob = nullptr;
+	for (Job* job: this->jobs) {
+		if (!job)
+			continue;
+
+		
+		JobOffer offer;
+		if (!job->searchJobOffer(c, offer))
+			continue;
+
+		auto pos = job->getEmployeeSite(nullptr, this->calendar);
+		int dx = pos.x - home.x;
+		int dy = pos.y - home.y;
+		float score = (MAX_RADIUS - sqrtf(float(dx*dx + dy*dy)));
+		if (score < 0)
+			continue;
+
+		score *= (float)offer.salaryEstimation;
+
+		if (score > bestScore) {
+			bestScore = score;
+			bestJob = job;
+			bestOffer = offer;
+		}	
+	}
+	
+	return bestJob;
 }
 
 

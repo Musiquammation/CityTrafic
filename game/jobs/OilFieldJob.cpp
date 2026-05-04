@@ -136,11 +136,26 @@ void OilFieldJob::onLeave(
 
 }
 
-bool OilFieldJob::hire(Character* worker, const Calendar& calendar) {
+bool OilFieldJob::hire(
+	Character* worker,
+	const JobOffer& offer,
+	const Calendar& calendar
+) {
 	// Check if worker is already in workers
 	if (this->workers.find(worker) != this->workers.end()) {
 		return false; // Worker is already hired
 	}
+
+
+	switch (offer.type) {
+	case JobOfferType::OIL_RAFFINER:
+		if (!this->employeesCounters.raffiners.canHire()) {return false;}
+		break;
+
+	default:
+		return false;
+	}
+
 	// Add worker to the list with initial data
 	this->workers[worker] = WorkerData{
 		0.0f,
@@ -150,6 +165,8 @@ bool OilFieldJob::hire(Character* worker, const Calendar& calendar) {
 			Calendar::WORKING_DAYS
 		)
 	};
+
+
 	return true;
 }
 
@@ -178,7 +195,6 @@ bool OilFieldJob::searchJobOffer(
 	}
 
 	return false;
-	/// TODO: get job offers
 }
 
 

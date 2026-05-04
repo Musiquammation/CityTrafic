@@ -95,10 +95,11 @@ public:
 	CharacterState getState() const;
 	Vector<int> getPos() const;
 
+	auto getHome() const {return this->home;}
 	Car* getCar() const;
 	bool setCar(Car* car);
 
-	bool takeJob(Job* job, const Calendar& calendar);
+	bool takeJob(Job* job, const JobOffer& offer, const Calendar& calendar);
 	void leaveJob();
 	Job* getJob();
 	bool isInside() const;

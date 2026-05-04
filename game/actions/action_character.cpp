@@ -7,6 +7,7 @@
 #include "../Map.hpp"
 #include "../Car.hpp"
 #include "../Job.hpp"
+#include "../JobOffer.hpp"
 #include "../Building.hpp"
 #include "../Character.hpp"
 
@@ -31,6 +32,7 @@ static inline float frac(float x) {
 #define LIST(all, fst, run, link)\
 	fst(result)\
 		all(work)\
+			fst(enshureWork)\
 		all(outWorkActivities)\
 			fst(enshureLargeCarFuel)\
 			fst(restAtHome)\
@@ -59,6 +61,8 @@ static inline float frac(float x) {
 	run(orientFuelStation)\
 	run(fillCarFuel)\
 	run(checkFuel)\
+	run(hasWork)\
+	run(searchWork)\
 			
 		
 
@@ -402,14 +406,38 @@ struct CharacterFriend {
 
 	def(checkFuel) {
 		setCharacter();
+		printStatus("checkFuel\n");
 
 		return ActionCode_get(c->car->getFuel() >= 1.0f);
 	}
 
 	def(checkFuelLarge) {
 		setCharacter();
+		printStatus("checkFuelLarge\n");
 
 		return ActionCode_get(c->car->getFuel() >= 10.0f);
+	}
+
+	def(hasWork) {
+		setCharacter();
+		printStatus("hasWork\n");
+
+		return ActionCode_get(c->job);
+	}
+
+	def(searchWork) {
+		setCharacter();
+		printStatus("searchWork\n");
+
+		JobOffer offer;
+		Job* job = game.searchJob(c, offer);
+		
+		printStatus("  got %p %d\n", job, (int)offer.type);
+		if (!job)
+			return ActionCode::FAILURE;
+
+		return ActionCode_get(c->takeJob(job,
+			offer, game.getCalendar()));
 	}
 
 
@@ -429,7 +457,13 @@ graph(outWorkActivities,
 	&restAtHome
 );
 
+graph(enshureWork,
+	&hasWork,
+	&searchWork
+);
+
 graph(work,
+	&enshureWork,
 	&mustWork,
 	&leave,
 	&enshureCarFuel,

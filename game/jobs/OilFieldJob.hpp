@@ -22,10 +22,6 @@ class OilFieldJob: public Job {
 	float salaryPerLiter;
 	float pricePerLiter;
 	std::map<Character*, WorkerData> workers;
-
-	struct {
-		EmployeesCounter raffiners;
-	} employeesCounters;
 	
 
 public:
@@ -36,6 +32,11 @@ public:
 	);
 
 	~OilFieldJob();
+
+
+	struct {
+		EmployeesCounter raffiners;
+	} employeesCounters;
 
 	calendar_t getNextEnterHour(
 		worker_t worker,
@@ -72,7 +73,11 @@ public:
 		const Calendar& calendar
 	) override;
 	
-	bool hire(Character* worker, const Calendar& calendar) override;
+	bool hire(
+		Character* worker,
+		const JobOffer& offer,
+		const Calendar& calendar
+	) override;
 
 	void fire(Character* worker) override;
 

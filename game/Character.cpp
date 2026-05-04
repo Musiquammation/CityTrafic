@@ -397,12 +397,12 @@ bool Character::setCar(Car* car) {
 }
 
 
-bool Character::takeJob(Job* job, const Calendar& calendar) {
+bool Character::takeJob(Job* job, const JobOffer& offer, const Calendar& calendar) {
 	if (this->job) {
 		this->leaveJob();
 	}
 
-	if (job->hire(this, calendar)) {
+	if (job->hire(this, offer, calendar)) {
 		this->job = job;
 		return true;
 	}

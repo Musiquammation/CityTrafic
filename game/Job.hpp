@@ -36,6 +36,9 @@ public:
 		const Calendar& calendar
 	) = 0;
 
+	/**
+	 * @warning worker can be null
+	 */
 	virtual Vector<int> getEmployeeSite(
 		worker_t worker,
 		const Calendar& calendar
@@ -58,7 +61,11 @@ public:
 	) = 0;
 
 
-	virtual bool hire(Character* worker, const Calendar& calendar) = 0;
+	virtual bool hire(
+		Character* worker,
+		const JobOffer& offer,
+		const Calendar& calendar
+	) = 0;
 
 	virtual void fire(Character* worker) = 0;
 
