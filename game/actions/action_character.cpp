@@ -271,10 +271,12 @@ struct CharacterFriend {
 		Building* building = c->getHomeBuilding(
 			game.getMap()).building;
 
+
 		// Check rent date
 		calendar_t m = c->nextRentPayMonth;
-		if ((m < calendar.totalMonth || (
-			m == calendar.totalMonth && calendar.day >= 9
+		printStatus("  next=%d now=%d\n", m, calendar.totalMonth);
+		if ((m > calendar.totalMonth || (
+			m == calendar.totalMonth && calendar.day < 9
 		))) {
 			return ActionCode::SUCCESS;
 		}
@@ -283,6 +285,9 @@ struct CharacterFriend {
 			throw std::runtime_error{
 				"Home must be of type BuildingType::HOME"};
 		}
+
+		printStatus("  pay rent money=%d rent=%d\n",
+			c->money, building->home.rent);
 
 		int rent = building->home.rent;
 		// Pay rent
