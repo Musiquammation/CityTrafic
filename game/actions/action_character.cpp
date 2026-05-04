@@ -10,6 +10,8 @@
 #include "../Building.hpp"
 #include "../Character.hpp"
 
+#include "../jobs/OilFieldJob.hpp"
+
 #include "../DebugLogger.hpp"
 
 static DebugLogger printStatus{"Status", false};
@@ -114,11 +116,6 @@ struct CharacterFriend {
 	def(isChillDay) {
 		printStatus("isChillDay\n");
 		return ActionCode::FAILURE;
-	}
-
-	def(chillDayTest) {
-		printStatus("chillDayTest\n");
-		return ActionCode::PENDING;
 	}
 
 	def(drive) {
@@ -304,19 +301,16 @@ struct CharacterFriend {
 		return ActionCode::FAILURE;
 	}
 
-	def(checkFuelLarge) {
-		setCharacter();
-		printStatus("checkFuelLarge\n");
-
-		return ActionCode::SUCCESS;
-	}
 	def(isAtHome) {
 		setCharacter();
 		printStatus("isAtHome\n");
 		printStatus("Money %d\n", c->money);
 
+		if (!c->isInside())
+			return ActionCode::FAILURE;
 
-		auto info = game.getBuilding((int)c->x, (int)c->y);
+		auto p = c->getPos();
+		auto info = game.getBuilding(p.x, p.y);
 		return ActionCode_get(info.x == c->home.x && info.y == c->home.y);
 	}
 
@@ -324,26 +318,74 @@ struct CharacterFriend {
 		setCharacter();
 		printStatus("locateFuelStation\n");
 
-		return ActionCode::FAILURE;
+		auto p = c->getPos();
+		auto& map = game.getMap();
+		auto info = map.searchBuilding(
+			p.x, p.y, BuildingType::OIL_FIELD);
+
+		if (!info.building)
+			return ActionCode::FAILURE;
+
+		return ActionCode_get(c->locateBuilding(map, info));
 	}
 	def(orientFuelStation) {
 		setCharacter();
 		printStatus("orientFuelStation\n");
 
-		return ActionCode::FAILURE;
+		auto p = c->getPos();
+		auto info = game.getMap().searchBuilding(
+			p.x, p.y, BuildingType::OIL_FIELD);
+
+		if (!info.building)
+			return ActionCode::FAILURE;
+
+		return ActionCode_get(c->orientBuilding(game, info));
 	}
+
 	def(fillCarFuel) {
 		setCharacter();
-		printStatus("fillCarFuel\n");
 
-		return ActionCode::FAILURE;
+		if (!c->isInside() || !c->car)
+			return ActionCode::FAILURE;
+
+		Building* building = c->getCurrentBuilding(
+			game.getMap(), BuildingType::OIL_FIELD).building;
+		
+
+		Job* _job = game.getJob(building->oilField.jobIdx);
+		OilFieldJob& job = dynamic_cast<OilFieldJob&>(*_job);
+		float price = job.getPricePerLiter(game);
+		float completion = c->car->getFuel();
+		int cost = Character::evalFullLiterSafetyCost(completion);
+		if (int((float)cost * price) > c->money) {
+			return ActionCode::SUCCESS;
+		}
+
+		float fuel = job.buy(game, 1);
+		if (fuel <= 0) {
+			if (completion < 5.0f)
+				return ActionCode::FAILURE;
+
+			return ActionCode::SUCCESS;
+		}
+		
+		c->car->appendFuel(fuel);
+		c->money--;
+		return ActionCode::PENDING;
 	}
+
 	def(checkFuel) {
 		setCharacter();
-		printStatus("checkFuel\n");
 
-		return ActionCode::SUCCESS;
+		return ActionCode_get(c->car->getFuel() >= 1.0f);
 	}
+
+	def(checkFuelLarge) {
+		setCharacter();
+
+		return ActionCode_get(c->car->getFuel() >= 10.0f);
+	}
+
 
 
 	

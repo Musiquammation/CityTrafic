@@ -4,6 +4,7 @@
 #include "calendar_t.hpp"
 #include "Vector.hpp"
 #include "BuildingInfo.hpp"
+#include "BuildingType.hpp"
 #include "ActionExecutor.hpp"
 #include "actions/ActionCode.hpp"
 
@@ -72,6 +73,7 @@ public:
 
 	static Character* createClientCharacter(float x, float y);
 	static Character* spawnCharacter(const Map& map, int x, int y);
+	static int evalFullLiterSafetyCost(float completion);
 
 	bool makeWalk(Game& game, int destX, int destY);
 	bool makeDrive(Map& map, int destX, int destY);
@@ -82,6 +84,7 @@ public:
 
 	BuildingInfo getWorkBuilding(Game& game) const;
 	BuildingInfo getHomeBuilding(const Map& map) const;
+	BuildingInfo getCurrentBuilding(const Map& map, BuildingType type) const;
 	bool orientBuilding(Game& game, BuildingInfo info);
 	bool locateBuilding(Map& map, BuildingInfo info);
 
@@ -89,6 +92,7 @@ public:
 	int takeRandomPointId(int modulo);
 
 	CharacterState getState() const;
+	Vector<int> getPos() const;
 
 	Car* getCar() const;
 	bool setCar(Car* car);
@@ -96,6 +100,7 @@ public:
 	bool takeJob(Job* job, const Calendar& calendar);
 	void leaveJob();
 	Job* getJob();
+	bool isInside() const;
 
 	void give(int money);
 	int pay(int money);

@@ -7,7 +7,7 @@
 #include <sstream>
 
 Car* CarHandler::spawnCar(int x, int y, Direction direction) {
-	auto car = new Car{x, y, direction};
+	auto car = new Car{x, y, direction, 30.0f};
 
 	this->cars[{x,y}] = car;
 	return car;

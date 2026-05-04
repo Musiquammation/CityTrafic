@@ -5,6 +5,7 @@
 #include "Vector.hpp"
 #include "Cell.hpp"
 #include "BuildingInfo.hpp"
+#include "BuildingType.hpp"
 
 #include <map>
 #include <vector>
@@ -15,72 +16,76 @@
 
 template<>
 struct std::hash<Vector<int>> {
-    size_t operator()(const Vector<int>& v) const noexcept {
-        return (uint64_t(v.x) << 32) | uint64_t(v.y);
-    }
+	size_t operator()(const Vector<int>& v) const noexcept {
+		return (uint64_t(v.x) << 32) | uint64_t(v.y);
+	}
 };
 
 
 typedef struct {
-    int x;
-    int y;
-    int width;
-    int height;
+	int x;
+	int y;
+	int width;
+	int height;
 } MapSize;
 
 class Map {
-    Cell* cells;
+	Cell* cells;
 
-    std::vector<std::unordered_set<Vector<int>>*> editedCells{};
-    std::map<Vector<int>, Building*> buildings;
+	std::vector<std::unordered_set<Vector<int>>*> editedCells{};
+	std::map<Vector<int>, Building*> buildings;
 
-    int x;
-    int y;
-    int width;
-    int height;
+	int x;
+	int y;
+	int width;
+	int height;
 
 
 public:
-    friend class Api;
+	friend class Api;
 
-    Map(int width, int height);
-    ~Map();
+	Map(int width, int height);
+	~Map();
 
-    void expand(int left, int top, int right, int bottom);
-    Cell* getEditCell(int x, int y);
-    const Cell* getCell(int x, int y) const;
-    MapSize getMapSize() const;
+	void expand(int left, int top, int right, int bottom);
+	Cell* getEditCell(int x, int y);
+	const Cell* getCell(int x, int y) const;
+	MapSize getMapSize() const;
 
-    void resetCarMarks() const;
+	void resetCarMarks() const;
 
-    /**
-     * First element is length,
-     * then format is:
-     * {dx(8), dy(8), data(16)} for each element
-     */
-    uint32_t* collectEditedCells(int x, int y,
-        int width, int height, int layer);
-    uint32_t* collectEditedCells(int layer);
+	/**
+	 * First element is length,
+	 * then format is:
+	 * {dx(8), dy(8), data(16)} for each element
+	 */
+	uint32_t* collectEditedCells(int x, int y,
+		int width, int height, int layer);
+	uint32_t* collectEditedCells(int layer);
 
-    void applyEdits(const uint32_t* edits);
+	void applyEdits(const uint32_t* edits);
 
-    int addEditedCellsLayer();
-    void removeEditedCellsLayer(int layer);
-    std::unordered_set<Vector<int>>* getEditLayer(int idx);
+	int addEditedCellsLayer();
+	void removeEditedCellsLayer(int layer);
+	std::unordered_set<Vector<int>>* getEditLayer(int idx);
 
-    bool checkBounds(int x, int y, int width, int height) const;
+	bool checkBounds(int x, int y, int width, int height) const;
 
-    void copyCells(Cell* dst, int x, int y, int w, int h) const;
+	void copyCells(Cell* dst, int x, int y, int w, int h) const;
 
-    BuildingInfo getBuilding(int x, int y) const;
-    bool addBuilding(int x, int y, Building* building, Game& game);
-    bool removeBuilding(int x, int y, Game& game);
+	BuildingInfo getBuilding(int x, int y) const;
+	bool addBuilding(int x, int y, Building* building, Game& game);
+	bool removeBuilding(int x, int y, Game& game);
 
-    Vector<int> searchParkingSpot(
-        int cx, int cy,
-        int lx, int ly,
-        int radius
-    ) const;
+	BuildingInfo searchBuilding(int x, int y, BuildingType type) const;
+
+
+	Vector<int> searchParkingSpot(
+		int cx, int cy,
+		int lx, int ly,
+		int radius
+	) const;
+
 };
 
 

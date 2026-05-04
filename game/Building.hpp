@@ -4,10 +4,7 @@
 #include "declarations.hpp"
 #include <stdint.h>
 
-enum class BuildingType: int {
-	HOME,
-	OIL_FIELD,
-};
+#include "BuildingType.hpp"
 
 
 struct Building {
@@ -28,6 +25,7 @@ struct Building {
 			float factor;
 			int left;
 			int size;
+			int jobIdx;
 		} oilField;
 	};
 	
@@ -42,7 +40,8 @@ struct Building {
 		int owner,
 		float crude,
 		int factor,
-		int size
+		int size,
+		int jobIdx
 	);
 
 

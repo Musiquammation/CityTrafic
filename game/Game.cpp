@@ -92,7 +92,7 @@ int Game::appendJob(Job* job) {
 
 	// No empty slots, so add job to the end
 	this->jobs.push_back(job);
-	return size - 1;
+	return size;
 }
 
 Job* Game::getJob(int idx) const {

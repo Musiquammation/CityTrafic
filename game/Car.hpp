@@ -25,6 +25,8 @@ private:
 	float publicSpeed = 0;
 	Character* driver = nullptr;
 	bool pathIsFinished = false;
+	float fuel;
+	float fuelCapacity;
 
 	friend class Api;
 
@@ -37,6 +39,8 @@ public:
 	static constexpr int PARKING_RADIUS = 16;
 	static constexpr float WIDTH = .9f;
 	static constexpr float HEIGHT = .6f;
+	static constexpr float ACCELERATION_FUEL_COST = 30.0f;
+	// static constexpr float ACCELERATION_FUEL_COST = .3f;
 
 	int x;
 	int y;
@@ -47,7 +51,7 @@ public:
 	Direction direction;
 	CarState state = CarState::FRONT;
 
-	Car(int x, int y, Direction direction);
+	Car(int x, int y, Direction direction, float fuelCapacity);
 
 	void update(Game* game, std::vector<PriorityNode>& prioritiesBuffer);
 	void move();
@@ -64,4 +68,7 @@ public:
 		int destX, int destY, Map& map);
 
 	void finishDriving(Character* driver);
+
+	float getFuel() const;
+	void appendFuel(float added);
 };

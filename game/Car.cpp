@@ -9,8 +9,11 @@
 #include "debugFile.hpp"
 
 
-Car::Car(int x, int y, Direction direction) 
-	: x(x), y(y), direction(direction)
+Car::Car(int x, int y, Direction direction, float fuelCapacity):
+	x(x), y(y),
+	direction(direction),
+	fuel(fuelCapacity),
+	fuelCapacity(fuelCapacity)
 {}
 
 
@@ -33,10 +36,15 @@ void Car::update(Game* game, std::vector<PriorityNode>& prioritiesBuffer) {
 		}
 
 	} else if (danger.acceleration > 0) {
+		float s = this->realSpeed;
 		this->realSpeed += danger.acceleration;
 		if (this->realSpeed > this->speedLimit) {
 			this->realSpeed = this->speedLimit;
 		}
+
+		float resultAcc = this->realSpeed - s;
+		this->fuel -= resultAcc * Car::ACCELERATION_FUEL_COST;
+		printf("Fuel %.3f\n", this->fuel);
 	}
 
 }
@@ -179,10 +187,11 @@ void Car::setSpeed(float speed) {
 
 
 bool Car::drive(Character* driver, int destX, int destY, Map& map) {
+	auto driverPos = driver->getPos();
 	// Check previous driver and position
 	if (this->driver ||
-		(int)driver->x != this->x ||
-		(int)driver->y != this->y
+		driverPos.x != this->x ||
+		driverPos.y != this->y
 	) {
 		return false;
 	}
@@ -243,4 +252,14 @@ void Car::finishDriving(Character* driver) {
 	this->driver = nullptr;
 	this->pathIsFinished = false;
 	d->notifyDrive();
+}
+
+float Car::getFuel() const {
+	return this->fuel;
+}
+
+void Car::appendFuel(float fuel) {
+	this->fuel += fuel;
+	if (this->fuel > this->fuelCapacity)
+		this->fuel = this->fuelCapacity;
 }

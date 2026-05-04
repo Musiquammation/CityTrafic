@@ -36,7 +36,8 @@ Building* Building::create_oilField(
 	int owner,
 	float crude,
 	int factor,
-	int size
+	int size,
+	int jobIdx
 ) {
 	auto b = new Building;
 	b->owner = owner;
@@ -46,6 +47,7 @@ Building* Building::create_oilField(
 	b->oilField.factor = expf(-1.0f / (float)factor);
 	b->oilField.left = size*size;
 	b->oilField.size = size;
+	b->oilField.jobIdx = jobIdx;
 	return b;
 }
 

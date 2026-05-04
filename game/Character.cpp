@@ -13,6 +13,7 @@ static DebugLogger printSpec{"Spec", false};
 static DebugLogger printStatus{"Character", true};
 
 #include <stdio.h>
+#include <math.h>
 
 Character::Character():
 	executor(actionNodes::character::init(), this, nullptr)
@@ -121,6 +122,13 @@ CharacterState Character::getState() const {
 	return this->state;
 }
 
+Vector<int> Character::getPos() const {
+	return {
+		(int)floorf(this->x),
+		(int)floorf(this->y),
+	};
+}
+
 Character* Character::createClientCharacter(float x, float y) {
 	auto c = new Character;
 	c->x = x;
@@ -156,26 +164,37 @@ Character* Character::spawnCharacter(const Map& map, int x, int y) {
 	return c;
 }
 
+int Character::evalFullLiterSafetyCost(float completion) {
+	static constexpr int LIMIT = 2'000'000'000;
+	if (completion >= 100.0f)
+		return LIMIT;
+
+	float v = 100.0f/(10.0f - sqrtf(completion));
+	if (v > (float)LIMIT)
+		return LIMIT;
+
+	return (int)v;
+}
+
 
 #include <chrono>
 #include <iostream>
 bool Character::makeWalk(Game& game, int destX, int destY) {
 	auto start = std::chrono::high_resolution_clock::now();
 
-	int x = (int)this->x;
-	int y = (int)this->y;
+	auto pos = this->getPos();
 	
 	char* path;
 	// Character already placed
-	if (x == destX && y == destY) {
+	if (pos.x == destX && pos.y == destY) {
 		path = (char*)malloc(1);
 		path[0] = 8;
 
 	} else {
 		path = makePedestranPath(
 			game.getMap(),
-			x,
-			y,
+			pos.x,
+			pos.y,
 			destX,
 			destY
 		);
@@ -198,7 +217,7 @@ bool Character::makeWalk(Game& game, int destX, int destY) {
 	}
 
 	printSpec("Pedestran path from (%d %d) to (%d %d): ",
-		x, y, destX, destY);
+		pos.x, pos.y, destX, destY);
 
 	for (char* i = path; *i != 8; i++)
 		printSpec("%d ", *i);
@@ -208,7 +227,7 @@ bool Character::makeWalk(Game& game, int destX, int destY) {
 	this->data.walk.path = path;
 	this->data.walk.position = 0;
 	this->data.walk.step = 0;
-	this->data.walk.anchor = {x, y};
+	this->data.walk.anchor = pos;
 	return true;
 }
 
@@ -225,7 +244,8 @@ bool Character::makeDrive(Map& map, int destX, int destY) {
 }
 
 bool Character::makeInside(Game& game) {
-	auto info = game.getBuilding((int)this->x, (int)this->y);
+	auto pos = this->getPos();
+	auto info = game.getBuilding(pos.x, pos.y);
 	if (!info.building)
 		return false;
 
@@ -241,9 +261,10 @@ bool Character::makeInside(Game& game) {
 void Character::makeOutside(Game& game) {
 	// Leave place
 	if (this->state == CharacterState::INSIDE) {
+		auto pos = this->getPos();
 		auto info = game.getMap().getBuilding(
-			(int)this->x,
-			(int)this->y
+			pos.x,
+			pos.y
 		);
 
 		if (!info.building) {
@@ -283,6 +304,24 @@ void Character::notifyDrive() {
 BuildingInfo Character::getHomeBuilding(const Map& map) const {
 	/// TODO: rework getHomeBuilding
 	return map.getBuilding(this->home.x, this->home.y);
+}
+
+BuildingInfo Character::getCurrentBuilding(const Map& map, BuildingType type) const {
+	if (!this->isInside()) {
+		throw std::runtime_error{"Cannot get current building "
+			"while not being inside a building"};
+	}
+
+	auto pos =  this->getPos();
+	auto info = map.getBuilding(pos.x, pos.y);
+	if (!info.building) {
+		throw std::runtime_error{"Cannot find current building"};
+	}
+
+	if (info.building->type != type)
+		throw std::runtime_error{"Anothing type was expected for building"};
+
+	return info;
 }
 
 BuildingInfo Character::getWorkBuilding(Game& game) const {
@@ -382,6 +421,10 @@ void Character::leaveJob() {
 
 Job* Character::getJob() {
 	return this->job;
+}
+
+bool Character::isInside() const {
+	return this->state == CharacterState::INSIDE;
 }
 
 void Character::give(int money) {

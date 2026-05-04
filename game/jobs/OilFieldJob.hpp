@@ -5,6 +5,7 @@
 
 #include <map>
 
+
 class OilFieldJob: public Job {
 	struct WorkerData {
 		float toPay;
@@ -16,14 +17,16 @@ class OilFieldJob: public Job {
 	instant_t startTime = {7,0};
 	instant_t finishTime = {15,0};
 	Vector<int> location;
-	float salaryPerUnit;
+	float salaryPerLiter;
+	float pricePerLiter;
 	std::map<Character*, WorkerData> workers;
 	
 
 public:
 	OilFieldJob(
 		Vector<int> location,
-		float salaryPerUnit
+		float salaryPerLiter,
+		float pricePerLiter
 	);
 
 	~OilFieldJob();
@@ -75,5 +78,7 @@ public:
 	uint32_t* getPanelData() override;
 	void setPanelData(const uint32_t* data) override;
 
+	float getPricePerLiter(const Game& game) const;
+	float buy(Game& game, int money);
 
 };

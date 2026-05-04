@@ -9,10 +9,12 @@
 
 OilFieldJob::OilFieldJob(
 	Vector<int> location,
-	float salaryPerUnit
+	float salaryPerLiter,
+	float pricePerLiter
 ):
 	location(location),
-	salaryPerUnit(salaryPerUnit)
+	salaryPerLiter(salaryPerLiter),
+	pricePerLiter(pricePerLiter)
 {}
 
 OilFieldJob::~OilFieldJob() {
@@ -92,7 +94,7 @@ void OilFieldJob::work(
 	auto it = this->workers.find((Character*)worker);
 
 	if (it != this->workers.end()) {
-		it->second.toPay += d * this->salaryPerUnit;
+		it->second.toPay += d * this->salaryPerLiter;
 	}
 
 
@@ -173,4 +175,46 @@ uint32_t* OilFieldJob::getPanelData() {
 
 void OilFieldJob::setPanelData(const uint32_t* data) {
 
+}
+
+
+
+float OilFieldJob::getPricePerLiter(const Game& game) const {
+	auto building = game.getBuilding(
+		this->location.x, this->location.y).building;
+
+	if (!building) {
+		throw std::runtime_error{"Missing work building"};
+	}
+
+	if (building->type != BuildingType::OIL_FIELD)
+		throw std::runtime_error{"A OIL_FIELD building was expected"};
+
+	if (building->oilField.refined >= 1.0f)
+		return this->pricePerLiter;
+
+	return 1e20f; // A lot : cannot be bought
+}
+
+float OilFieldJob::buy(Game& game, int money) {
+	float liters = (float)money / this->pricePerLiter;
+
+	auto building = game.getBuilding(
+		this->location.x, this->location.y).building;
+
+	if (!building) {
+		throw std::runtime_error{"Missing work building"};
+	}
+
+	if (building->type != BuildingType::OIL_FIELD)
+		throw std::runtime_error{"A OIL_FIELD building was expected"};
+
+	// Enough refined oil to buy
+	if (liters >= building->oilField.refined) {
+		building->oilField.refined -= liters;
+		this->give(money);
+		return liters;
+	}
+
+	return 0;
 }
