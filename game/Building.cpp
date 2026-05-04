@@ -1,6 +1,8 @@
 #include "Building.hpp"
 
 #include "PanelId.hpp"
+#include "Game.hpp"
+#include "jobs/OilFieldJob.hpp"
 
 #include "DebugLogger.hpp"
 DebugLogger print{"Building"};
@@ -22,7 +24,7 @@ Building* Building::create_home(
 	auto b = new Building;
 	b->owner = owner;
 	b->type = BuildingType::HOME;
-	b->home.left = capacity;
+	b->home.leftEmployees = capacity;
 	b->home.capacity = capacity;
 	b->home.rent = rent;
 	b->home.characters = new Character*[capacity];
@@ -45,7 +47,7 @@ Building* Building::create_oilField(
 	b->oilField.crude = crude;
 	b->oilField.refined = 0;
 	b->oilField.factor = expf(-1.0f / (float)factor);
-	b->oilField.left = size*size;
+	b->oilField.leftEmployees = size*size;
 	b->oilField.size = size;
 	b->oilField.jobIdx = jobIdx;
 	return b;
@@ -115,7 +117,7 @@ int Building::enter(Character* c) {
 		for (int i = 0; i < this->home.capacity; i++) {
 			if (this->home.characters[i] == nullptr) {
 				this->home.characters[i] = c;
-				this->home.left--;
+				this->home.leftEmployees--;
 				return i;
 			}
 		}
@@ -124,8 +126,8 @@ int Building::enter(Character* c) {
 
 	case BuildingType::OIL_FIELD:
 	{
-		if (this->oilField.left > 0) {
-			this->oilField.left--;
+		if (this->oilField.leftEmployees > 0) {
+			this->oilField.leftEmployees--;
 			return 0;
 		}
 		return -1;
@@ -142,7 +144,7 @@ void Building::leave(int position) {
 	case BuildingType::HOME:
 	{
 		if (this->home.characters[position]) {
-			this->home.left++;
+			this->home.leftEmployees++;
 		}
 		this->home.characters[position] = nullptr;
 		break;
@@ -150,7 +152,7 @@ void Building::leave(int position) {
 
 	case BuildingType::OIL_FIELD:
 	{
-		this->oilField.left++;
+		this->oilField.leftEmployees++;
 		break;
 	}
 	}
@@ -160,10 +162,10 @@ void Building::leave(int position) {
 bool Building::isFull() const {
 	switch (this->type) {
 	case BuildingType::HOME:
-		return this->home.left == 0;
+		return this->home.leftEmployees == 0;
 
 	case BuildingType::OIL_FIELD:
-		return this->home.left == 0;
+		return this->home.leftEmployees == 0;
 
 	}
 
@@ -173,12 +175,15 @@ bool Building::isFull() const {
 
 
 
-uint32_t* Building::getPanelData() {
+uint32_t* Building::getPanelData(const Game& game) {
+	#define flt(x) ((*(uint32_t*)&x))
+
 	switch (this->type) {
 	case BuildingType::HOME:
 	{
-		auto result = (uint32_t*)malloc(sizeof(uint32_t)*4);
-		result[0] = 2; // length (as uint32_t)
+		static constexpr int COUNT = 2;
+		auto result = (uint32_t*)malloc(sizeof(uint32_t)*(COUNT+2));
+		result[0] = COUNT; // length (as uint32_t)
 		result[1] = (uint32_t)PanelId::BUILDING_HOME;
 		result[2] = this->home.rent;
 		result[3] = this->home.capacity;
@@ -187,20 +192,33 @@ uint32_t* Building::getPanelData() {
 
 	case BuildingType::OIL_FIELD:
 	{
-		auto result = (uint32_t*)malloc(sizeof(uint32_t)*4);
-		result[0] = 2; // length (as uint32_t)
+		static constexpr int COUNT = 8;
+		auto _job = game.getJob(this->oilField.jobIdx);
+		auto& job = dynamic_cast<OilFieldJob&>(*_job);
+		auto result = (uint32_t*)malloc(sizeof(uint32_t)*(COUNT+2));
+		result[0] = COUNT; // length (as uint32_t)
 		result[1] = (uint32_t)PanelId::BUILDING_OIL_FIELD;
-		result[2] = *(uint32_t*)&this->oilField.crude;
-		result[3] = *(uint32_t*)&this->oilField.left;
+		result[2] = flt(this->oilField.crude);
+		result[3] = flt(this->oilField.refined);
+		result[4] = job.startTime.hour;
+		result[5] = job.finishTime.hour;
+		result[6] = flt(job.salaryPerLiter);
+		result[7] = flt(job.pricePerLiter);
+		result[8] = job.employeesCounters.raffiners.current;
+		result[9] = job.employeesCounters.raffiners.goal;
 		return result;
 	}
 
 	}
 
+
+	#undef flt
 	return nullptr;
 }
 
-void Building::setPanelData(const uint32_t* data) {
+void Building::setPanelData(const uint32_t* data, Game& game) {
+	#define flt(x) ((*(uint32_t*)&x))
+
 	switch (this->type) {
 	case BuildingType::HOME:
 		this->home.rent = data[0];
@@ -208,9 +226,22 @@ void Building::setPanelData(const uint32_t* data) {
 		break;
 
 	case BuildingType::OIL_FIELD:
-		// Edit nothing
+	{
+		auto _job = game.getJob(this->oilField.jobIdx);
+		auto& job = dynamic_cast<OilFieldJob&>(*_job);
+
+		job.startTime.hour = (short)(data[4]%24);
+		job.finishTime.hour = (short)(data[5]%24);
+		flt(job.salaryPerLiter) = data[6];
+		flt(job.pricePerLiter) = data[7];
+		job.employeesCounters.raffiners.current = data[8];
+		job.employeesCounters.raffiners.goal = data[9];
 		break;
 	}
+	}
+
+
+	#undef flt
 }
 
 

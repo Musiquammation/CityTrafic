@@ -90,10 +90,11 @@ async function net_getUpdate(reader: DataReader) {
 
 	const money = reader.readInt32();
 	const jobSize = reader.readInt32();
+	let jobs: Job[]|null;
 	if (jobSize) {
 		const offset = reader.getOffset();
 		const jobLength = Math.floor(jobSize/3);
-		const jobs = new Array<Job>(jobLength);
+		jobs = new Array<Job>(jobLength);
 		for (let i = 0; i < jobLength; i++) {
 			const type = reader.readUint32();
 			const x = reader.readInt32();
@@ -103,6 +104,8 @@ async function net_getUpdate(reader: DataReader) {
 		
 		console.log(jobs);
 		reader.setOffset(offset + jobSize*4);
+	} else {
+		jobs = null;
 	}
 	const calendar = reader.readUint64();
 
@@ -142,6 +145,9 @@ async function net_getUpdate(reader: DataReader) {
 	state.setMoney(money);
 	state.cars = cars;
 	state.characters = characters;
+	if (jobs) {
+		state.setJobs(jobs);
+	}
 
 	const now = Date.now();
 	const delta = now - lastEntityAsk;

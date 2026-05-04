@@ -19,6 +19,7 @@ import { HandPanel } from "./HandPanel";
 import { ImageLoader } from "../handler/ImageLoader";
 import { loadAssets } from "./loadAssets";
 import { evalCalendar } from "./evalCalendar";
+import { Job } from "./Job";
 
 function modulo(a: number, n: number) {
 	return (a % n + n) % n;
@@ -48,6 +49,7 @@ export class PlayState extends GameState {
 	}[] = [];
 	
 	readonly handPanel: HandPanel;
+	private jobs: Job[] = [];
 	cars: Car[] = [];
 	characters: Character[] = [];
 
@@ -307,5 +309,9 @@ export class PlayState extends GameState {
 		const writer = new DataWriter();
 		writer.writeUint8(SERVER_IDS.UPDATE);
 		sendSocket(writer.toArrayBuffer());
+	}
+
+	setJobs(jobs: Job[]) {
+		this.jobs = jobs;
 	}
 }

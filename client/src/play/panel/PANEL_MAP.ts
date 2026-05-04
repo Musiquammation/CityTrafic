@@ -17,7 +17,13 @@ PANEL_MAP.set(PANEL_IDS.BUILDING_OIL_FIELD, {
     title: "Oil field",
     fields: [
         new NamedUnit("Crude", units.f32),
-        new NamedUnit("Left", units.f32)
+        new NamedUnit("Refined", units.f32),
+        new NamedUnit("Entry hour", units.i32),
+        new NamedUnit("Leave hour", units.i32),
+        new NamedUnit("Salary (per liter)", units.f32),
+        new NamedUnit("Sold prince (per liter)", units.f32),
+        new NamedUnit("Current employees", units.i32),
+        new NamedUnit("Goal employees", units.i32),
     ]
 });
 

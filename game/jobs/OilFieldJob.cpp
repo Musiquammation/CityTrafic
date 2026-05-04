@@ -99,6 +99,7 @@ void OilFieldJob::work(
 	}
 
 
+	building->oilField.refined += d;
 	building->oilField.crude = n;
 }
 

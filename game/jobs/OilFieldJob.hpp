@@ -16,11 +16,7 @@ class OilFieldJob: public Job {
 	};
 
 	
-	instant_t startTime = {7,0};
-	instant_t finishTime = {15,0};
 	Vector<int> location;
-	float salaryPerLiter;
-	float pricePerLiter;
 	std::map<Character*, WorkerData> workers;
 	
 
@@ -37,6 +33,14 @@ public:
 	struct {
 		EmployeesCounter raffiners;
 	} employeesCounters;
+
+	instant_t startTime = {7,0};
+	instant_t finishTime = {15,0};
+
+	float salaryPerLiter;
+	float pricePerLiter;
+
+
 
 	calendar_t getNextEnterHour(
 		worker_t worker,

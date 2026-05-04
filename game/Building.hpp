@@ -14,7 +14,7 @@ struct Building {
 	union {
 		struct {
 			Character** characters;
-			int left;
+			int leftEmployees;
 			int capacity;
 			int rent;
 		} home;
@@ -23,7 +23,7 @@ struct Building {
 			float crude;
 			float refined;
 			float factor;
-			int left;
+			int leftEmployees;
 			int size;
 			int jobIdx;
 		} oilField;
@@ -55,8 +55,8 @@ struct Building {
 	int fillEntryList(Vector<int> list[]) const;
 	int fillLeaveList(Vector<int> list[]) const;
 
-	uint32_t* getPanelData();
-	void setPanelData(const uint32_t* data);
+	uint32_t* getPanelData(const Game& game);
+	void setPanelData(const uint32_t* data, Game& game);
 
 	~Building();
 };

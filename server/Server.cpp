@@ -359,7 +359,7 @@ uint8_t* Server::getPanel(Client* client, const uint8_t* ptr) {
 
 		switch (v.type) {
 		case PanelVariantType::BUILDING:
-			v.building->setPanelData((uint32_t*)ptr);
+			v.building->setPanelData((uint32_t*)ptr, *game);
 			break;
 
 		case PanelVariantType::JOB:
@@ -379,7 +379,7 @@ uint8_t* Server::getPanel(Client* client, const uint8_t* ptr) {
 	uint32_t* data;
 	switch (v.type) {
 	case PanelVariantType::BUILDING:
-		data = v.building->getPanelData();
+		data = v.building->getPanelData(*game);
 		break;
 
 	case PanelVariantType::JOB:
