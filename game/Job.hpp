@@ -65,6 +65,7 @@ public:
 	virtual void forAllWorkers(std::function<void(Character*)>) = 0;
 
 
+	virtual void getJobOffers(std::vector<JobOffer>& offers) const;
 
 
 	virtual uint32_t* getPanelData() = 0;

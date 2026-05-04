@@ -166,6 +166,11 @@ void OilFieldJob::forAllWorkers(
 	}
 }
 
+void OilFieldJob::getJobOffers(std::vector<JobOffer>& offers) const {
+	/// TODO: get job offers
+}
+
+
 
 
 uint32_t* OilFieldJob::getPanelData() {

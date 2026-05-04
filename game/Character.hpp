@@ -28,8 +28,9 @@ class Character {
 	CharacterState state;
 	int money = 0;
 	int waitingJoyMoney = 0;
-	calendar_t nextRentPayMonth = 0;
+	int salaryEstimation = 0;
 	unsigned int pointId;
+	calendar_t nextRentPayMonth = 0;
 
 
 	static constexpr float SPEED = .04f;

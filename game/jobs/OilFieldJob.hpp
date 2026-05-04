@@ -74,6 +74,7 @@ public:
 		std::function<void(Character*)>
 	) override;
 
+	void getJobOffers(std::vector<JobOffer>& offers) const override;
 
 	uint32_t* getPanelData() override;
 	void setPanelData(const uint32_t* data) override;

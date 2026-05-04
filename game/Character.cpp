@@ -413,6 +413,7 @@ bool Character::takeJob(Job* job, const Calendar& calendar) {
 void Character::leaveJob() {
 	this->job->fire(this);
 	this->job = nullptr;
+	this->salaryEstimation = 0;
 }
 
 Job* Character::getJob() {

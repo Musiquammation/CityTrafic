@@ -102,6 +102,10 @@ struct CharacterFriend {
 			}
 
 			int salary = job->getSalary(c, calendar);
+			if (salary>0) {
+				c->salaryEstimation = salary;
+			}
+			
 			int earned = job->pay(salary);
 			printStatus("earn %d | %d\n", earned, salary);
 			c->money += earned;
