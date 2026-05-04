@@ -14,8 +14,10 @@
 
 #include "../DebugLogger.hpp"
 
-static DebugLogger printStatus{"Status", false};
-static DebugLogger print{"Action", false};
+static DebugLogger printStatus{"Status", true};
+static DebugLogger print{"Action", true};
+static DebugLogger printWalk{"Walk", false};
+static DebugLogger printDrive{"Drive", false};
 
 
 #include <cmath>
@@ -119,7 +121,7 @@ struct CharacterFriend {
 	}
 
 	def(drive) {
-		printStatus("drive\n");
+		printDrive("\n");
 		setCharacter();
 		if (c->data.drive.state == ActionCode::PENDING) {
 			return ActionCode::PENDING;
@@ -130,7 +132,7 @@ struct CharacterFriend {
 	}
 
 	def(walk) {
-		printStatus("walk\n");
+		printWalk("\n");
 		setCharacter();
 
 		return c->walk(game);
@@ -304,14 +306,20 @@ struct CharacterFriend {
 	def(isAtHome) {
 		setCharacter();
 		printStatus("isAtHome\n");
-		printStatus("Money %d\n", c->money);
+		printStatus("  money %d\n", c->money);
 
 		if (!c->isInside())
 			return ActionCode::FAILURE;
 
 		auto p = c->getPos();
 		auto info = game.getBuilding(p.x, p.y);
-		return ActionCode_get(info.x == c->home.x && info.y == c->home.y);
+		if (info.x == c->home.x && info.y == c->home.y) {
+			printStatus("  success\n");
+			return ActionCode::SUCCESS;
+		}
+
+		printStatus("  failure\n");
+		return ActionCode::FAILURE;	
 	}
 
 	def(locateFuelStation) {
@@ -344,6 +352,7 @@ struct CharacterFriend {
 
 	def(fillCarFuel) {
 		setCharacter();
+		printStatus("fillCarFuel\n");
 
 		if (!c->isInside() || !c->car)
 			return ActionCode::FAILURE;
@@ -356,12 +365,20 @@ struct CharacterFriend {
 		OilFieldJob& job = dynamic_cast<OilFieldJob&>(*_job);
 		float price = job.getPricePerLiter(game);
 		float completion = c->car->getFuel();
-		int cost = Character::evalFullLiterSafetyCost(completion);
-		if (int((float)cost * price) > c->money) {
+		float cost = Character::evalFullLiterSafetyCost(completion);
+		if ((cost * price) > (float)c->money) {
 			return ActionCode::SUCCESS;
 		}
 
 		float fuel = job.buy(game, 1);
+		printStatus(
+			"  price=%f money=%d completion=%f cost=%f fuel=%f\n",
+			price,
+			c->money,
+			completion,
+			cost,
+			fuel
+		);
 		if (fuel <= 0) {
 			if (completion < 5.0f)
 				return ActionCode::FAILURE;
@@ -369,9 +386,9 @@ struct CharacterFriend {
 			return ActionCode::SUCCESS;
 		}
 		
-		c->car->appendFuel(fuel);
+		bool r = c->car->appendFuel(fuel);
 		c->money--;
-		return ActionCode::PENDING;
+		return r ? ActionCode::SUCCESS : ActionCode::PENDING;
 	}
 
 	def(checkFuel) {

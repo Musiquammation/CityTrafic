@@ -164,16 +164,12 @@ Character* Character::spawnCharacter(const Map& map, int x, int y) {
 	return c;
 }
 
-int Character::evalFullLiterSafetyCost(float completion) {
-	static constexpr int LIMIT = 2'000'000'000;
+float Character::evalFullLiterSafetyCost(float completion) {
 	if (completion >= 100.0f)
-		return LIMIT;
+		return 0.0f;
 
 	float v = 100.0f/(10.0f - sqrtf(completion));
-	if (v > (float)LIMIT)
-		return LIMIT;
-
-	return (int)v;
+	return v;
 }
 
 

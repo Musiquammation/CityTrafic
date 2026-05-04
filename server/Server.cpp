@@ -415,8 +415,11 @@ uint8_t* Server::onerror(Client* client, const uint8_t* ptr) {
 }
 
 void Server::disconnect(Client* client) {
-	auto game = client->match->getGame<true>();
-	game->map.removeEditedCellsLayer(client->cellsLayerId);
+	auto match = client->match;
+	if (match) {
+		auto game = client->match->getGame<true>();
+		game->map.removeEditedCellsLayer(client->cellsLayerId);
+	}
 }
 
 

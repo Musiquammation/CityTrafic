@@ -73,7 +73,7 @@ public:
 
 	static Character* createClientCharacter(float x, float y);
 	static Character* spawnCharacter(const Map& map, int x, int y);
-	static int evalFullLiterSafetyCost(float completion);
+	static float evalFullLiterSafetyCost(float completion);
 
 	bool makeWalk(Game& game, int destX, int destY);
 	bool makeDrive(Map& map, int destX, int destY);

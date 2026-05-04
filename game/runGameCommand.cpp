@@ -82,7 +82,7 @@ static const void* test(
 	auto shop = Building::create_oilField(playerId, 1000.0f, 50000, 4, jobIdx);
 	game.map.addBuilding(1, 5, shop, game);
 
-
+	shop->oilField.refined += 100;
 
 	auto character = Character::spawnCharacter(game.getMap(), 10, 11);
 	if (character) {

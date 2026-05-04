@@ -39,8 +39,8 @@ public:
 	static constexpr int PARKING_RADIUS = 16;
 	static constexpr float WIDTH = .9f;
 	static constexpr float HEIGHT = .6f;
-	static constexpr float ACCELERATION_FUEL_COST = 30.0f;
-	// static constexpr float ACCELERATION_FUEL_COST = .3f;
+	// static constexpr float ACCELERATION_FUEL_COST = 30.0f;
+	static constexpr float ACCELERATION_FUEL_COST = .3f;
 
 	int x;
 	int y;
@@ -70,5 +70,5 @@ public:
 	void finishDriving(Character* driver);
 
 	float getFuel() const;
-	void appendFuel(float added);
+	bool appendFuel(float added);
 };

@@ -19,7 +19,7 @@ struct Client {
 	int cellsLayerId = -1;
 	int playerId = -1;
 	uint64_t updateJobsDate = 0;
-	Match* match;
+	Match* match = nullptr;
 
 	std::set<uint64_t> visitedRegions;
 	uWS::WebSocket<false, true, Client>* ws = nullptr;

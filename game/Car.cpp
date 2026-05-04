@@ -258,8 +258,12 @@ float Car::getFuel() const {
 	return this->fuel;
 }
 
-void Car::appendFuel(float fuel) {
+bool Car::appendFuel(float fuel) {
 	this->fuel += fuel;
-	if (this->fuel > this->fuelCapacity)
+	if (this->fuel > this->fuelCapacity) {
 		this->fuel = this->fuelCapacity;
+		return true;
+	}
+
+	return false;
 }

@@ -210,7 +210,7 @@ float OilFieldJob::buy(Game& game, int money) {
 		throw std::runtime_error{"A OIL_FIELD building was expected"};
 
 	// Enough refined oil to buy
-	if (liters >= building->oilField.refined) {
+	if (building->oilField.refined >= liters) {
 		building->oilField.refined -= liters;
 		this->give(money);
 		return liters;
