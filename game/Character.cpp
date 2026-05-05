@@ -10,7 +10,7 @@
 
 #include "DebugLogger.hpp"
 static DebugLogger printSpec{"Spec", false};
-static DebugLogger printStatus{"Character", true};
+static DebugLogger print{"Character", true};
 
 #include <stdio.h>
 #include <math.h>
@@ -45,9 +45,6 @@ void Character::cleanupState() {
 		this->x = (float)this->car->x + .5f;
 		this->y = (float)this->car->y + .5f;
 		this->car->finishDriving(this);
-		break;
-
-	case CharacterState::GROCERY:
 		break;
 	}
 }
@@ -366,7 +363,15 @@ bool Character::locateBuilding(Map& map, BuildingInfo info) {
 void Character::frame(Game& game) {
 	if (this->state == CharacterState::CLIENT)
 		return;
-		
+	
+	print("seeds %5.4f\n", this->seeds);
+
+	// Consume food
+	this->seeds -= 0.0003f;
+	if (this->seeds < 0) {
+		printWarn("Needs are negative (%f\n)", this->seeds);
+	}
+
 	if (this->executor.run(game, this)) {
 		this->executor.restart();
 	}

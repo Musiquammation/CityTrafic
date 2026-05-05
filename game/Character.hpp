@@ -17,11 +17,14 @@ enum class CharacterState {
 	WALK,
 	INSIDE,
 	OUTSIDE,
-	DRIVE,
-	GROCERY
+	DRIVE
 };
 
 class Character {
+	static constexpr float SPEED = .04f;
+	static constexpr float MAX_SEEDS = 50;
+	static constexpr float CHECK_SEEDS = 10;
+
 	Car* car = nullptr;
 	ActionExecutor executor;
 	Job* job = nullptr;
@@ -32,9 +35,8 @@ class Character {
 	int salaryEstimation = 0;
 	unsigned int pointId;
 	calendar_t nextRentPayMonth = 0;
+	float seeds = MAX_SEEDS;
 
-
-	static constexpr float SPEED = .04f;
 
 	Character();
 
@@ -52,6 +54,10 @@ class Character {
 
 		struct {
 			int index;
+
+			struct {
+				int delay;
+			} grocery;
 		} inside;
 
 		struct {
@@ -62,9 +68,6 @@ class Character {
 			ActionCode state;
 		} drive;
 
-		struct {
-			int delay;
-		} grocery;
 	} data;
 
 	void cleanupState();

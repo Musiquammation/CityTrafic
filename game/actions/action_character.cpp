@@ -12,6 +12,7 @@
 #include "../Character.hpp"
 
 #include "../jobs/OilFieldJob.hpp"
+#include "../jobs/CashierJob.hpp"
 
 #include "../DebugLogger.hpp"
 
@@ -35,6 +36,8 @@ static inline float frac(float x) {
 			fst(enshureWork)\
 		all(outWorkActivities)\
 			fst(enshureLargeCarFuel)\
+			fst(enshureFood)\
+				all(enshureFood_sub)\
 			fst(restAtHome)\
 	fst(enshureCarFuel)\
 	all(collectFuel)\
@@ -63,6 +66,11 @@ static inline float frac(float x) {
 	run(checkFuel)\
 	run(hasWork)\
 	run(searchWork)\
+	run(checkFood)\
+	run(locateGrocery)\
+	run(orientGrocery)\
+	run(buySeeds)\
+	run(waitSeedsConsumption)\
 			
 		
 
@@ -77,6 +85,31 @@ declList();
 #define setCharacter() Character* c = (Character*)_data;
 
 struct CharacterFriend {
+	static ActionCode locate(Game& game, Character* character, BuildingType type) {
+		auto p = character->getPos();
+		auto& map = game.getMap();
+		auto info = map.searchBuilding(
+			p.x, p.y, type);
+
+		if (!info.building)
+			return ActionCode::FAILURE;
+
+		return ActionCode_get(character->locateBuilding(map, info));
+	}
+
+	static ActionCode orient(Game& game, Character* character, BuildingType type) {
+		auto p = character->getPos();
+		auto info = game.getMap().searchBuilding(
+			p.x, p.y, BuildingType::OIL_FIELD);
+
+		if (!info.building)
+			return ActionCode::FAILURE;
+
+		return ActionCode_get(character->orientBuilding(game, info));
+
+	}
+
+
 	def(mustWork) {
 		printStatus("mustWork\n");
 		setCharacter();
@@ -338,29 +371,13 @@ struct CharacterFriend {
 	def(locateFuelStation) {
 		setCharacter();
 		printStatus("locateFuelStation\n");
-
-		auto p = c->getPos();
-		auto& map = game.getMap();
-		auto info = map.searchBuilding(
-			p.x, p.y, BuildingType::OIL_FIELD);
-
-		if (!info.building)
-			return ActionCode::FAILURE;
-
-		return ActionCode_get(c->locateBuilding(map, info));
+		return locate(game, c, BuildingType::OIL_FIELD);
 	}
+
 	def(orientFuelStation) {
 		setCharacter();
 		printStatus("orientFuelStation\n");
-
-		auto p = c->getPos();
-		auto info = game.getMap().searchBuilding(
-			p.x, p.y, BuildingType::OIL_FIELD);
-
-		if (!info.building)
-			return ActionCode::FAILURE;
-
-		return ActionCode_get(c->orientBuilding(game, info));
+		return orient(game, c, BuildingType::OIL_FIELD);
 	}
 
 	def(fillCarFuel) {
@@ -441,6 +458,76 @@ struct CharacterFriend {
 	}
 
 
+	def(checkFood) {
+		setCharacter();
+		printStatus("checkFood\n");
+		printStatus("  seeds=%.f\n", c->seeds);
+
+		return ActionCode_get(c->seeds > Character::CHECK_SEEDS);
+	}
+
+	def(locateGrocery) {
+		setCharacter();
+		printStatus("locateGrocery\n");
+		return locate(game, c, BuildingType::GROCERY);
+	}
+
+	def(orientGrocery) {
+		setCharacter();
+		printStatus("orientGrocery\n");
+		return orient(game, c, BuildingType::GROCERY);
+	}
+
+	def(buySeeds) {
+		setCharacter();
+		printStatus("buySeeds\n");
+
+		auto p = character->getPos();
+		auto& map = game.getMap();
+		auto info = map.searchBuilding(
+			p.x, p.y, BuildingType::GROCERY);
+
+		if (!info.building)
+			return ActionCode::FAILURE;
+
+		
+		auto& job = dynamic_cast<CashierJob&>(*game.getJob(
+			info.building->grocery.jobIdx));
+
+		float diff = (float)Character::MAX_SEEDS - c->seeds;
+		float maxAffordableSeeds = floorf((float)c->money / job.seedPrice);
+
+		float seedsBought;
+
+		if (maxAffordableSeeds >= diff) {
+			seedsBought = diff;
+		} else {
+			seedsBought = maxAffordableSeeds;
+		}
+
+		c->seeds += seedsBought;
+		c->money -= (int)ceilf(seedsBought * job.seedPrice);
+
+
+		static constexpr float DELAY_PER_SEED = 1.1f;
+		c->data.inside.grocery.delay = (int)ceilf(seedsBought * DELAY_PER_SEED);
+		return ActionCode::SUCCESS;
+	}
+
+	def(waitSeedsConsumption) {
+		setCharacter();
+		printStatus("waitSeedsConsumption\n");
+
+		c->data.inside.grocery.delay--;
+		if (c->data.inside.grocery.delay <= 0)
+			return ActionCode::SUCCESS;
+
+		return ActionCode::PENDING;
+	}
+
+
+
+
 
 	
 	
@@ -454,7 +541,27 @@ graph(result,
 
 graph(outWorkActivities,
 	&enshureLargeCarFuel,
+	&enshureFood,
 	&restAtHome
+);
+
+graph(enshureFood,
+	&checkFood,
+	&enshureFood_sub
+);
+
+graph(enshureFood_sub,
+	&leave,
+	&walkToCar,
+	&locateGrocery,
+	&drive,
+	&leave,
+	&orientGrocery,
+	&walk,
+	&enter,
+	&buySeeds,
+	&waitSeedsConsumption,
+	&leave
 );
 
 graph(enshureWork,
@@ -514,8 +621,8 @@ graph(restAtHome,
 );
 
 graph(goHome,
-	&checkHomeOwnership,
 	&enshureCarFuel,
+	&checkHomeOwnership,
 	&walkToCar,
 	&locateHome,
 	&drive,

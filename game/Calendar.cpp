@@ -2,8 +2,8 @@
 
 #include <stdio.h>
 
-// constexpr float DAYS_PER_HOUR = 365.0f/(24*7);
-constexpr float DAYS_PER_HOUR = 365.0f/4;
+constexpr float DAYS_PER_HOUR = 365.0f/(24*7);
+// constexpr float DAYS_PER_HOUR = 365.0f/4;
 
 // Number of days per month (-1 = February, handled separately)
 const int Calendar::MONTH_DAYS[12] = {

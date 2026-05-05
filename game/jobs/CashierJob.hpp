@@ -37,6 +37,7 @@ public:
 	} employeesCounters;
 
 	float salaryPerHour = 0.0f;
+	float seedPrice = 0.5f;
 
 	instant_t startTime = {11,0};
 	instant_t finishTime = {18,0};
