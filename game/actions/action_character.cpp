@@ -16,7 +16,7 @@
 
 #include "../DebugLogger.hpp"
 
-static DebugLogger printStatus{"Status", true};
+static DebugLogger printStatus{"Status", false};
 static DebugLogger print{"Action", true};
 static DebugLogger printWalk{"Walk", false};
 static DebugLogger printDrive{"Drive", false};
@@ -113,12 +113,13 @@ struct CharacterFriend {
 	def(mustWork) {
 		printStatus("mustWork\n");
 		setCharacter();
-		Job* job = c->getJob();
-		if (!job) {
+		auto info = game.getBuilding(c->jobLoc.x, c->jobLoc.y);
+		if (!info.building) {
 			// No job so no need to work
 			return ActionCode::FAILURE;
 		}
-
+		
+		Job* job = info.building->getJob();
 		auto& calendar = game.getCalendar();
 		auto hour = job->getNextEnterHour(c, calendar);
 
@@ -194,10 +195,9 @@ struct CharacterFriend {
 	def(orientWork) {
 		printStatus("orientWork\n");
 		setCharacter();
-		if (!c->getJob())
-			return ActionCode::FAILURE; // no job
-			
+		
 		auto info = c->getWorkBuilding(game);
+		if (!info.building) {return ActionCode::FAILURE;}
 		bool r = c->orientBuilding(game, info);
 		return ActionCode_get(r);
 	}
@@ -214,10 +214,9 @@ struct CharacterFriend {
 	def(locateWork) {
 		printStatus("locateWork\n");
 		setCharacter();
-		if (!c->getJob())
-			return ActionCode::FAILURE; // no job
 
 		auto info = c->getWorkBuilding(game);
+		if (!info.building) {return ActionCode::FAILURE;}
 		bool r = c->locateBuilding(game.getMap(), info);
 		return ActionCode_get(r);
 	}
@@ -251,41 +250,45 @@ struct CharacterFriend {
 	def(enterWork) {
 		printStatus("enterWork\n");
 		setCharacter();
-		if (!c->job)
+		auto info = game.getBuilding(c->jobLoc.x, c->jobLoc.y);
+		if (!info.building)
 			return ActionCode::FAILURE;
 
-		c->job->onEnter(c, game.getCalendar());
+		Job* job = info.building->getJob();
+		job->onEnter(c, info.building, game.getCalendar());
 		return ActionCode::SUCCESS;
 	}
 
 	def(leaveWork) {
 		printStatus("leaveWork\n");
 		setCharacter();
-		Job* job = c->getJob();
-
-		if (!job)
+		auto info = game.getBuilding(c->jobLoc.x, c->jobLoc.y);
+		
+		if (!info.building)
 			return ActionCode::FAILURE;
-
-		job->onLeave(c, game.getCalendar());
+		
+		Job* job = info.building->getJob();
+		job->onLeave(c, nullptr, game.getCalendar());
 		return ActionCode::SUCCESS;
 	}
 
 	def(passWork) {
 		printStatus("passWork\n");
 		setCharacter();
-		Job* job = c->getJob();
-		if (!job) {
+		auto info = game.getBuilding(c->jobLoc.x, c->jobLoc.y);
+		if (!info.building) {
 			// No job so no need to work
 			return ActionCode::FAILURE;
 		}
-
+		
+		Job* job = info.building->getJob();
 		auto& calendar = game.getCalendar();
 		auto hour = job->getNextLeaveHour(c, calendar);
 
 		if (calendar.indicator > hour) 
 			return ActionCode::SUCCESS;
 
-		job->work(c, game);
+		job->work(c, Vector<int>{0, 0}, info.building, game);
 		return ActionCode::PENDING;
 	}
 
@@ -391,16 +394,15 @@ struct CharacterFriend {
 			game.getMap(), BuildingType::OIL_FIELD).building;
 		
 
-		Job* _job = game.getJob(building->oilField.jobIdx);
-		OilFieldJob& job = dynamic_cast<OilFieldJob&>(*_job);
-		float price = job.getPricePerLiter(game);
+		auto job = building->oilField.job;
+		float price = job->getPricePerLiter(building);
 		float completion = c->car->getFuel();
 		float cost = Character::evalFullLiterSafetyCost(completion);
 		if ((cost * price) > (float)c->money) {
 			return ActionCode::SUCCESS;
 		}
 
-		float fuel = job.buy(game, 1);
+		float fuel = job->buy(building, 1);
 		printStatus(
 			"  price=%f money=%d completion=%f cost=%f fuel=%f\n",
 			price,
@@ -439,7 +441,7 @@ struct CharacterFriend {
 		setCharacter();
 		printStatus("hasWork\n");
 
-		return ActionCode_get(c->job);
+		return ActionCode_get(c->jobLoc.x != INT32_MIN);
 	}
 
 	def(searchWork) {
@@ -447,21 +449,24 @@ struct CharacterFriend {
 		printStatus("searchWork\n");
 
 		JobOffer offer;
-		Job* job = game.searchJob(c, offer);
+		auto loc = game.searchJob(c, offer);
 		
-		printStatus("  got %p %d\n", job, (int)offer.type);
-		if (!job)
+		if (loc.x == INT32_MIN)
 			return ActionCode::FAILURE;
+		printStatus("  got job\n");
 
-		return ActionCode_get(c->takeJob(job,
-			offer, game.getCalendar()));
+		return ActionCode_get(c->takeJob(
+			loc,
+			offer,
+			game
+		));
 	}
 
 
 	def(checkFood) {
 		setCharacter();
 		printStatus("checkFood\n");
-		printStatus("  seeds=%.f\n", c->seeds);
+		printStatus("  seeds=%.3f\n", c->seeds);
 
 		return ActionCode_get(c->seeds > Character::CHECK_SEEDS);
 	}
@@ -491,11 +496,10 @@ struct CharacterFriend {
 			return ActionCode::FAILURE;
 
 		
-		auto& job = dynamic_cast<CashierJob&>(*game.getJob(
-			info.building->grocery.jobIdx));
+		auto job = info.building->grocery.job;
 
 		float diff = (float)Character::MAX_SEEDS - c->seeds;
-		float maxAffordableSeeds = floorf((float)c->money / job.seedPrice);
+		float maxAffordableSeeds = floorf((float)c->money / job->seedPrice);
 
 		float seedsBought;
 
@@ -506,7 +510,7 @@ struct CharacterFriend {
 		}
 
 		c->seeds += seedsBought;
-		c->money -= (int)ceilf(seedsBought * job.seedPrice);
+		c->money -= (int)ceilf(seedsBought * job->seedPrice);
 
 
 		static constexpr float DELAY_PER_SEED = 1.1f;

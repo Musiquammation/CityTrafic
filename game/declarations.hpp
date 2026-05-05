@@ -20,3 +20,9 @@ struct JobOffer;
 
 template<bool freeArray>
 class PathHandler;
+
+
+
+struct OilFieldJob;
+struct AgricultorJob;
+struct CashierJob;

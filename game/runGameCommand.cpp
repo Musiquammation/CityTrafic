@@ -8,6 +8,7 @@
 #include "CellType.hpp"
 #include "direction.hpp"
 #include "jobs/OilFieldJob.hpp"
+#include "jobs/CashierJob.hpp"
 
 #include <stdio.h>
 
@@ -72,18 +73,9 @@ static const void* test(
 	Car* car = game.spawnCar(4, 14, Direction::UP);
 
 	int playerId = game.getPlayerId(player);
+	
 	auto home = Building::create_home(playerId, 3, 500);
 	game.map.addBuilding(10, 11, home, game);
-	
-	auto job = new OilFieldJob{{1,5}, 1.9f, 2.0f};
-	int jobIdx = game.appendJob(job);
-	job->give(10000);
-	job->employeesCounters.raffiners.goal = 5;
-
-	auto shop = Building::create_oilField(playerId, 1000.0f, 50000, 4, jobIdx);
-	game.map.addBuilding(1, 5, shop, game);
-
-	shop->oilField.refined += 100;
 
 	auto character = Character::spawnCharacter(game.getMap(), 10, 11);
 	if (character) {
@@ -91,6 +83,20 @@ static const void* test(
 		character->setCar(car);
 		game.characterHandler.pushCharacter(character);
 	}
+
+	auto oilJob = new OilFieldJob{1.9f, 2.0f};
+	oilJob->give(10000);
+	oilJob->employeesCounters.raffiners.goal = 5;
+	auto oilField = Building::create_oilField(oilJob, playerId, 1000.0f, 50000, 4);
+	game.map.addBuilding(1, 5, oilField, game);
+	oilField->oilField.refined += 100;
+
+	auto cashierJob = new CashierJob{};
+	auto grocery = Building::create_grocery(cashierJob, playerId);
+	game.map.addBuilding(15, 1, grocery, game);
+	grocery->grocery.stock += 1000.0f;
+
+
 
 
 	return ptr;

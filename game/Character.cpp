@@ -320,13 +320,10 @@ BuildingInfo Character::getCurrentBuilding(const Map& map, BuildingType type) co
 }
 
 BuildingInfo Character::getWorkBuilding(Game& game) const {
-	/// TODO: rework getWorkBuilding
-	if (this->job) {
-		auto site = this->job->getEmployeeSite(this, game.getCalendar());
-		return game.getMap().getBuilding(site.x, site.y);
-	}
+	if (this->jobLoc.x == INT32_MIN)
+		return {INT32_MIN, INT32_MIN, nullptr};
 
-	return {INT32_MIN, INT32_MIN, nullptr};
+	return game.getMap().getBuilding(this->jobLoc.x, this->jobLoc.y);
 }
 
 bool Character::orientBuilding(Game& game, BuildingInfo info) {
@@ -404,27 +401,58 @@ bool Character::setCar(Car* car) {
 }
 
 
-bool Character::takeJob(Job* job, const JobOffer& offer, const Calendar& calendar) {
-	if (this->job) {
-		this->leaveJob();
+bool Character::takeJob(
+	Vector<int> loc,
+	const JobOffer& offer,
+	Game& game
+) {
+	if (this->hasJob()) {
+		this->leaveJob(game);
 	}
 
-	if (job->hire(this, offer, calendar)) {
-		this->job = job;
+	auto info = game.getBuilding(loc.x, loc.y);
+	auto job = info.building->getJob();
+
+	if (job->hire(this, info.building, offer, game.getCalendar())) {
+		this->jobLoc = loc;
 		return true;
 	}
 
 	return false;
 }
 
-void Character::leaveJob() {
-	this->job->fire(this);
-	this->job = nullptr;
+void Character::leaveJob(Game& game) {
+	if (!this->hasJob()) {
+		return;
+	}
+
+	auto info = game.getBuilding(this->jobLoc.x, this->jobLoc.y);
+	if (info.building) {
+		auto job = info.building->getJob();
+		if (job) {
+			job->fire(this);
+		}
+	}
+
+	this->jobLoc = {INT32_MIN, INT32_MIN};
 	this->salaryEstimation = 0;
 }
 
-Job* Character::getJob() {
-	return this->job;
+Job* Character::getJob(Game& game) const {
+	if (!this->hasJob()) {
+		return nullptr;
+	}
+
+	auto info = game.getBuilding(this->jobLoc.x, this->jobLoc.y);
+	return info.building ? info.building->getJob() : nullptr;
+}
+
+Vector<int> Character::getJobLoc() const {
+	return this->jobLoc;
+}
+
+bool Character::hasJob() const {
+	return this->jobLoc.x != INT32_MIN;
 }
 
 bool Character::isInside() const {

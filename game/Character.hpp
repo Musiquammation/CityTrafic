@@ -27,7 +27,7 @@ class Character {
 
 	Car* car = nullptr;
 	ActionExecutor executor;
-	Job* job = nullptr;
+	Vector<int> jobLoc = {INT32_MIN, INT32_MIN};
 	Vector<int> home;
 	CharacterState state;
 	int money = 0;
@@ -107,9 +107,15 @@ public:
 	Car* getCar() const;
 	bool setCar(Car* car);
 
-	bool takeJob(Job* job, const JobOffer& offer, const Calendar& calendar);
-	void leaveJob();
-	Job* getJob();
+	bool takeJob(
+		Vector<int> loc,
+		const JobOffer& offer,
+		Game& game
+	);
+	void leaveJob(Game& game);
+	Job* getJob(Game& game) const;
+	Vector<int> getJobLoc() const;
+	bool hasJob() const;
 	bool isInside() const;
 
 	void give(int money);

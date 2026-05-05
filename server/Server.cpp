@@ -56,19 +56,7 @@ PanelVariant getVariant(const Game& game, const uint8_t* ptr) {
 	// Recognize object
 	auto x = take(int32_t);
 	if (x == (int)-0x80000000) {
-		// Job
-		auto jobIdx = take(int32_t);
-		Job* job = game.getJob(jobIdx);
-		if (!job) {
-			throw std::runtime_error{"Cannot find job asked by panel"};
-		}
-
-		return {
-			PanelVariantType::JOB,
-			ptr,
-			{.job = job}
-		};
-
+		throw std::runtime_error{"Job handle has been removed"};
 	}
 
 	auto y = take(int32_t);

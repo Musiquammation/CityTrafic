@@ -9,17 +9,15 @@
 #include <math.h>
 
 AgricultorJob::AgricultorJob(
-	Vector<int> location,
 	float salaryPerSeed,
 	float pricePerSeed
 ):
-	location(location),
 	salaryPerSeed(salaryPerSeed),
 	pricePerSeed(pricePerSeed)
 {}
 
 AgricultorJob::~AgricultorJob() {
-	this->fireEveryone();
+	
 }
 
 calendar_t AgricultorJob::getNextEnterHour(
@@ -69,43 +67,49 @@ int AgricultorJob::getSalary(
 
 Vector<int> AgricultorJob::getEmployeeSite(
 	worker_t worker,
+	Vector<int> loc,
+	Building* building,
 	const Calendar& calendar
 ) {
-	return this->location;
+	return loc;
 }
 
 void AgricultorJob::work(
 	worker_t worker,
+	Vector<int> loc,
+	Building* building,
 	Game& game
 ) {
-	auto building = game.getBuilding(
-		this->location.x, this->location.y).building;
+	Building* workBuilding = building;
+	if (!workBuilding) {
+		workBuilding = game.getBuilding(loc.x, loc.y).building;
+	}
 
-	if (!building) {
+	if (!workBuilding) {
 		throw std::runtime_error{"Missing work building"};
 	}
 
-	if (building->type != BuildingType::PLANTATION)
+	if (workBuilding->type != BuildingType::PLANTATION)
 		throw std::runtime_error{"A PLANTATION building was expected"};
 
+	workBuilding->plantation.couldown--;
+	if (workBuilding->plantation.couldown <= 0) {
+		workBuilding->plantation.couldown += workBuilding->plantation.delay;
+		workBuilding->plantation.stock += 1.0f;
+	}
 
-    building->plantation.couldown--;
-    if (building->plantation.couldown <= 0) {
-        building->plantation.couldown += building->plantation.delay;
-        building->plantation.stock += 1.0f;
-    }
-
-    auto it = this->workers.find((Character*)worker);
+	auto it = this->workers.find((Character*)worker);
 
 	if (it != this->workers.end()) {
 		it->second.toPay += this->salaryPerSeed /
-            (float)building->plantation.delay;
+			(float)workBuilding->plantation.delay;
 	}
 
 }
 
 void AgricultorJob::onEnter(
 	worker_t worker,
+	Building* building,
 	const Calendar& calendar
 ) {
 	auto it = this->workers.find((Character*)worker);
@@ -122,6 +126,7 @@ void AgricultorJob::onEnter(
 
 void AgricultorJob::onLeave(
 	worker_t worker,
+	Building* building,
 	const Calendar& calendar
 ) {
 	auto it = this->workers.find((Character*)worker);
@@ -140,6 +145,7 @@ void AgricultorJob::onLeave(
 
 bool AgricultorJob::hire(
 	Character* worker,
+	Building* building,
 	const JobOffer& offer,
 	const Calendar& calendar
 ) {
@@ -213,35 +219,16 @@ void AgricultorJob::setPanelData(const uint32_t* data) {
 
 
 
-float AgricultorJob::getPricePerSeed(const Game& game) const {
-	auto building = game.getBuilding(
-		this->location.x, this->location.y).building;
-
-	if (!building) {
-		throw std::runtime_error{"Missing work building"};
-	}
-
-	if (building->type != BuildingType::OIL_FIELD)
-		throw std::runtime_error{"A OIL_FIELD building was expected"};
-
+float AgricultorJob::getPricePerSeed(const Building* building) const {
 	if (building->oilField.refined >= 1.0f)
 		return this->pricePerSeed;
 
 	return 1e20f; // A lot : cannot be bought
 }
 
-float AgricultorJob::buy(Game& game, int money) {
+float AgricultorJob::buy(Building* building, int money) {
 	float seeds = (float)money / this->pricePerSeed;
 
-	auto building = game.getBuilding(
-		this->location.x, this->location.y).building;
-
-	if (!building) {
-		throw std::runtime_error{"Missing work building"};
-	}
-
-	if (building->type != BuildingType::OIL_FIELD)
-		throw std::runtime_error{"A OIL_FIELD building was expected"};
 
 	// Enough refined oil to buy
 	if (building->oilField.refined >= seeds) {

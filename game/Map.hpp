@@ -13,7 +13,6 @@
 #include <unordered_set>
 
 
-
 template<>
 struct std::hash<Vector<int>> {
 	size_t operator()(const Vector<int>& v) const noexcept {
@@ -86,7 +85,9 @@ public:
 		int radius
 	) const;
 
-};
 
+	auto buildings_begin() {return buildings.begin();}
+	auto buildings_end() {return buildings.end();}
+};
 
 extern const Cell _outCellBuffer;

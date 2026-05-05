@@ -17,14 +17,11 @@ class CashierJob: public Job {
 	};
 
 	
-	Vector<int> location;
 	std::map<Character*, WorkerData> workers;
 	
 
 public:
-	CashierJob(
-		Vector<int> location
-	);
+	CashierJob();
 
 	~CashierJob();
 
@@ -62,26 +59,34 @@ public:
 
 	Vector<int> getEmployeeSite(
 		worker_t worker,
+		Vector<int> loc,
+		Building* building,
 		const Calendar& calendar
 	) override;
 
+
 	void work(
 		worker_t worker,
+		Vector<int> loc,
+		Building* building,
 		Game& game
 	) override;
 
 	void onEnter(
 		worker_t worker,
+		Building* building,
 		const Calendar& calendar
 	) override;
 
 	void onLeave(
 		worker_t worker,
+		Building* building,
 		const Calendar& calendar
 	) override;
 	
 	bool hire(
 		Character* worker,
+		Building* building,
 		const JobOffer& offer,
 		const Calendar& calendar
 	) override;
@@ -98,6 +103,6 @@ public:
 	uint32_t* getPanelData() override;
 	void setPanelData(const uint32_t* data) override;
 
-	void setSalary(Game& game, float salary);
-	void setEfficiency(Game& game,float efficiency);
+	void setSalary(Game& game, Building* building, float salary);
+	void setEfficiency(Game& game, Building* building, float efficiency);
 };

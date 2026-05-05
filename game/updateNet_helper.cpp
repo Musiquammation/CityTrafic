@@ -51,9 +51,6 @@ uint32_t* updateNet_helper_write(
 	bool alignJobs;
 	if (updateClientJobs) {
 		jobSize = 0;
-		for (auto job: game.jobs)
-			if (job)
-				jobSize += 3;
 
 		alignJobs = (jobSize % 2 == 1);
 		if (alignJobs) {
@@ -86,17 +83,6 @@ uint32_t* updateNet_helper_write(
 
 	// Send jobs
 	if (updateClientJobs) {
-		for (auto job: game.jobs) {
-			if (!job) {
-				continue;
-			}
-	
-			push(job->getJobType());
-			/// TODO: send (x,y)
-			*(int32_t*)ptr++ = 42;
-			*(int32_t*)ptr++ = 41;
-		}
-	
 		if (alignJobs) {
 			ptr++; // align
 		}

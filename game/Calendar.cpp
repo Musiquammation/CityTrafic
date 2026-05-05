@@ -92,8 +92,6 @@ calendar_t Calendar::getTime(calendar_t day, instant_t instant) {
 
 
 calendar_t Calendar::getFutureInstant(instant_t time, const int* days) const {
-    calendar_t targetToday = getTime(totalDay, time);
-
     for (int offset = 0; offset < 7; offset++) {
         int targetWeekDay = (this->weekDay + offset) % 7;
         

@@ -8,13 +8,12 @@
 
 #include <math.h>
 
-CashierJob::CashierJob(Vector<int> location):
-	location(location),
+CashierJob::CashierJob():
 	salaryPerHour(salaryPerHour)
 {}
 
 CashierJob::~CashierJob() {
-	this->fireEveryone();
+	
 }
 
 static constexpr float EFFICIENCY_COST = 6.0f;
@@ -92,9 +91,11 @@ int CashierJob::getSalary(
 
 Vector<int> CashierJob::getEmployeeSite(
 	worker_t worker,
+	Vector<int> loc,
+	Building* building,
 	const Calendar& calendar
 ) {
-	return this->location;
+	return loc;
 }
 
 static Building* getBuilding(Game& game, Vector<int> loc) {
@@ -113,13 +114,21 @@ static Building* getBuilding(Game& game, Vector<int> loc) {
 
 void CashierJob::work(
 	worker_t worker,
+	Vector<int> loc,
+	Building* building,
 	Game& game
 ) {
-	Building* b = getBuilding(game, this->location);
+	Building* workBuilding = building;
+	if (!workBuilding) {
+		workBuilding = getBuilding(game, loc);
+	}
+
+	// TODO: implement cashier work logic on workBuilding
 }
 
 void CashierJob::onEnter(
 	worker_t worker,
+	Building* building,
 	const Calendar& calendar
 ) {
 	auto it = this->workers.find((Character*)worker);
@@ -137,6 +146,7 @@ void CashierJob::onEnter(
 
 void CashierJob::onLeave(
 	worker_t worker,
+	Building* building,
 	const Calendar& calendar
 ) {
 	auto it = this->workers.find((Character*)worker);
@@ -158,6 +168,7 @@ void CashierJob::onLeave(
 
 bool CashierJob::hire(
 	Character* worker,
+	Building* building,
 	const JobOffer& offer,
 	const Calendar& calendar
 ) {
@@ -232,19 +243,23 @@ void CashierJob::setPanelData(const uint32_t* data) {
 }
 
 
-void CashierJob::setSalary(Game& game, float salary) {
+void CashierJob::setSalary(Game& game, Building* building, float salary) {
 	this->salaryPerHour = salary;
 
-	Building* b = getBuilding(game, this->location);
-	b->grocery.cashierEfficiency = evalEfficiency(salary);
+	if (!building) {
+		return;
+	}
+	building->grocery.cashierEfficiency = evalEfficiency(salary);
 }
 
 
-void CashierJob::setEfficiency(Game& game, float efficiency) {
+void CashierJob::setEfficiency(Game& game, Building* building, float efficiency) {
 	this->salaryPerHour = evalSalary(efficiency);
 
-	Building* b = getBuilding(game, this->location);
-	b->grocery.cashierEfficiency = efficiency;
+	if (!building) {
+		return;
+	}
+	building->grocery.cashierEfficiency = efficiency;
 
 }
 

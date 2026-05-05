@@ -16,7 +16,6 @@ private:
 	CarHandler carHandler{};
 	CharacterHandler characterHandler{};
 	Calendar calendar;
-	std::vector<Job*> jobs;
 	std::vector<Player> players;
 	int frameCount = 0;
 	uint64_t updateJobsDate = 0;
@@ -52,9 +51,6 @@ public:
 	Map& getMap() {return this->map;}
 	const Calendar& getCalendar() const {return this->calendar;}
 
-	int appendJob(Job* job);
-	void removeJob(int job);
-	Job* getJob(int idx) const;
 
 	int getFrame() const;
 	bool checkBounds(int x, int y, int width, int height) const;
@@ -62,7 +58,10 @@ public:
 	Player* getPlayer(int id);
 	int getPlayerId(Player* player);
 
-	Job* searchJob(Character* c, JobOffer& bestOffer);
+	Vector<int> searchJob(
+		Character* c,
+		JobOffer& bestOffer
+	);
 
 	~Game();
 };

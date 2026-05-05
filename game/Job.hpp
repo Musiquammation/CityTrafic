@@ -12,15 +12,15 @@ class Job {
 	
 protected:
 	using worker_t = const Character*;
-	void fireEveryone();
-
 	
 public:
 	static constexpr int NO_LOCATION = INT32_MIN;
 
 	void give(int money);
 	int pay(int money);
-
+	void destroy(Game& game, int owner);
+	
+	
 	virtual calendar_t getNextEnterHour(
 		worker_t worker,
 		const Calendar& calendar
@@ -41,28 +41,35 @@ public:
 	 */
 	virtual Vector<int> getEmployeeSite(
 		worker_t worker,
+		Vector<int> loc,
+		Building* building,
 		const Calendar& calendar
 	) = 0;
 
 	virtual void work(
 		worker_t worker,
+		Vector<int> loc,
+		Building* building,
 		Game& game
 	) = 0;
 
 
 	virtual void onEnter(
 		worker_t worker,
+		Building* building,
 		const Calendar& calendar
 	) = 0;
 
 	virtual void onLeave(
 		worker_t worker,
+		Building* building,
 		const Calendar& calendar
 	) = 0;
 
 
 	virtual bool hire(
 		Character* worker,
+		Building* building,
 		const JobOffer& offer,
 		const Calendar& calendar
 	) = 0;
@@ -78,7 +85,6 @@ public:
 	virtual uint32_t* getPanelData() = 0;
 	virtual void setPanelData(const uint32_t* data) = 0;
 
-	virtual int getJobType() const {return 0;}
 
 	virtual ~Job() = default;
 

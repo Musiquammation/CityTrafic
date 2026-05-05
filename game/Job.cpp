@@ -1,5 +1,6 @@
 #include "Job.hpp"
 
+#include "Game.hpp"
 #include "Character.hpp"
 
 void Job::give(int money) {
@@ -17,8 +18,12 @@ int Job::pay(int money) {
 	return given;
 }
 
-void Job::fireEveryone() {
-	this->forAllWorkers([](Character* c) {
-		c->leaveJob(); 
+void Job::destroy(Game& game, int owner) {
+	Player* player = game.getPlayer(owner);
+	player->money += this->money;
+
+	// Fire everyone
+	this->forAllWorkers([&game](Character* c) {
+		c->leaveJob(game);
 	});
 }

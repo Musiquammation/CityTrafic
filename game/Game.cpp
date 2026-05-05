@@ -6,6 +6,7 @@
 #include "Cell.hpp"
 #include "Job.hpp"
 #include "Map.hpp"
+#include "Building.hpp"
 
 #include <stdio.h>
 #include <math.h>
@@ -77,40 +78,12 @@ Car* Game::getCar(int x, int y) {
 }
 
 BuildingInfo Game::getBuilding(int x, int y) const {
+	if (x == INT32_MIN)
+		return {INT32_MIN, INT32_MIN, nullptr};
+
 	return this->map.getBuilding(x, y);
 }
 
-int Game::appendJob(Job* job) {
-	this->updateJobsDate = this->calendar.indicator;
-
-	// Search empty slots
-	int size = (int)this->jobs.size();
-	for (int i = 0; i < size; i++) {
-		if (this->jobs[i] == nullptr) {
-			this->jobs[i] = job;
-			return i;
-		}
-	}
-
-	// No empty slots, so add job to the end
-	this->jobs.push_back(job);
-	return size;
-}
-
-Job* Game::getJob(int idx) const {
-	if (idx < 0 || idx >= (int)this->jobs.size()) {
-		return nullptr;
-	}
-
-	return this->jobs[idx];
-}
-
-void Game::removeJob(int job) {
-	this->updateJobsDate = this->calendar.indicator;
-
-	delete this->jobs[job];
-	this->jobs[job]	= nullptr;
-}
 
 
 
@@ -139,8 +112,11 @@ int Game::getPlayerId(Player* player) {
 }
 
 
-Job* Game::searchJob(Character* c, JobOffer& bestOffer) {
-	static constexpr float MAX_RADIUS = 64.0f;
+Vector<int> Game::searchJob(
+	Character* c,
+	JobOffer& bestOffer
+) {
+	static constexpr int MAX_RADIUS = 64.0f;
 
 	auto home = c->getHome();
 	if (home.x == INT32_MIN) {
@@ -149,17 +125,25 @@ Job* Game::searchJob(Character* c, JobOffer& bestOffer) {
 	
 
 	float bestScore = 0;
-	Job* bestJob = nullptr;
-	for (Job* job: this->jobs) {
+	Vector<int> bestLoc{INT32_MIN, INT32_MIN};
+
+	
+	for (
+		auto it = this->map.buildings_begin();
+		it != this->map.buildings_end();
+		it++
+	) {
+		auto building = it->second;
+		auto job = building->getJob();
 		if (!job)
 			continue;
 
-		
 		JobOffer offer;
 		if (!job->searchJobOffer(c, offer))
 			continue;
 
-		auto pos = job->getEmployeeSite(nullptr, this->calendar);
+		auto loc = it->first;
+		auto pos = job->getEmployeeSite(c, loc, building, this->calendar);
 		int dx = pos.x - home.x;
 		int dy = pos.y - home.y;
 		float score = (MAX_RADIUS - sqrtf(float(dx*dx + dy*dy)));
@@ -170,18 +154,18 @@ Job* Game::searchJob(Character* c, JobOffer& bestOffer) {
 
 		if (score > bestScore) {
 			bestScore = score;
-			bestJob = job;
+			bestLoc = loc;
 			bestOffer = offer;
 		}	
-	}
 	
-	return bestJob;
+	}
+
+	/// TODO: searchJob
+	
+	return bestLoc;
 }
 
 
 Game::~Game() {
-	// Delete jobs
-	for (Job* job: this->jobs)
-		if (job)
-			delete job;
+
 }

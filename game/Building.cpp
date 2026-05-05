@@ -40,52 +40,52 @@ Building* Building::create_home(
 }
 
 Building* Building::create_oilField(
+	OilFieldJob* job,
 	int owner,
 	float crude,
 	int factor,
-	int size,
-	int jobIdx
+	int size
 ) {
 	auto b = new Building;
 	b->owner = owner;
 	b->type = BuildingType::OIL_FIELD;
+	b->oilField.job = job;
 	b->oilField.crude = crude;
 	b->oilField.refined = 0;
 	b->oilField.factor = expf(-1.0f / (float)factor);
 	b->oilField.leftEmployees = size*size;
 	b->oilField.size = size;
-	b->oilField.jobIdx = jobIdx;
 	return b;
 }
 
 Building* Building::create_plantation(
+	AgricultorJob* job,
 	int owner,
-	int delay,
-	int jobIdx
+	int delay
 
 ) {
 	auto b = new Building;
 	b->owner = owner;
 	b->type = BuildingType::PLANTATION;
+	b->plantation.job = job;
 	b->plantation.couldown = delay;
 	b->plantation.delay = delay;
 	b->plantation.stock = 0.0f;
-	b->plantation.jobIdx = jobIdx;
 	return b;
 }
 
 Building* Building::create_grocery(
-	int owner,
-	int jobIdx
+	CashierJob* job,
+	int owner
 ) {
 	auto b = new Building;
 	b->owner = owner;
 	b->type = BuildingType::GROCERY;
+	b->grocery.job = job;
 	b->grocery.stock = 0.0f;
 	b->grocery.clients = 0;
 	b->grocery.cashierEfficiency = 1;
 	b->grocery.cashiers = 0;
-	b->grocery.jobIdx = jobIdx;
 	return b;
 
 }
@@ -284,28 +284,25 @@ uint32_t* Building::getPanelData(const Game& game) {
 	case BuildingType::OIL_FIELD:
 	{
 		static constexpr int COUNT = 8;
-		auto _job = game.getJob(this->oilField.jobIdx);
-		auto& job = dynamic_cast<OilFieldJob&>(*_job);
+		auto job = this->oilField.job;
 		auto result = (uint32_t*)malloc(sizeof(uint32_t)*(COUNT+2));
 
 		result[0] = COUNT; // length (as uint32_t)
 		result[1] = (uint32_t)PanelId::BUILDING_OIL_FIELD;
 		result[2] = flt(this->oilField.crude);
 		result[3] = flt(this->oilField.refined);
-		result[4] = job.startTime.hour;
-		result[5] = job.finishTime.hour;
-		result[6] = flt(job.salaryPerLiter);
-		result[7] = flt(job.pricePerLiter);
-		result[8] = job.employeesCounters.raffiners.current;
-		result[9] = job.employeesCounters.raffiners.goal;
+		result[4] = job->startTime.hour;
+		result[5] = job->finishTime.hour;
+		result[6] = flt(job->salaryPerLiter);
+		result[7] = flt(job->pricePerLiter);
+		result[8] = job->employeesCounters.raffiners.current;
+		result[9] = job->employeesCounters.raffiners.goal;
 		return result;
 	}
 
 	case BuildingType::PLANTATION:
 	{
 		static constexpr int COUNT = 1;
-		auto _job = game.getJob(this->oilField.jobIdx);
-		auto& job = dynamic_cast<AgricultorJob&>(*_job);
 		auto result = (uint32_t*)malloc(sizeof(uint32_t)*(COUNT+2));
 
 		/// TODO: that
@@ -316,8 +313,7 @@ uint32_t* Building::getPanelData(const Game& game) {
 	case BuildingType::GROCERY:
 	{
 		static constexpr int COUNT = 5;
-		auto _job = game.getJob(this->oilField.jobIdx);
-		auto& job = dynamic_cast<CashierJob&>(*_job);
+		auto job = this->grocery.job;
 		auto result = (uint32_t*)malloc(sizeof(uint32_t)*(COUNT+2));
 
 		result[0] = COUNT; // length (as uint32_t)
@@ -326,7 +322,7 @@ uint32_t* Building::getPanelData(const Game& game) {
 		result[3] = this->grocery.cashiers;
 		result[4] = flt(this->grocery.stock);
 		result[5] = flt(this->grocery.cashierEfficiency);
-		result[6] = flt(job.salaryPerHour);
+		result[6] = flt(job->salaryPerHour);
 		return result;
 	}
 
@@ -350,15 +346,14 @@ void Building::setPanelData(const uint32_t* data, Game& game) {
 
 	case BuildingType::OIL_FIELD:
 	{
-		auto _job = game.getJob(this->oilField.jobIdx);
-		auto& job = dynamic_cast<OilFieldJob&>(*_job);
+		auto job = this->oilField.job;
 
-		job.startTime.hour = (short)(data[4]%24);
-		job.finishTime.hour = (short)(data[5]%24);
-		flt(job.salaryPerLiter) = data[6];
-		flt(job.pricePerLiter) = data[7];
-		job.employeesCounters.raffiners.current = data[8];
-		job.employeesCounters.raffiners.goal = data[9];
+		job->startTime.hour = (short)(data[4]%24);
+		job->finishTime.hour = (short)(data[5]%24);
+		flt(job->salaryPerLiter) = data[6];
+		flt(job->pricePerLiter) = data[7];
+		job->employeesCounters.raffiners.current = data[8];
+		job->employeesCounters.raffiners.goal = data[9];
 		break;
 	}
 
@@ -370,8 +365,7 @@ void Building::setPanelData(const uint32_t* data, Game& game) {
 
 	case BuildingType::GROCERY:
 	{
-		auto _job = game.getJob(this->oilField.jobIdx);
-		auto& job = dynamic_cast<CashierJob&>(*_job);
+		auto job = this->grocery.job;
 
 		float efficiency;
 		float salary;
@@ -379,10 +373,10 @@ void Building::setPanelData(const uint32_t* data, Game& game) {
 		flt(efficiency) = data[5];
 		flt(salary) = data[6];
 
-		if (salary != job.salaryPerHour) {
-			job.setSalary(game, salary);
+		if (salary != job->salaryPerHour) {
+			job->setSalary(game, this, salary);
 		} else if (efficiency != this->grocery.cashierEfficiency) {
-			job.setEfficiency(game, efficiency);
+			job->setEfficiency(game, this, efficiency);
 		}
 
 		break;
@@ -394,10 +388,27 @@ void Building::setPanelData(const uint32_t* data, Game& game) {
 	#undef flt
 }
 
+Job* Building::getJob() {
+	switch (this->type) {
+	case BuildingType::HOME:
+		return nullptr;
+	
+	case BuildingType::OIL_FIELD:
+		return this->oilField.job;
+
+	case BuildingType::PLANTATION:
+		return this->plantation.job;
+
+	case BuildingType::GROCERY:
+		return this->grocery.job;
+	}
+
+	return nullptr;
+}
 
 
 
-Building::~Building() {
+void Building::destroy(Game& game) {
 	switch (this->type) {
 	case BuildingType::HOME:
 		delete[] this->home.characters;
@@ -412,5 +423,23 @@ Building::~Building() {
 	case BuildingType::GROCERY:
 		break;
 	}
+
+	Job* job = this->getJob();
+	if (job) {
+		job->destroy(game, this->owner);
+	}
+
 	
+	#if TESTING_SERV
+	this->hasBeenDestroyed = true;
+	#endif
+
+}
+
+Building::~Building() {
+	#if TESTING_SERV
+	if (!this->hasBeenDestroyed) {
+		printWarn("Building not destroyed");
+	}
+	#endif
 }

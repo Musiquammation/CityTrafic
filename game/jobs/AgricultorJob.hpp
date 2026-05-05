@@ -16,13 +16,11 @@ class AgricultorJob: public Job {
 	};
 
 	
-	Vector<int> location;
 	std::map<Character*, WorkerData> workers;
 	
 
 public:
 	AgricultorJob(
-		Vector<int> location,
 		float salaryPerSeed,
 		float pricePerSeed
 	);
@@ -59,26 +57,34 @@ public:
 
 	Vector<int> getEmployeeSite(
 		worker_t worker,
+		Vector<int> loc,
+		Building* building,
 		const Calendar& calendar
 	) override;
 
+
 	void work(
 		worker_t worker,
+		Vector<int> loc,
+		Building* building,
 		Game& game
 	) override;
 
 	void onEnter(
 		worker_t worker,
+		Building* building,
 		const Calendar& calendar
 	) override;
 
 	void onLeave(
 		worker_t worker,
+		Building* building,
 		const Calendar& calendar
 	) override;
 	
 	bool hire(
 		Character* worker,
+		Building* building,
 		const JobOffer& offer,
 		const Calendar& calendar
 	) override;
@@ -95,7 +101,7 @@ public:
 	uint32_t* getPanelData() override;
 	void setPanelData(const uint32_t* data) override;
 
-	float getPricePerSeed(const Game& game) const;
-	float buy(Game& game, int money);
+	float getPricePerSeed(const Building* building) const;
+	float buy(Building* building, int money);
 
 };

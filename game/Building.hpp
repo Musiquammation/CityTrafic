@@ -10,6 +10,10 @@ struct Building {
 	BuildingType type;
 	int owner;
 
+	#if TESTING_SERV
+	bool hasBeenDestroyed = false;
+	#endif
+
 	union {
 		struct {
 			Character** characters;
@@ -19,27 +23,27 @@ struct Building {
 		} home;
 
 		struct {
+			OilFieldJob* job;
 			float crude;
 			float refined;
 			float factor;
 			int leftEmployees;
 			int size;
-			int jobIdx;
 		} oilField;
 
 		struct {
+			AgricultorJob* job;
 			int couldown;
 			int delay;
 			float stock;
-			int jobIdx;
 		} plantation;
 
 		struct {
+			CashierJob* job;
 			float stock;
 			int clients;
 			float cashierEfficiency;
 			int cashiers;
-			int jobIdx;
 		} grocery;
 	};
 	
@@ -51,22 +55,22 @@ struct Building {
 	);
 
 	static Building* create_oilField(
+		OilFieldJob* job,
 		int owner,
 		float crude,
 		int factor,
-		int size,
-		int jobIdx
+		int size
 	);
 
 	static Building* create_plantation(
+		AgricultorJob* job,
 		int owner,
-		int delay,
-		int jobIdx
+		int delay
 	);
 
 	static Building* create_grocery(
-		int owner,
-		int jobIdx
+		CashierJob* job,
+		int owner
 	);
 
 
@@ -83,5 +87,8 @@ struct Building {
 	uint32_t* getPanelData(const Game& game);
 	void setPanelData(const uint32_t* data, Game& game);
 
+	Job* getJob();
+
+	void destroy(Game& game);
 	~Building();
 };
