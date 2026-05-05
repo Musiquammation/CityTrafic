@@ -37,8 +37,9 @@ struct Building {
 		struct {
 			float stock;
 			int clients;
-			int cashierEfficiency;
+			float cashierEfficiency;
 			int cashiers;
+			int jobIdx;
 		} grocery;
 	};
 	
@@ -60,6 +61,11 @@ struct Building {
 	static Building* create_plantation(
 		int owner,
 		int delay,
+		int jobIdx
+	);
+
+	static Building* create_grocery(
+		int owner,
 		int jobIdx
 	);
 

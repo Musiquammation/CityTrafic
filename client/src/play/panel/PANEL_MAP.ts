@@ -28,9 +28,22 @@ PANEL_MAP.set(PANEL_IDS.BUILDING_OIL_FIELD, {
 });
 
 
-PANEL_MAP.set(PANEL_IDS.BUILDING_OIL_FIELD, {
+PANEL_MAP.set(PANEL_IDS.BUILDING_PLANTATTION, {
     title: "Plantation",
     fields: [
         new NamedUnit("Test", units.f32),
+    ]
+});
+
+
+
+PANEL_MAP.set(PANEL_IDS.BUILDING_GROCERY, {
+    title: "Grocery",
+    fields: [
+        new NamedUnit("Clients", units.i32),
+        new NamedUnit("Cashiers", units.i32),
+        new NamedUnit("Stock", units.f32),
+        new NamedUnit("Efficiency", units.f32),
+        new NamedUnit("Salary (per hour)", units.f32),
     ]
 });

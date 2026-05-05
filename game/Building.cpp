@@ -2,7 +2,10 @@
 
 #include "PanelId.hpp"
 #include "Game.hpp"
+
 #include "jobs/OilFieldJob.hpp"
+#include "jobs/AgricultorJob.hpp"
+#include "jobs/CashierJob.hpp"
 
 #include "DebugLogger.hpp"
 DebugLogger print{"Building"};
@@ -71,7 +74,21 @@ Building* Building::create_plantation(
 	return b;
 }
 
+Building* Building::create_grocery(
+	int owner,
+	int jobIdx
+) {
+	auto b = new Building;
+	b->owner = owner;
+	b->type = BuildingType::GROCERY;
+	b->grocery.stock = 0.0f;
+	b->grocery.clients = 0;
+	b->grocery.cashierEfficiency = 1;
+	b->grocery.cashiers = 0;
+	b->grocery.jobIdx = jobIdx;
+	return b;
 
+}
 
 
 Vector<int> Building::getSize() const {
@@ -177,8 +194,10 @@ int Building::enter(Character* c) {
 
 	case BuildingType::GROCERY:
 	{
-		int max = this->grocery.cashierEfficiency * this->grocery.cashiers;
-		if (this->grocery.clients >= max)
+		float max = this->grocery.cashierEfficiency *
+			(float)this->grocery.cashiers;
+
+		if ((float)this->grocery.clients >= max)
 			return -1;
 
 		return 0;
@@ -234,12 +253,9 @@ bool Building::isFull() const {
 
 	case BuildingType::GROCERY:
 	{
-		int max = this->grocery.cashierEfficiency * this->grocery.cashiers;
-		if (this->grocery.clients >= max)
-			return -1;
-
-		return 0;
-
+		float max = this->grocery.cashierEfficiency * 
+			(float)this->grocery.cashiers;
+		return ((float)this->grocery.clients < max);
 	}
 	}
 
@@ -257,6 +273,7 @@ uint32_t* Building::getPanelData(const Game& game) {
 	{
 		static constexpr int COUNT = 2;
 		auto result = (uint32_t*)malloc(sizeof(uint32_t)*(COUNT+2));
+
 		result[0] = COUNT; // length (as uint32_t)
 		result[1] = (uint32_t)PanelId::BUILDING_HOME;
 		result[2] = this->home.rent;
@@ -270,6 +287,7 @@ uint32_t* Building::getPanelData(const Game& game) {
 		auto _job = game.getJob(this->oilField.jobIdx);
 		auto& job = dynamic_cast<OilFieldJob&>(*_job);
 		auto result = (uint32_t*)malloc(sizeof(uint32_t)*(COUNT+2));
+
 		result[0] = COUNT; // length (as uint32_t)
 		result[1] = (uint32_t)PanelId::BUILDING_OIL_FIELD;
 		result[2] = flt(this->oilField.crude);
@@ -287,7 +305,7 @@ uint32_t* Building::getPanelData(const Game& game) {
 	{
 		static constexpr int COUNT = 1;
 		auto _job = game.getJob(this->oilField.jobIdx);
-		auto& job = dynamic_cast<OilFieldJob&>(*_job);
+		auto& job = dynamic_cast<AgricultorJob&>(*_job);
 		auto result = (uint32_t*)malloc(sizeof(uint32_t)*(COUNT+2));
 
 		/// TODO: that
@@ -298,16 +316,18 @@ uint32_t* Building::getPanelData(const Game& game) {
 	case BuildingType::GROCERY:
 	{
 		static constexpr int COUNT = 5;
+		auto _job = game.getJob(this->oilField.jobIdx);
+		auto& job = dynamic_cast<CashierJob&>(*_job);
 		auto result = (uint32_t*)malloc(sizeof(uint32_t)*(COUNT+2));
+
 		result[0] = COUNT; // length (as uint32_t)
 		result[1] = (uint32_t)PanelId::BUILDING_GROCERY;
-		result[2] = flt(this->grocery.stock);
-		result[3] = this->grocery.clients;
-		result[4] = this->grocery.cashierEfficiency;
-		result[5] = this->grocery.cashiers;
+		result[2] = this->grocery.clients;
+		result[3] = this->grocery.cashiers;
+		result[4] = flt(this->grocery.stock);
+		result[5] = flt(this->grocery.cashierEfficiency);
+		result[6] = flt(job.salaryPerHour);
 		return result;
-
-
 	}
 
 
@@ -350,7 +370,21 @@ void Building::setPanelData(const uint32_t* data, Game& game) {
 
 	case BuildingType::GROCERY:
 	{
-		// No data to edit
+		auto _job = game.getJob(this->oilField.jobIdx);
+		auto& job = dynamic_cast<CashierJob&>(*_job);
+
+		float efficiency;
+		float salary;
+
+		flt(efficiency) = data[5];
+		flt(salary) = data[6];
+
+		if (salary != job.salaryPerHour) {
+			job.setSalary(game, salary);
+		} else if (efficiency != this->grocery.cashierEfficiency) {
+			job.setEfficiency(game, efficiency);
+		}
+
 		break;
 
 	}

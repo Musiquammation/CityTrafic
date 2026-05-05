@@ -11,7 +11,7 @@ class Calendar {
 public:
 	static const char* const WEEK_DAYS[7];
 	static const int WORKING_DAYS[6]; // Monday-Friday
-	static const int DECALED_DAYS[6]; // Tuesday-Friday
+	static const int DECALED_DAYS[6]; // Tuesday-Saturday
 	static const int EXTENDED_DAYS[7]; // Monday-Saturday
 
 	static constexpr calendar_t NOTIME = (calendar_t)(-1);
