@@ -6,6 +6,7 @@
 #include "BuildingInfo.hpp"
 #include "BuildingType.hpp"
 #include "ActionExecutor.hpp"
+#include "CharacterStatus.hpp"
 #include "actions/ActionCode.hpp"
 
 namespace actionNodes::character {
@@ -30,6 +31,7 @@ class Character {
 	Vector<int> jobLoc = {INT32_MIN, INT32_MIN};
 	Vector<int> home;
 	CharacterState state;
+	CharacterStatus status = CharacterStatus::IDLE;
 	int money = 0;
 	int waitingJoyMoney = 0;
 	int salaryEstimation = 0;
@@ -120,6 +122,10 @@ public:
 
 	void give(int money);
 	int pay(int money);
+
+
+
+	void sendData(uint32_t* ptr);
 
 	~Character();
 };

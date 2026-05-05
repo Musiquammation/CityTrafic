@@ -36,7 +36,7 @@ translations = [
 	servTranslation("ClientId", "CLIENT_IDS"),
 	gameTranslation("CommandCode", "COMMAND_CODES"),
 	gameTranslation("PanelId", "PANEL_IDS"),
-	
+	gameTranslation("CharacterStatus", "CHARACTER_STATUS"),	
 ]
 
 def generate_files(t: Translation):

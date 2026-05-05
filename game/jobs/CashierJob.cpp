@@ -8,9 +8,9 @@
 
 #include <math.h>
 
-CashierJob::CashierJob():
-	salaryPerHour(salaryPerHour)
-{}
+CashierJob::CashierJob() {
+	
+}
 
 CashierJob::~CashierJob() {
 	

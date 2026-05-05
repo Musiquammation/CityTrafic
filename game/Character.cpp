@@ -475,6 +475,12 @@ int Character::pay(int money) {
 
 }
 
+void Character::sendData(uint32_t* ptr) {
+	ptr[0] = (uint32_t)this->status;
+	ptr[1] = this->money;
+	ptr[2] = *(uint32_t*)&this->seeds;
+}
+
 
 
 Character::~Character() {

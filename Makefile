@@ -11,7 +11,7 @@ EMXX = em++
 # =========================
 # Flags de base
 # =========================
-CXXFLAGS = -Wextra -Werror -Wconversion -Wswitch -g -std=c++20 -MMD -MP
+CXXFLAGS = -Wextra -Werror -Wconversion -Wswitch -Wuninitialized -g -std=c++20 -MMD -MP
 LDFLAGS  =
 
 # =========================
