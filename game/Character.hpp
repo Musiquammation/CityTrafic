@@ -17,7 +17,8 @@ enum class CharacterState {
 	WALK,
 	INSIDE,
 	OUTSIDE,
-	DRIVE
+	DRIVE,
+	GROCERY
 };
 
 class Character {
@@ -60,6 +61,10 @@ class Character {
 		struct {
 			ActionCode state;
 		} drive;
+
+		struct {
+			int delay;
+		} grocery;
 	} data;
 
 	void cleanupState();

@@ -33,6 +33,13 @@ struct Building {
 			float stock;
 			int jobIdx;
 		} plantation;
+
+		struct {
+			float stock;
+			int clients;
+			int cashierEfficiency;
+			int cashiers;
+		} grocery;
 	};
 	
 	

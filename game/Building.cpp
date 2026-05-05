@@ -13,7 +13,9 @@ DebugLogger print{"Building"};
 
 const Vector<int> SIZES[] = {
 	{3,2},
-	{-1,-1}
+	{-1,-1},
+	{8,4},
+	{3,3}
 };
 
 Building* Building::create_home(
@@ -105,8 +107,12 @@ int Building::fillEntryList(Vector<int> list[]) const {
 		break;
 
 	case BuildingType::PLANTATION:
-		*ptr++ = {this->oilField.size/2 - 1, this->oilField.size - 1};
-		*ptr++ = {this->oilField.size/2    , this->oilField.size - 1};
+		*ptr++ = {3, 7};
+		*ptr++ = {4, 7};
+		break;
+
+	case BuildingType::GROCERY:
+		*ptr++ = {2, 2};
 		break;
 	}
 
@@ -127,9 +133,14 @@ int Building::fillLeaveList(Vector<int> list[]) const {
 		break;
 		
 	case BuildingType::PLANTATION:
-		*ptr++ = {this->oilField.size/2 - 1, 0};
-		*ptr++ = {this->oilField.size/2    , 0};
+		*ptr++ = {3, 0};
+		*ptr++ = {4, 0};
 		break;
+
+	case BuildingType::GROCERY:
+		*ptr++ = {0, 0};
+		break;
+
 	}
 
 	return (int)(ptr-list);
@@ -164,6 +175,15 @@ int Building::enter(Character* c) {
 		return 0;
 	}
 
+	case BuildingType::GROCERY:
+	{
+		int max = this->grocery.cashierEfficiency * this->grocery.cashiers;
+		if (this->grocery.clients >= max)
+			return -1;
+
+		return 0;
+	}
+
 	}
 
 
@@ -191,6 +211,12 @@ void Building::leave(int position) {
 	{
 		break;
 	}
+
+	case BuildingType::GROCERY:
+	{
+		this->grocery.clients--;
+		break;
+	}
 	}
 
 }
@@ -205,6 +231,16 @@ bool Building::isFull() const {
 
 	case BuildingType::PLANTATION:
 		return false;
+
+	case BuildingType::GROCERY:
+	{
+		int max = this->grocery.cashierEfficiency * this->grocery.cashiers;
+		if (this->grocery.clients >= max)
+			return -1;
+
+		return 0;
+
+	}
 	}
 
 	return true;
@@ -259,6 +295,21 @@ uint32_t* Building::getPanelData(const Game& game) {
 		return result;
 	}
 
+	case BuildingType::GROCERY:
+	{
+		static constexpr int COUNT = 5;
+		auto result = (uint32_t*)malloc(sizeof(uint32_t)*(COUNT+2));
+		result[0] = COUNT; // length (as uint32_t)
+		result[1] = (uint32_t)PanelId::BUILDING_GROCERY;
+		result[2] = flt(this->grocery.stock);
+		result[3] = this->grocery.clients;
+		result[4] = this->grocery.cashierEfficiency;
+		result[5] = this->grocery.cashiers;
+		return result;
+
+
+	}
+
 
 	}
 
@@ -297,8 +348,14 @@ void Building::setPanelData(const uint32_t* data, Game& game) {
 		break;
 	}
 
+	case BuildingType::GROCERY:
+	{
+		// No data to edit
+		break;
+
 	}
 
+	}
 
 	#undef flt
 }
@@ -318,6 +375,8 @@ Building::~Building() {
 	case BuildingType::PLANTATION:
 		break;
 
+	case BuildingType::GROCERY:
+		break;
 	}
 	
 }

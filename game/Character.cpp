@@ -47,6 +47,8 @@ void Character::cleanupState() {
 		this->car->finishDriving(this);
 		break;
 
+	case CharacterState::GROCERY:
+		break;
 	}
 }
 
