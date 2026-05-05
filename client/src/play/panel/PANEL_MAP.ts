@@ -28,4 +28,9 @@ PANEL_MAP.set(PANEL_IDS.BUILDING_OIL_FIELD, {
 });
 
 
-
+PANEL_MAP.set(PANEL_IDS.BUILDING_OIL_FIELD, {
+    title: "Plantation",
+    fields: [
+        new NamedUnit("Test", units.f32),
+    ]
+});

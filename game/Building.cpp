@@ -53,6 +53,23 @@ Building* Building::create_oilField(
 	return b;
 }
 
+Building* Building::create_plantation(
+	int owner,
+	int delay,
+	int jobIdx
+
+) {
+	auto b = new Building;
+	b->owner = owner;
+	b->type = BuildingType::PLANTATION;
+	b->plantation.couldown = delay;
+	b->plantation.delay = delay;
+	b->plantation.stock = 0.0f;
+	b->plantation.jobIdx = jobIdx;
+	return b;
+}
+
+
 
 
 Vector<int> Building::getSize() const {
@@ -86,6 +103,11 @@ int Building::fillEntryList(Vector<int> list[]) const {
 		*ptr++ = {this->oilField.size/2 - 1, this->oilField.size - 1};
 		*ptr++ = {this->oilField.size/2    , this->oilField.size - 1};
 		break;
+
+	case BuildingType::PLANTATION:
+		*ptr++ = {this->oilField.size/2 - 1, this->oilField.size - 1};
+		*ptr++ = {this->oilField.size/2    , this->oilField.size - 1};
+		break;
 	}
 
 	return (int)(ptr-list);
@@ -104,6 +126,10 @@ int Building::fillLeaveList(Vector<int> list[]) const {
 		*ptr++ = {this->oilField.size/2    , 0};
 		break;
 		
+	case BuildingType::PLANTATION:
+		*ptr++ = {this->oilField.size/2 - 1, 0};
+		*ptr++ = {this->oilField.size/2    , 0};
+		break;
 	}
 
 	return (int)(ptr-list);
@@ -133,6 +159,11 @@ int Building::enter(Character* c) {
 		return -1;
 	}
 
+	case BuildingType::PLANTATION:
+	{
+		return 0;
+	}
+
 	}
 
 
@@ -155,6 +186,11 @@ void Building::leave(int position) {
 		this->oilField.leftEmployees++;
 		break;
 	}
+
+	case BuildingType::PLANTATION:
+	{
+		break;
+	}
 	}
 
 }
@@ -167,6 +203,8 @@ bool Building::isFull() const {
 	case BuildingType::OIL_FIELD:
 		return this->home.leftEmployees == 0;
 
+	case BuildingType::PLANTATION:
+		return false;
 	}
 
 	return true;
@@ -209,6 +247,19 @@ uint32_t* Building::getPanelData(const Game& game) {
 		return result;
 	}
 
+	case BuildingType::PLANTATION:
+	{
+		static constexpr int COUNT = 1;
+		auto _job = game.getJob(this->oilField.jobIdx);
+		auto& job = dynamic_cast<OilFieldJob&>(*_job);
+		auto result = (uint32_t*)malloc(sizeof(uint32_t)*(COUNT+2));
+
+		/// TODO: that
+		result[0] = 32;
+		return result;
+	}
+
+
 	}
 
 
@@ -221,9 +272,10 @@ void Building::setPanelData(const uint32_t* data, Game& game) {
 
 	switch (this->type) {
 	case BuildingType::HOME:
+	{
 		this->home.rent = data[0];
-		print("rent %d\n", data[0]);
 		break;
+	}
 
 	case BuildingType::OIL_FIELD:
 	{
@@ -238,6 +290,13 @@ void Building::setPanelData(const uint32_t* data, Game& game) {
 		job.employeesCounters.raffiners.goal = data[9];
 		break;
 	}
+
+	case BuildingType::PLANTATION:
+	{
+		// No data to edit
+		break;
+	}
+
 	}
 
 
@@ -255,5 +314,10 @@ Building::~Building() {
 
 	case BuildingType::OIL_FIELD:
 		break;
+
+	case BuildingType::PLANTATION:
+		break;
+
 	}
+	
 }

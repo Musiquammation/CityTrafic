@@ -6,7 +6,6 @@
 
 #include "BuildingType.hpp"
 
-
 struct Building {
 	BuildingType type;
 	int owner;
@@ -27,6 +26,13 @@ struct Building {
 			int size;
 			int jobIdx;
 		} oilField;
+
+		struct {
+			int couldown;
+			int delay;
+			float stock;
+			int jobIdx;
+		} plantation;
 	};
 	
 	
@@ -41,6 +47,12 @@ struct Building {
 		float crude,
 		int factor,
 		int size,
+		int jobIdx
+	);
+
+	static Building* create_plantation(
+		int owner,
+		int delay,
 		int jobIdx
 	);
 

@@ -1,7 +1,8 @@
 #pragma once
 
 enum class JobOfferType {
-    OIL_RAFFINER
+    OIL_RAFFINER,
+    AGRICULTOR
 };
 
 struct JobOffer {
