@@ -4,8 +4,8 @@ type icon_t = {list: {[key: string]: string;}, first: string};
 
 export abstract class HandObject {
     abstract getIcons(): icon_t;
-    abstract enable(): string|null;
-    abstract diseable(): void;
+    abstract enable(play: PlayState): string|null;
+    abstract diseable(play: PlayState): void;
 
     abstract mouseUp(x: number, y: number,
         btn: number, play: PlayState): void;
@@ -21,8 +21,8 @@ export abstract class HandObject {
 export class HandButton extends HandObject {
     readonly icons: icon_t;
 
-    private readonly _enable: () => string|null;
-    private readonly _disable: ()=>void;
+    private readonly _enable: (play: PlayState) => string|null;
+    private readonly _disable: (play: PlayState)=>void;
 
     private readonly _mouseUp: (x: number, y: number,
         btn: number, play: PlayState)=>void;
@@ -35,8 +35,8 @@ export class HandButton extends HandObject {
 
     constructor(
         icons: icon_t,
-        enable: ()=>string|null,
-        disable: ()=>void,
+        enable: (play: PlayState)=>string|null,
+        disable: (play: PlayState)=>void,
         mouseUp: (x: number, y: number, btn: number, play: PlayState)=>void,
         mouseDown: (x: number, y: number, btn: number, play: PlayState)=>void = ()=>{},
         mouseMove: (prevX: number, prevY: number,
@@ -55,11 +55,11 @@ export class HandButton extends HandObject {
         return this.icons;
     }
 
-    override enable() {
-        return this._enable();
+    override enable(play: PlayState) {
+        return this._enable(play);
     }
-    override diseable() {
-        this._disable();
+    override diseable(play: PlayState) {
+        this._disable(play);
     }
     
     override mouseUp(x: number, y: number, btn: number, play: PlayState) {
@@ -93,14 +93,14 @@ export class HandList extends HandObject {
         return this.list[0].getIcons();
     }
 
-    override enable() {
+    override enable(play: PlayState) {
         this.alive = true;
-        return this.list[this.selected].enable();
+        return this.list[this.selected].enable(play);
     }
     
-    override diseable() {
+    override diseable(play: PlayState) {
         this.alive = true;
-        this.list[this.selected].diseable();        
+        this.list[this.selected].diseable(play);        
     }
     
     override mouseUp(x: number, y: number, btn: number, play: PlayState) {
@@ -117,12 +117,12 @@ export class HandList extends HandObject {
         this.list[this.selected].mouseMove(prevX, prevY, x, y, btn, play);        
     }
 
-    change(idx: number) {
+    change(play: PlayState, idx: number) {
         if (this.alive) {
-            this.list[this.selected].diseable();
+            this.list[this.selected].diseable(play);
         }
 
         this.selected = idx;
-        return this.list[idx].enable();
+        return this.list[idx].enable(play);
     }
 }

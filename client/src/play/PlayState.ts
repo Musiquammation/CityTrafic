@@ -54,6 +54,7 @@ export class PlayState extends GameState {
 	private jobs: Job[] = [];
 	cars: Car[] = [];
 	characters: Character[] = [];
+	handData: any = null;
 
 	constructor() {
 		super();

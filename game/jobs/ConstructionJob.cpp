@@ -154,7 +154,7 @@ bool ConstructionJob::hire(
 
 
 	switch (offer.type) {
-	case JobOfferType::OIL_RAFFINER:
+	case JobOfferType::CONSTRUCTION:
 		if (!this->employeesCounters.workers.canHire()) {return false;}
 		break;
 
@@ -195,7 +195,7 @@ bool ConstructionJob::searchJobOffer(
 	JobOffer& offer
 ) const {
 	if (this->employeesCounters.workers.canHire()) {
-		offer.type = JobOfferType::OIL_RAFFINER;
+		offer.type = JobOfferType::CONSTRUCTION;
 		offer.salaryEstimation = int(this->salaryPerUnit * 200);
 		return true;
 	}

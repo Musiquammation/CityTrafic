@@ -98,7 +98,7 @@ Building* Building::create_construction(
 ) {
 	auto b = new Building;
 	b->owner = owner;
-	b->type = BuildingType::GROCERY;
+	b->type = BuildingType::CONSTRUCTION;
 	b->construction.job = job;
 	b->construction.goal = building;
 	b->construction.completion = 0;
@@ -397,7 +397,9 @@ uint32_t* Building::getPanelData(const Game& game) {
 		auto result = (uint32_t*)malloc(sizeof(uint32_t)*(COUNT+2));
 
 		/// TODO: that
-		result[0] = 32;
+		result[0] = COUNT;
+		result[1] = (uint32_t)-1;
+
 		return result;
 	}
 
@@ -423,8 +425,9 @@ uint32_t* Building::getPanelData(const Game& game) {
 		auto job = this->construction.job;
 		auto result = (uint32_t*)malloc(sizeof(uint32_t)*(COUNT+2));
 
+		printf("called\n");
 		result[0] = COUNT; // length (as uint32_t)
-		result[1] = (uint32_t)PanelId::BUILDING_GROCERY;
+		result[1] = (uint32_t)PanelId::BUILDING_CONSTRUCTION;
 		result[2] = (uint32_t)this->construction.goal->type;
 		result[3] = this->construction.completion;
 		result[4] = this->construction.total;
@@ -456,12 +459,11 @@ void Building::setPanelData(const uint32_t* data, Game& game) {
 	{
 		auto job = this->oilField.job;
 
-		job->startTime.hour = (short)(data[4]%24);
-		job->finishTime.hour = (short)(data[5]%24);
-		flt(job->salaryPerLiter) = data[6];
-		flt(job->pricePerLiter) = data[7];
-		job->employeesCounters.raffiners.current = data[8];
-		job->employeesCounters.raffiners.goal = data[9];
+		job->startTime.hour = (short)(data[0]%24);
+		job->finishTime.hour = (short)(data[1]%24);
+		flt(job->salaryPerLiter) = data[2];
+		flt(job->pricePerLiter) = data[3];
+		job->employeesCounters.raffiners.goal = data[4];
 		break;
 	}
 
@@ -478,8 +480,8 @@ void Building::setPanelData(const uint32_t* data, Game& game) {
 		float efficiency;
 		float salary;
 
-		flt(efficiency) = data[5];
-		flt(salary) = data[6];
+		flt(efficiency) = data[0];
+		flt(salary) = data[1];
 
 		if (salary != job->salaryPerHour) {
 			job->setSalary(game, this, salary);
@@ -493,8 +495,7 @@ void Building::setPanelData(const uint32_t* data, Game& game) {
 	case BuildingType::CONSTRUCTION:
 	{
 		auto job = this->construction.job;
-		job->employeesCounters.workers.current = data[5];
-		job->employeesCounters.workers.goal = data[6];
+		job->employeesCounters.workers.goal = data[0];
 		break;
 	}
 

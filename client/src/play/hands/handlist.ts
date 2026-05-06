@@ -1,4 +1,5 @@
 import { sendCommand } from '../../net/sendCommand';
+import { sendSocket } from '../../net/sendSocket';
 import { COMMAND_CODES } from '../../shared/CommandCode';
 import { HandPanel } from '../HandPanel';
 import { PlayState } from '../PlayState';
@@ -119,7 +120,10 @@ function placeParking(
 }
 
 
-function applyTurn(x: number, y: number, btn: number, play: PlayState, edit: boolean) {
+function applyTurn(
+	x: number, y: number, btn: number,
+	play: PlayState, edit: boolean
+) {
 	x = Math.floor(x);
 	y = Math.floor(y);
 	const current = play.getCell(x, y);
@@ -142,6 +146,83 @@ function applyTurn(x: number, y: number, btn: number, play: PlayState, edit: boo
 	}
 }
 
+
+
+
+
+function ask(play: PlayState, label: string, text: string) {
+	const r = prompt(text);
+	if (r === null)
+		play.handData = null;
+	
+	if (play.handData) {
+		play.handData[label] = r;
+	}
+}
+
+
+
+
+const placeHome = new HandButton(
+	{
+		list: {placeHome: "assets/icons/placeHome.png"},
+		first: 'placeHome'
+	},
+
+	// enable
+	play => {
+		play.handData = {};
+
+		
+		
+		ask(play, 'money',"Total money given to employees " +
+				"(to motivate citizen to get this job)");
+
+		ask(play, 'capacity',
+				"Capacity (increase construction time)");
+		ask(play, 'rent', "Rent");
+
+		return 'placeHome';
+	},
+
+	// diseable
+	play => {
+		play.handData = null;
+	},
+
+	// mouseUp
+	(x, y, btn, play) => {
+		
+
+	},
+
+	// mouseDown
+	(x, y, btn, play) => {
+		x = Math.floor(x);
+		y = Math.floor(y);
+
+		const current = play.getCell(x, y);
+		if (btn === HandPanel.RIGHT_BTN && current !== null) {
+			applyDefaultRightClick(x, y, current, play);
+		}
+		
+		const data = play.handData;
+		if (data === null)
+			return;
+
+		sendCommand(COMMAND_CODES.PLACE_HOME, writer => {
+			writer.writeUint32(x);
+			writer.writeUint32(y);
+			writer.writeInt32(data.money);
+			writer.writeInt32(data.capacity);
+			writer.writeInt32(data.rent);
+		});
+	},
+
+	// mouseMove
+	(prevX, prevY, x, y, btn, play) => {
+	},
+);
 
 export const handlist = {
 	erase: new HandButton(
@@ -179,7 +260,7 @@ export const handlist = {
 		},
 
 		// enable
-		()=>null,
+		()=>'road',
 
 		// diseable
 		()=>{},
@@ -208,7 +289,7 @@ export const handlist = {
 		},
 
 		// enable
-		()=>null,
+		()=>'parking',
 
 		// diseable
 		()=>{},
@@ -236,7 +317,7 @@ export const handlist = {
 		},
 
 		// enable
-		()=>null,
+		()=>'turn',
 
 		// diseable
 		()=>{},
@@ -255,6 +336,9 @@ export const handlist = {
 		(prevX, prevY, x, y, btn, play) => {
 			applyTurn(x, y, btn, play, false);
 		},
-	)
+	),
+
+
+	placeHome
 
 }

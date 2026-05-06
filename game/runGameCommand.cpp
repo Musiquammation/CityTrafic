@@ -161,14 +161,14 @@ def(direction) {
 def(placeHome) {
 	int x = take(int32_t);
 	int y = take(int32_t);
-	int constructionSalary = take(int32_t);
+	int constructionMoney = take(int32_t);
 	int capacity = take(int32_t);
 	int rent = take(int32_t);
 	int playerId = game.getPlayerId(player);
 
 	auto building = Building::create_home(playerId, capacity, rent);
 	auto constructionJob = new ConstructionJob{
-		(float)constructionSalary / (float)building->getConstructionCost()
+		(float)constructionMoney / (float)building->getConstructionCost()
 	};
 	auto construction = Building::create_construction(
 		constructionJob,
@@ -183,11 +183,11 @@ def(placeHome) {
 	}
 
 
-	return nullptr;
+	return ptr;
 }
 
 def(placeGrossery) {
-	return nullptr;
+	return ptr;
 }
 
 

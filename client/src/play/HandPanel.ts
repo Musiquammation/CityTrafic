@@ -1,8 +1,10 @@
+import { getGameHandler } from "../gameHandler";
 import { ImageLoader } from "../handler/ImageLoader";
 import { sendCommand } from "../net/sendCommand";
 import { COMMAND_CODES } from "../shared/CommandCode";
 import { handlist } from "./hands/handlist";
 import { HandButton, HandList, HandObject } from "./hands/handtypes";
+import { PlayState } from "./PlayState";
 
 
 
@@ -89,6 +91,7 @@ export class HandPanel {
 		pushButton(handlist.road);
 		pushButton(handlist.parking);
 		pushButton(handlist.turn);
+		pushButton(handlist.placeHome);
 
 
 
@@ -112,8 +115,12 @@ export class HandPanel {
 		this.div.children[this.selected].classList.remove('selected');
 		this.div.children[idx].classList.add('selected');
 		
-		this.list[this.selected].diseable();
-		const icon = this.list[idx].enable();
+		const play = getGameHandler().getState();
+		if (!(play instanceof PlayState))
+			throw new TypeError("PlayState type was expected");
+
+		this.list[this.selected].diseable(play);
+		const icon = this.list[idx].enable(play);
 
 		this.selected = idx;
 
