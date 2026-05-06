@@ -29,7 +29,7 @@ class Character {
 	Car* car = nullptr;
 	ActionExecutor executor;
 	Vector<int> jobLoc = {INT32_MIN, INT32_MIN};
-	Vector<int> home;
+	Vector<int> home = {INT32_MIN, INT32_MIN};
 	CharacterState state;
 	CharacterStatus status = CharacterStatus::IDLE;
 	int money = 0;
@@ -106,6 +106,8 @@ public:
 	Vector<int> getPos() const;
 
 	auto getHome() const {return this->home;}
+	void kickFromHouse();
+
 	Car* getCar() const;
 	bool setCar(Car* car);
 
@@ -123,7 +125,7 @@ public:
 	void give(int money);
 	int pay(int money);
 
-
+	bool isAtHome(const Game& game) const;
 
 	uint32_t* sendData(uint32_t* ptr);
 

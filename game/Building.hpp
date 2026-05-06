@@ -17,7 +17,7 @@ struct Building {
 	union {
 		struct {
 			Character** characters;
-			int leftEmployees;
+			int left;
 			int capacity;
 			int rent;
 		} home;
@@ -104,5 +104,10 @@ struct Building {
 	Job* getJob();
 
 	void destroy(Game& game);
+
+
+	bool home_addCharacter(Character* c);
+	bool home_removeCharacter(Character* c);
+
 	~Building();
 };

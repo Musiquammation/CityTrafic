@@ -353,6 +353,7 @@ struct CharacterFriend {
 		
 		// Cannot pay rent, so character quits home
 		c->home.x = INT32_MIN; // no home
+		building->home_removeCharacter(c);
 		return ActionCode::FAILURE;
 	}
 
@@ -361,12 +362,8 @@ struct CharacterFriend {
 		printStatus("isAtHome\n");
 		printStatus("  money %d\n", c->money);
 
-		if (!c->isInside())
-			return ActionCode::FAILURE;
-
-		auto p = c->getPos();
-		auto info = game.getBuilding(p.x, p.y);
-		if (info.x == c->home.x && info.y == c->home.y) {
+		bool isAtHome = c->isAtHome(game);
+		if (isAtHome) {
 			printStatus("  success\n");
 			return ActionCode::SUCCESS;
 		}

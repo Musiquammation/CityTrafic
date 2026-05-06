@@ -154,7 +154,6 @@ Character* Character::spawnCharacter(const Map& map, int x, int y) {
 
 	c->x = (float)x + .5f;
 	c->y = (float)y + .5f;
-	c->home = {info.x, info.y};
 	c->state = CharacterState::INSIDE;
 	c->money = 0;
 	c->data.inside.index = index;
@@ -380,6 +379,10 @@ int Character::takeRandomPointId(int modulo) {
 }
 
 
+void Character::kickFromHouse() {
+	this->home.x = INT32_MIN;
+}
+
 Car* Character::getCar() const {
 	return this->car;
 }
@@ -471,8 +474,21 @@ int Character::pay(int money) {
 	int given = this->money;
 	this->money = 0;
 	return given;
+}
+
+bool Character::isAtHome(const Game& game) const {
+	if (this->home.x == INT32_MIN)
+		return false;
+
+	if (!this->isInside())
+		return false;
+
+	auto p = this->getPos();
+	auto info = game.getBuilding(p.x, p.y);
+	return (info.x == this->home.x && info.y == this->home.y);
 
 }
+
 
 uint32_t* Character::sendData(uint32_t* ptr) {
 	ptr[0] = (uint32_t)this->status;

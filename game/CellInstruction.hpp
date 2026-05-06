@@ -1,6 +1,8 @@
 #pragma once
 
-enum class CellInstruction {
+#include "cell_t.hpp"
+
+enum class CellInstruction: cell_t {
     EMPTY,
     BUILDING
 };

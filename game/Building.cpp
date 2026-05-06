@@ -2,6 +2,7 @@
 
 #include "PanelId.hpp"
 #include "Game.hpp"
+#include "Character.hpp"
 
 #include "jobs/OilFieldJob.hpp"
 #include "jobs/AgricultorJob.hpp"
@@ -31,7 +32,7 @@ Building* Building::create_home(
 	auto b = new Building;
 	b->owner = owner;
 	b->type = BuildingType::HOME;
-	b->home.leftEmployees = capacity;
+	b->home.left = 0;
 	b->home.capacity = capacity;
 	b->home.rent = rent;
 	b->home.characters = new Character*[capacity];
@@ -247,14 +248,7 @@ int Building::enter(Character* c) {
 	switch (this->type) {
 	case BuildingType::HOME:
 	{
-		for (int i = 0; i < this->home.capacity; i++) {
-			if (this->home.characters[i] == nullptr) {
-				this->home.characters[i] = c;
-				this->home.leftEmployees--;
-				return i;
-			}
-		}
-		return -1;
+		return 0;
 	}
 
 	case BuildingType::OIL_FIELD:
@@ -295,10 +289,6 @@ void Building::leave(int position) {
 	switch (this->type) {
 	case BuildingType::HOME:
 	{
-		if (this->home.characters[position]) {
-			this->home.leftEmployees++;
-		}
-		this->home.characters[position] = nullptr;
 		break;
 	}
 
@@ -330,10 +320,10 @@ void Building::leave(int position) {
 bool Building::isFull() const {
 	switch (this->type) {
 	case BuildingType::HOME:
-		return this->home.leftEmployees == 0;
+		return false;
 
 	case BuildingType::OIL_FIELD:
-		return this->home.leftEmployees == 0;
+		return this->oilField.leftEmployees == 0;
 
 	case BuildingType::PLANTATION:
 		return false;
@@ -538,6 +528,13 @@ void Building::destroy(Game& game) {
 	switch (this->type) {
 	case BuildingType::HOME:
 	{
+		for (int i = 0; i < this->home.capacity; i++) {
+			auto c = this->home.characters[i];
+			if (c) {
+				c->kickFromHouse();
+			}
+		}
+
 		delete[] this->home.characters;
 		break;
 	}
@@ -579,6 +576,56 @@ void Building::destroy(Game& game) {
 	#endif
 
 }
+
+
+bool Building::home_addCharacter(Character* c) {
+	#if TESTING_SERV
+	if (this->type != BuildingType::HOME) {
+		throw std::runtime_error{"HOME type was expected"};
+	}
+	#endif
+
+
+	if (this->home.left == 0)
+		return false;
+
+	for (int i = 0; i < this->home.capacity; i++) {
+		if (this->home.characters[i] == nullptr) {
+			this->home.left--;
+			this->home.characters[i] = c;
+			return true;
+		}
+	}
+
+	this->home.left = 0;
+	return false;
+}
+
+bool Building::home_removeCharacter(Character* c) {
+	#if TESTING_SERV
+	if (this->type != BuildingType::HOME) {
+		throw std::runtime_error{"HOME type was expected"};
+	}
+	#endif
+
+	for (int i = 0; i < this->home.capacity; i++) {
+		if (this->home.characters[i] == c) {
+			this->home.left--;
+			this->home.characters[i] = nullptr;
+			return true;
+		}
+	}
+
+	return false;
+}
+
+
+
+
+
+
+
+
 
 Building::~Building() {
 	#if TESTING_SERV
