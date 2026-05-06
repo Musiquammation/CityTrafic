@@ -66,8 +66,8 @@ public:
 
 	Vector<int> searchHome(
 		int maxRent,
-		float cx,
-		float cy
+		int cx,
+		int cy
 	);
 
 	~Game();

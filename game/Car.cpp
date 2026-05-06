@@ -44,7 +44,6 @@ void Car::update(Game* game, std::vector<PriorityNode>& prioritiesBuffer) {
 
 		float resultAcc = this->realSpeed - s;
 		this->fuel -= resultAcc * Car::ACCELERATION_FUEL_COST;
-		printf("Fuel %.3f\n", this->fuel);
 	}
 
 }

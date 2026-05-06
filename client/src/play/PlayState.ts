@@ -291,8 +291,6 @@ export class PlayState extends GameState {
 					ctx.save();
 					ctx.translate(x+dx, y+dy);
 					if (drawCell(cell, ctx, loader)) {
-						debugger;
-
 						// Draw building
 						const size = getBuildingSize(
 							chunks,

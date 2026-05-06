@@ -32,7 +32,7 @@ Building* Building::create_home(
 	auto b = new Building;
 	b->owner = owner;
 	b->type = BuildingType::HOME;
-	b->home.left = 0;
+	b->home.left = capacity;
 	b->home.capacity = capacity;
 	b->home.rent = rent;
 	b->home.characters = new Character*[capacity];
@@ -139,7 +139,7 @@ int Building::fillEntryList(Vector<int> list[]) const {
 	Vector<int>* ptr = list;
 	switch (this->type) {
 	case BuildingType::HOME:
-		*ptr++ = {2, 0};
+		*ptr++ = {1, 0};
 		break;
 
 	case BuildingType::OIL_FIELD:
@@ -170,7 +170,7 @@ int Building::fillLeaveList(Vector<int> list[]) const {
 	Vector<int>* ptr = list;
 	switch (this->type) {
 	case BuildingType::HOME:
-		*ptr++ = {2, 1};
+		*ptr++ = {0, 1};
 		break;
 
 	case BuildingType::OIL_FIELD:
@@ -252,6 +252,7 @@ int Building::enter(Character* c) {
 	switch (this->type) {
 	case BuildingType::HOME:
 	{
+		print("Enter home\n");
 		return 0;
 	}
 
@@ -293,6 +294,7 @@ void Building::leave(int position) {
 	switch (this->type) {
 	case BuildingType::HOME:
 	{
+		print("Leave home\n");
 		break;
 	}
 

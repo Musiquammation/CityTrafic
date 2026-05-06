@@ -11,6 +11,7 @@
 #include "DebugLogger.hpp"
 static DebugLogger printSpec{"Spec", false};
 static DebugLogger print{"Character", true};
+static DebugLogger printSeeds{"Seeds", false};
 
 #include <stdio.h>
 #include <math.h>
@@ -45,6 +46,9 @@ void Character::cleanupState() {
 		this->x = (float)this->car->x + .5f;
 		this->y = (float)this->car->y + .5f;
 		this->car->finishDriving(this);
+		break;
+
+	case CharacterState::WAIT:
 		break;
 	}
 }
@@ -240,6 +244,7 @@ bool Character::makeDrive(Map& map, int destX, int destY) {
 bool Character::makeInside(Game& game) {
 	auto pos = this->getPos();
 	auto info = game.getBuilding(pos.x, pos.y);
+	print("Enters (%d %d): %p\n", pos.x, pos.y, info.building);
 	if (!info.building)
 		return false;
 
@@ -359,7 +364,7 @@ void Character::frame(Game& game) {
 	if (this->state == CharacterState::CLIENT)
 		return;
 	
-	print("seeds %5.4f\n", this->seeds);
+	printSeeds("%5.4f\n", this->seeds);
 
 	// Consume food
 	this->seeds -= 0.0003f;

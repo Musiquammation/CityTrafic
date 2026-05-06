@@ -189,9 +189,11 @@ Vector<int> Game::searchJob(
 
 Vector<int> Game::searchHome(
 	int maxRent,
-	float cx,
-	float cy
+	int cx,
+	int cy
 ) {
+	static constexpr int RADIUS = 250;
+
 	for (auto it = this->map.buildings_begin();
 		it != this->map.buildings_end();
 		it++
@@ -210,10 +212,10 @@ Vector<int> Game::searchHome(
 		Vector<int> pos = it->first;
 		int dx = pos.x - cx;
 		int dy = pos.y - cy;
-		float dist = sqrtf(float(dx*dx + dy*dy));
-		if (dist > 64.0f)
+		if (dx*dx + dy*dy > RADIUS * RADIUS)
 			continue;
 
+		printf("=> %d %d\n", pos.x, pos.y);
 		return pos;
 	}
 

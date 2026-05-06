@@ -16,7 +16,7 @@
 
 #include "../DebugLogger.hpp"
 
-static DebugLogger printStatus{"Status", false};
+static DebugLogger printStatus{"Status", true};
 static DebugLogger print{"Action", true};
 static DebugLogger printWalk{"Walk", false};
 static DebugLogger printDrive{"Drive", false};
@@ -385,7 +385,8 @@ struct CharacterFriend {
 		printStatus("searchHome\n");
 		setCharacter();
 
-		auto home = game.searchHome(c->money/2, c->x, c->y);
+		auto pos = c->getPos();
+		auto home = game.searchHome(c->money/2, pos.x, pos.y);
 		printStatus("  got %d %d\n", home.x, home.y);
 		if (home.x == INT32_MIN)
 			return ActionCode::FAILURE;	
