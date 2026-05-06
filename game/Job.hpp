@@ -18,6 +18,7 @@ public:
 
 	void give(int money);
 	int pay(int money);
+	int getMoney() const;
 	void destroy(Game& game, int owner);
 	
 	

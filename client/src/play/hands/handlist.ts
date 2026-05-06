@@ -32,7 +32,7 @@ function applyDefaultRightClick(
 
 	// Building
 	if (cellType === 2 || cellType === 3) {
-		runPanel({building: {x, y}});
+		setTimeout(() => runPanel({building: {x, y}}));
 		return;
 	}
 }

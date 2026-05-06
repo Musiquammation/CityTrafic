@@ -571,7 +571,9 @@ void Building::destroy(Game& game) {
 	}
 	}
 
+	// Take job money and then destroy job
 	Job* job = this->getJob();
+	game.getPlayer(this->owner)->money += job->getMoney();
 	if (job) {
 		job->destroy(game, this->owner);
 	}
