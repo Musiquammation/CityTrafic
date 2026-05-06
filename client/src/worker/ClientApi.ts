@@ -258,6 +258,12 @@ export class ClientApi {
 			transfered.push(cells.buffer);
 		}
 
+		chunks.sort((a, b) => {
+			if (a.x !== b.x) return a.x - b.x;
+			return a.y - b.y;
+		});
+
+
 		return {
 			result: chunks,
 			transfered

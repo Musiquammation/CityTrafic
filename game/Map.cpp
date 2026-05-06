@@ -342,6 +342,7 @@ bool Map::addBuilding(int x, int y, Building* building, Game& game) {
 	if (!building) return false;
 
 	const auto size = building->getSize();
+	cell_t drawFlag = building->isSizeConstant() ? 0:(1<<14);
 
 	// Check bounds
 	if (!checkBounds(x, y, size.x, size.y)) {
@@ -356,13 +357,13 @@ bool Map::addBuilding(int x, int y, Building* building, Game& game) {
 
 	// Try to fill area
 	for (int dy = 0; dy < size.y; dy++) {
-		cell_t argBase;
+		cell_t argBase = drawFlag;
 		if (dy < 16) {
-			argBase = (cell_t)(dy<<8); // direct
+			argBase |= (cell_t)(dy<<8); // direct
 		} else {
 			int decalage = dy / 4 - 1;
 			if (decalage>15) {decalage=15;}
-			argBase = (cell_t)((1<<13) | (decalage<<8)); // jump
+			argBase |= (cell_t)((1<<13) | (decalage<<8)); // jump
 		}
 		
 		for (int dx = 0; dx < size.x; dx++) {

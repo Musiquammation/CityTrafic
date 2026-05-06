@@ -21,6 +21,7 @@ import { loadAssets } from "./loadAssets";
 import { evalCalendar } from "./evalCalendar";
 import { Job } from "./Job";
 import { EntityDataHandler } from "./EntityDataHandler";
+import { drawBuilding } from "./drawBuilding";
 
 function modulo(a: number, n: number) {
 	return (a % n + n) % n;
@@ -31,6 +32,124 @@ const html_day = document.getElementById("gameDay")!;
 const html_year = document.getElementById("gameYear")!;
 const html_hour = document.getElementById("gameHour")!;
 const html_money = document.getElementById("gameMoney")!;
+
+interface FastChunk {
+	x: number;
+	y: number;
+	cells: Uint16Array;
+}
+
+function searchChunk(chunks: FastChunk[], x: number, y: number) {
+    let left = 0;
+    let right = chunks.length - 1;
+
+    while (left <= right) {
+        const mid = (left + right) >> 1;
+        const c = chunks[mid];
+
+        if (c.x === x && c.y === y) {
+            return c;
+        }
+
+        if (c.x < x || (c.x === x && c.y < y)) {
+            left = mid + 1;
+        } else {
+            right = mid - 1;
+        }
+    }
+
+    return null;
+}
+
+function getBuildingSize(
+	chunks: FastChunk[],
+	chunk: FastChunk,
+	dx: number, dy: number
+) {
+	let width = 1;
+	let height = 1;
+
+
+	const base = dy * Chunk.SIZE;
+	// Get width
+	{
+		let ptr = base + dx;
+		let pos = dx;
+		let cx = chunk.x;
+		let cy = chunk.y;
+
+		// Next block
+		
+		while (true) {
+			ptr++;
+			pos++;
+				
+			if (pos >= Chunk.SIZE) {
+				pos -= Chunk.SIZE;
+				cx++;
+
+				const next = searchChunk(chunks, cx, cy);
+				if (!next)
+					break;
+
+				chunk = next;
+				ptr = base + pos;
+			}
+
+			const cell = chunk.cells[ptr];
+
+			// Check type
+			if ((cell & 0xf) !== 3)
+				break;
+
+			// Check for dy
+			if (((cell >> 8) & 0xf) || (cell & (1<<13)))
+				break;
+
+			width++;
+		}
+	}
+
+	// Get height
+	{
+		let ptr = base + dx;
+		let pos = dy;
+		let cx = chunk.x;
+		let cy = chunk.y;
+
+		// Next block
+		while (true) {
+			ptr += Chunk.SIZE;
+			pos++;
+
+			if (pos >= Chunk.SIZE) {
+				pos -= Chunk.SIZE;
+				cy++;
+
+				const next = searchChunk(chunks, cx, cy);
+				if (!next)
+					break;
+
+				chunk = next;
+				ptr = pos * Chunk.SIZE + dx;
+			}
+
+			const cell = chunk.cells[ptr];
+
+			// Check type
+			if ((cell & 0xf) !== 3)
+				break;
+
+			// Check for dx
+			if (((cell >> 4) & 0xf) || (cell & (1<<12)))
+				break;
+
+			height++;
+		}
+	}
+
+	return {width, height};
+}
 
 export class PlayState extends GameState {
 	private camX = 0;
@@ -144,11 +263,7 @@ export class PlayState extends GameState {
 		const rangeW = GAME_WIDTH/this.camZ;
 		const rangeH = GAME_HEIGHT/this.camZ;
 
-		const chunks = await askWorker<{
-			x: number,
-			y: number,
-			cells: Uint16Array
-		}[]>('getChunks', [
+		const chunks = await askWorker<FastChunk[]>('getChunks', [
 			Math.floor(this.camX - rangeW/2),
 			Math.floor(this.camY - rangeH/2),
 			Math.floor(rangeW),
@@ -156,10 +271,16 @@ export class PlayState extends GameState {
 		]);
 
 
-		// Update chunks
+		// Update and sort chunks
 		this.chunks = chunks;
+		chunks.sort((a, b) => {
+			if (a.x !== b.x) return a.x - b.x;
+			return a.y - b.y;
+		});
 
-		for (const {x, y, cells} of chunks) {
+
+		for (const chunk of chunks) {
+			const {x, y, cells} = chunk;
 			let j = 0;
 			for (let dy = 0; dy < Chunk.SIZE; dy++) {
 				for (let dx = 0; dx < Chunk.SIZE; dx++) {
@@ -169,7 +290,19 @@ export class PlayState extends GameState {
 
 					ctx.save();
 					ctx.translate(x+dx, y+dy);
-					drawCell(cell, ctx, loader);
+					if (drawCell(cell, ctx, loader)) {
+						debugger;
+
+						// Draw building
+						const size = getBuildingSize(
+							chunks,
+							chunk,
+							dx, dy,
+						);
+						
+
+						drawBuilding(cell >> 4, ctx, loader, size);
+					}
 					ctx.restore();
 				}
 			}
@@ -218,6 +351,7 @@ export class PlayState extends GameState {
 
 		// Draw game
 		args.followCamera();
+		ctx.imageSmoothingEnabled = false;
 		await this.drawGrid(ctx, args.imageLoader);
 		this.drawCharacters(ctx);
 		this.drawCars(ctx);
@@ -244,7 +378,6 @@ export class PlayState extends GameState {
 
 
 	sendCameraUpdate() {
-		console.log("cam");
 		const writer = new DataWriter();
 		writer.writeUint8(SERVER_IDS.LISTEN);
 		writer.skip(3);

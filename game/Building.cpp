@@ -17,11 +17,11 @@ DebugLogger print{"Building"};
 #include <stdint.h>
 
 const Vector<int> SIZES[] = {
-	{3,2},
-	{-1,-1},
-	{8,4},
-	{3,3},
-	{-1,-1}
+	{2,2},    // home
+	{-1,-1},  // oil field
+	{8,4},    // plantation
+	{3,3},    // grocery
+	{-1,-1}   // construction
 };
 
 Building* Building::create_home(
@@ -124,6 +124,10 @@ Vector<int> Building::getSize() const {
 	default:
 		return {1,1};
 	}
+}
+
+bool Building::isSizeConstant() const {
+	return SIZES[(int)this->type].x >= 0;
 }
 
 

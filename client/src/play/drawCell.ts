@@ -1,5 +1,6 @@
 import { ImageLoader } from "../handler/ImageLoader";
 import { direction } from "./direction";
+import { drawBuilding } from "./drawBuilding";
 
 const DIRECTION_NAMES = ['all', 'front', 'turn', 'turn', 'select', 'select', 'share', 'all'];
 const DIRECTION_FLIPS = [false, false, false, true, false, true, false];
@@ -30,18 +31,16 @@ export function drawCell(
 
 
 	case 2: // building
-		ctx.fillStyle = "#008000";
-		ctx.fillRect(0, 0, 1, 1);
-		break
+		return drawBuilding(data >> 4, ctx, loader, null);
 
 	case 3: // link
-		ctx.fillStyle = "#00ff00";
-		ctx.fillRect(0, 0, 1, 1);
+		if (data & (1<<14)) {
+			/// TODO: draw link cell
+		}
 		break;
 
 	case 4: // parking
-		ctx.fillStyle = "pink";
-		ctx.fillRect(0, 0, 1, 1);
+		ctx.drawImage(loader.get('parking'), 0, 0, 1, 1);
 		break;
 
 	case 5: // direction
@@ -80,4 +79,7 @@ export function drawCell(
 
 	}
 	}
+
+
+	return false;
 }

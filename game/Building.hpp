@@ -92,6 +92,7 @@ struct Building {
 	bool isFull() const;
 	
 	Vector<int> getSize() const;
+	bool isSizeConstant() const;
 	int getBufferLargeLength() const;
 	int fillEntryList(Vector<int> list[]) const;
 	int fillLeaveList(Vector<int> list[]) const;

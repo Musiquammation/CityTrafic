@@ -165,8 +165,8 @@ function ask(play: PlayState, label: string, text: string) {
 
 const placeHome = new HandButton(
 	{
-		list: {placeHome: "assets/icons/placeHome.png"},
-		first: 'placeHome'
+		list: {home: "assets/home.png"},
+		first: 'home'
 	},
 
 	// enable
