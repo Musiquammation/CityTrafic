@@ -71,6 +71,14 @@ export class DataWriter {
 		return this;
 	}
 
+	writeUint64(value: bigint, littleEndian: boolean = true) {
+		this.checkSize(8);
+		this.view.setBigUint64(this.offset, value, littleEndian);
+		this.offset += 8;
+		return this;
+	}
+
+
 	writeFloat32(value: number, littleEndian: boolean = true) {
 		this.checkSize(4);
 		this.view.setFloat32(this.offset, value, littleEndian);

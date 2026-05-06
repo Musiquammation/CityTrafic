@@ -7,5 +7,6 @@ export enum CLIENT_IDS {
 	EDITS,
 	UPDATE,
 	PANEL,
+	GET_ENTITY,
 	ERROR,
 }

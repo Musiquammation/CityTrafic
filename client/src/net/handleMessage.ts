@@ -125,13 +125,18 @@ async function net_getUpdate(reader: DataReader) {
 		cars[i] = {x,y,step,speed,direction,state};
 	}
 
+	if (carsCount % 2) {
+		reader.skip(4);
+	}
+
 	// Read characters
 	const charactersCount = reader.readUint32();
 	const characters = new Array<Character>(charactersCount);
 	for (let i = 0; i < charactersCount; i++) {
+		const ptr = reader.readUint64();
 		const x = reader.readFloat32();
 		const y = reader.readFloat32();
-		characters[i] = {x,y};
+		characters[i] = {x,y,ptr};
 	}
 
 
@@ -174,6 +179,13 @@ function net_panel(reader: DataReader) {
 	resolvePanel(id, reader);
 }
 
+function net_getEntity(reader: DataReader) {
+	const state = getGameHandler().getState();
+	if (state instanceof PlayState) {
+		state.entityData.recv(reader);
+	}
+}
+
 export function handleMessage(reader: DataReader): DataWriter | null {
 	const action = reader.readUint8();
 
@@ -197,6 +209,12 @@ export function handleMessage(reader: DataReader): DataWriter | null {
 	case CLIENT_IDS.PANEL:
 		net_panel(reader);
 		return null;
+
+	case CLIENT_IDS.GET_ENTITY:
+		net_getEntity(reader);
+		return null;
+
+	
 		
 	default:
 		throw new Error("Unknown action " + action);

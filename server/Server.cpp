@@ -11,6 +11,7 @@
 #include <game/Game.hpp>
 #include <game/Map.hpp>
 #include <game/Building.hpp>
+#include <game/Character.hpp>
 #include <game/Job.hpp>
 #include <game/runGameCommand.hpp>
 #include <game/updateNet_helper.hpp>
@@ -397,6 +398,37 @@ uint8_t* Server::getPanel(Client* client, const uint8_t* ptr) {
 }
 
 
+uint8_t* Server::getCharacter(Client* client, const uint8_t* ptr) {
+	align(ptr,7);
+
+	Character* character = (Character*)(take(uint64_t));
+	auto game = client->match->getGame<true>();
+	uint8_t* const response = (uint8_t*)malloc(
+		sizeof(uint32_t) * (4+3)
+	);
+	uint8_t* res = response;
+	align(res,4); // for final size
+	push(uint8_t, ClientId::GET_ENTITY);
+
+	
+	if (character && game->characterHandler.contains(character)) {
+		push(uint8_t, 1); // pointer is valid
+		push(uint16_t, 0); // character
+		push(uint64_t, (uint64_t)character);
+		res = (uint8_t*)character->sendData((uint32_t*)res);
+	} else {
+		push(uint8_t, 0); // pointer not valid
+		push(uint16_t, 0); // character
+		push(uint64_t, (uint64_t)character);
+	}
+	
+
+	retRes();
+}
+
+uint8_t* Server::getCar(Client* client, const uint8_t* args) {
+	throw std::runtime_error{"[TODO:] getCar"};
+}
 
 uint8_t* Server::onerror(Client* client, const uint8_t* ptr) {
 	return nullptr;

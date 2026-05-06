@@ -20,6 +20,7 @@ import { ImageLoader } from "../handler/ImageLoader";
 import { loadAssets } from "./loadAssets";
 import { evalCalendar } from "./evalCalendar";
 import { Job } from "./Job";
+import { EntityDataHandler } from "./EntityDataHandler";
 
 function modulo(a: number, n: number) {
 	return (a % n + n) % n;
@@ -48,6 +49,7 @@ export class PlayState extends GameState {
 		cells: Uint16Array<ArrayBufferLike>;
 	}[] = [];
 	
+	readonly entityData = new EntityDataHandler(this);
 	readonly handPanel: HandPanel;
 	private jobs: Job[] = [];
 	cars: Car[] = [];
@@ -109,6 +111,11 @@ export class PlayState extends GameState {
 
 	frame(game: GameHandler): GameState | null {
 		this.handleInputs(game.inputHandler);
+
+		const mouse = this.mouseHandler.getMouse();
+		if (mouse) {
+			this.selectEntityDataPoint(mouse.x, mouse.y);
+		}
 
 		this.frameCount++;
 		return null;
@@ -210,9 +217,10 @@ export class PlayState extends GameState {
 
 		// Draw game
 		args.followCamera();
-		await this.drawGrid(args.ctx, args.imageLoader);
-		this.drawCharacters(args.ctx);
-		this.drawCars(args.ctx);
+		await this.drawGrid(ctx, args.imageLoader);
+		this.drawCharacters(ctx);
+		this.drawCars(ctx);
+		this.entityData.drawBubble(ctx);
 		args.unfollowCamera();
 		
 
@@ -314,4 +322,24 @@ export class PlayState extends GameState {
 	setJobs(jobs: Job[]) {
 		this.jobs = jobs;
 	}
+
+
+
+	private selectEntityDataPoint(x: number, y: number) {
+		for (let i = 0; i < this.characters.length; i++) {
+			const c = this.characters[i];
+			const left = c.x - CHARACTER_SIZE.x/2;
+			const right = c.x + CHARACTER_SIZE.x/2;
+			const top = c.y - CHARACTER_SIZE.y/2;
+			const bottom = c.y + CHARACTER_SIZE.y/2;
+
+			if (left <= x && x <= right && top <= y && y <= bottom) {
+				this.entityData.ask(c.ptr, 'character');
+				return;
+			}
+		}
+
+		this.entityData.unselect();
+	}
+
 }

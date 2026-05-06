@@ -20,6 +20,8 @@ class Server {
 	uint8_t* runCommand(Client* client, const uint8_t* args);
 	uint8_t* getUpdates(Client* client, const uint8_t* args);
 	uint8_t* getPanel(Client* client, const uint8_t* args);
+	uint8_t* getCharacter(Client* client, const uint8_t* args);
+	uint8_t* getCar(Client* client, const uint8_t* args);
 	uint8_t* onerror(Client* client, const uint8_t* args);
 
 	void disconnect(Client* client);

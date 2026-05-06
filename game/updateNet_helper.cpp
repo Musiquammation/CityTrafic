@@ -61,16 +61,26 @@ uint32_t* updateNet_helper_write(
 		jobSize = 0;
 	}
 
+	// 64bits alignement
+	int alignCars = (carsCount % 2 == 1) ? 1:0;
+
 	uint32_t fullSize = sizeof(uint32_t) * (
+		+ 1 // full size
 		+ 1 // money
 		+ 1 // jobSize
 		+ jobSize
 		+ 2 // date
+		+ 1 // cars count
 		+ carsCount*5 // cars
-		+ charactersCount*2 + 3 // characters
+		+ alignCars
+		+ 1 // character count
+		+ charactersCount*4 // characters
 	);
 
-	uint32_t* const buffer = (uint32_t*)malloc(fullSize + sizeof(uint32_t));
+	uint32_t* const buffer = (uint32_t*)malloc(
+		fullSize +
+		sizeof(uint32_t)
+	);
 	*(uint8_t*)buffer = clientRequestId;
 
 	uint32_t* ptr = buffer + 1;
@@ -113,6 +123,11 @@ uint32_t* updateNet_helper_write(
 		}
 	}
 
+
+	if (alignCars) {
+		ptr++;
+	}
+
 	// Send characters
 	push(charactersCount);
 	for (auto character: game.characterHandler) {
@@ -122,6 +137,7 @@ uint32_t* updateNet_helper_write(
 			&& character->x >= fx0 && character->x < fx1
 			&& character->y >= fy0 && character->y < fy1
 		) {
+			push64((uint64_t)character);
 			push(*(uint32_t*)&character->x);
 			push(*(uint32_t*)&character->y);
 		}
@@ -164,8 +180,11 @@ void updateNet_helper_read(Game& game, void* args) {
 		car->setSpeed(speed);
 	}
 
+	if (carsCount % 2) {ptr++;}
+
 	uint32_t charactersCount = *ptr++;
 	for (uint32_t i = 0; i < charactersCount; i++) {
+		ptr += 2; // pointer	
 		float x = *(float*)(ptr++);
 		float y = *(float*)(ptr++);
 

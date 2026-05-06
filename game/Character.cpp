@@ -297,7 +297,6 @@ void Character::notifyDrive() {
 }
 
 BuildingInfo Character::getHomeBuilding(const Map& map) const {
-	/// TODO: rework getHomeBuilding
 	return map.getBuilding(this->home.x, this->home.y);
 }
 
@@ -475,10 +474,13 @@ int Character::pay(int money) {
 
 }
 
-void Character::sendData(uint32_t* ptr) {
+uint32_t* Character::sendData(uint32_t* ptr) {
 	ptr[0] = (uint32_t)this->status;
 	ptr[1] = this->money;
 	ptr[2] = *(uint32_t*)&this->seeds;
+
+	ptr += 3;
+	return ptr;
 }
 
 

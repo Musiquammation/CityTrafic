@@ -64,6 +64,8 @@ void Server::run(int port) {
                     get(GAME_COMMANDS, runCommand);
                     get(UPDATE, getUpdates);
                     get(PANEL, getPanel);
+					get(GET_CHARACTER, getCharacter);
+					get(GET_CAR, getCar);
                     get(ERROR, onerror);
                 }
     

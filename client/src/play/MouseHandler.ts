@@ -85,7 +85,6 @@ export class MouseHandler {
 
 		this.x = pos.x;
 		this.y = pos.y;
-
 	}
 
 	onScroll(e: WheelEvent) {

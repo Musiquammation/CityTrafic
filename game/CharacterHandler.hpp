@@ -10,6 +10,7 @@ class CharacterHandler {
 public:
 	void pushCharacter(Character* character);
 
+	bool contains(Character* character);
 	auto begin() { return this->characters.begin(); }
 	auto end() { return this->characters.end(); }
 	auto begin() const { return this->characters.begin(); }

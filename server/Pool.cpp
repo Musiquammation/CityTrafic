@@ -5,10 +5,20 @@
 #include <game/Game.hpp>
 #include <cstring>
 
+#ifndef TIME_MODE
+#define TIME_MODE 1
+#endif
+
 void runThread(Pool* pool) {
 	using clock = std::chrono::steady_clock;
-	const auto FRAME_TIME = std::chrono::microseconds(16667/32); // make faster
-	// const auto FRAME_TIME = std::chrono::microseconds(16667);
+
+	#if TIME_MODE == 0 // fast
+	const auto FRAME_TIME = std::chrono::microseconds(16667/32);
+	#elif TIME_MODE == 1 // slow
+	const auto FRAME_TIME = std::chrono::microseconds(16667*16);
+	#else // basic
+	const auto FRAME_TIME = std::chrono::microseconds(16667);
+	#endif
 
 	auto next = clock::now();
 

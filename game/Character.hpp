@@ -125,7 +125,7 @@ public:
 
 
 
-	void sendData(uint32_t* ptr);
+	uint32_t* sendData(uint32_t* ptr);
 
 	~Character();
 };

@@ -8,5 +8,7 @@ enum class ServerId {
 	GAME_COMMANDS,
 	UPDATE,
 	PANEL,
+	GET_CHARACTER,
+	GET_CAR,
 	ERROR,
 };

@@ -9,5 +9,6 @@ enum class ClientId {
 	EDITS,
 	UPDATE,
 	PANEL,
+	GET_ENTITY,
 	ERROR,
 };
