@@ -45,6 +45,13 @@ struct Building {
 			float cashierEfficiency;
 			int cashiers;
 		} grocery;
+
+		struct {
+			ConstructionJob* job;
+			Building* goal;
+			int completion;
+			int total;
+		} construction;
 	};
 	
 	
@@ -73,6 +80,11 @@ struct Building {
 		int owner
 	);
 
+	static Building* create_construction(
+		ConstructionJob* job,
+		Building* building,
+		int owner
+	);
 
 
 	int enter(Character* c);
@@ -83,6 +95,8 @@ struct Building {
 	int getBufferLargeLength() const;
 	int fillEntryList(Vector<int> list[]) const;
 	int fillLeaveList(Vector<int> list[]) const;
+
+	int getConstructionCost() const;
 
 	uint32_t* getPanelData(const Game& game);
 	void setPanelData(const uint32_t* data, Game& game);

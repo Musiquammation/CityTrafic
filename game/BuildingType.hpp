@@ -4,5 +4,6 @@ enum class BuildingType: int {
 	HOME,
 	OIL_FIELD,
 	PLANTATION,
-	GROCERY
+	GROCERY,
+	CONSTRUCTION
 };

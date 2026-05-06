@@ -6,6 +6,7 @@
 #include "jobs/OilFieldJob.hpp"
 #include "jobs/AgricultorJob.hpp"
 #include "jobs/CashierJob.hpp"
+#include "jobs/ConstructionJob.hpp"
 
 #include "DebugLogger.hpp"
 DebugLogger print{"Building"};
@@ -18,7 +19,8 @@ const Vector<int> SIZES[] = {
 	{3,2},
 	{-1,-1},
 	{8,4},
-	{3,3}
+	{3,3},
+	{-1,-1}
 };
 
 Building* Building::create_home(
@@ -87,7 +89,21 @@ Building* Building::create_grocery(
 	b->grocery.cashierEfficiency = 1;
 	b->grocery.cashiers = 0;
 	return b;
+}
 
+Building* Building::create_construction(
+	ConstructionJob* job,
+	Building* building,
+	int owner
+) {
+	auto b = new Building;
+	b->owner = owner;
+	b->type = BuildingType::GROCERY;
+	b->construction.job = job;
+	b->construction.goal = building;
+	b->construction.completion = 0;
+	b->construction.total = building->getConstructionCost();
+	return b;
 }
 
 
@@ -100,6 +116,9 @@ Vector<int> Building::getSize() const {
 	switch (this->type) {
 	case BuildingType::OIL_FIELD:
 		return {this->oilField.size, this->oilField.size};
+
+	case BuildingType::CONSTRUCTION:
+		return this->construction.goal->getSize();
 
 	default:
 		return {1,1};
@@ -131,6 +150,11 @@ int Building::fillEntryList(Vector<int> list[]) const {
 	case BuildingType::GROCERY:
 		*ptr++ = {2, 2};
 		break;
+
+	case BuildingType::CONSTRUCTION:
+		*ptr++ = {0, 0};
+		break;
+		
 	}
 
 	return (int)(ptr-list);
@@ -158,10 +182,44 @@ int Building::fillLeaveList(Vector<int> list[]) const {
 		*ptr++ = {0, 0};
 		break;
 
+	case BuildingType::CONSTRUCTION:
+		*ptr++ = {0, 0};
+		break;
+
+
 	}
 
 	return (int)(ptr-list);
 }
+
+int Building::getConstructionCost() const {
+	switch (this->type) {
+	case BuildingType::HOME:
+	{
+		return 36'000; // 10mn (realtime)
+	}
+	case BuildingType::OIL_FIELD:
+	{
+		return 2'000'000'000;
+	}
+	case BuildingType::PLANTATION:
+	{
+		return 2'000'000'000;;
+	}
+	case BuildingType::GROCERY:
+	{
+		return 2'000'000'000;;
+	}
+	case BuildingType::CONSTRUCTION:
+	{
+		return 0;
+	}
+
+
+	}
+	return 0;
+}
+
 
 
 int Building::enter(Character* c) {
@@ -203,6 +261,9 @@ int Building::enter(Character* c) {
 		return 0;
 	}
 
+	case BuildingType::CONSTRUCTION:
+		return 0;
+
 	}
 
 
@@ -236,6 +297,11 @@ void Building::leave(int position) {
 		this->grocery.clients--;
 		break;
 	}
+
+	case BuildingType::CONSTRUCTION:
+	{
+		break;
+	}
 	}
 
 }
@@ -257,6 +323,10 @@ bool Building::isFull() const {
 			(float)this->grocery.cashiers;
 		return ((float)this->grocery.clients < max);
 	}
+
+	case BuildingType::CONSTRUCTION:
+		return false;
+
 	}
 
 	return true;
@@ -326,6 +396,23 @@ uint32_t* Building::getPanelData(const Game& game) {
 		return result;
 	}
 
+	case BuildingType::CONSTRUCTION:
+	{
+		static constexpr int COUNT = 5;
+		auto job = this->construction.job;
+		auto result = (uint32_t*)malloc(sizeof(uint32_t)*(COUNT+2));
+
+		result[0] = COUNT; // length (as uint32_t)
+		result[1] = (uint32_t)PanelId::BUILDING_GROCERY;
+		result[2] = (uint32_t)this->construction.goal->type;
+		result[3] = this->construction.completion;
+		result[4] = this->construction.total;
+		result[5] = job->employeesCounters.workers.current;
+		result[6] = job->employeesCounters.workers.goal;
+
+		return result;
+	}
+
 
 	}
 
@@ -380,7 +467,14 @@ void Building::setPanelData(const uint32_t* data, Game& game) {
 		}
 
 		break;
+	}
 
+	case BuildingType::CONSTRUCTION:
+	{
+		auto job = this->construction.job;
+		job->employeesCounters.workers.current = data[5];
+		job->employeesCounters.workers.goal = data[6];
+		break;
 	}
 
 	}
@@ -401,6 +495,9 @@ Job* Building::getJob() {
 
 	case BuildingType::GROCERY:
 		return this->grocery.job;
+
+	case BuildingType::CONSTRUCTION:
+		return this->construction.job;
 	}
 
 	return nullptr;
@@ -411,17 +508,35 @@ Job* Building::getJob() {
 void Building::destroy(Game& game) {
 	switch (this->type) {
 	case BuildingType::HOME:
+	{
 		delete[] this->home.characters;
 		break;
+	}
 
 	case BuildingType::OIL_FIELD:
+	{
 		break;
+	}
 
 	case BuildingType::PLANTATION:
+	{
 		break;
+	}
 
 	case BuildingType::GROCERY:
+	{
 		break;
+	}
+
+	case BuildingType::CONSTRUCTION:
+	{
+		auto goal = this->construction.goal;
+		if (goal) {
+			goal->destroy(game);
+			delete goal;
+		}
+		break;
+	}
 	}
 
 	Job* job = this->getJob();

@@ -211,7 +211,6 @@ export class EntityDataHandler {
 		if (!this.bubble)
 			return;
 
-		console.log(this.bubble);
 		
 
 		switch (this.bubble.type) {

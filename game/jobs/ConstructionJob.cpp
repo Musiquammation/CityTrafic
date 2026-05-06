@@ -1,0 +1,241 @@
+#include "ConstructionJob.hpp"
+
+#include "../JobOffer.hpp"
+#include "../Game.hpp"
+#include "../Map.hpp"
+#include "../Calendar.hpp"
+#include "../Building.hpp"
+
+#include <math.h>
+
+ConstructionJob::ConstructionJob(
+	float salaryPerUnit,
+	float pricePerUnit
+):
+	salaryPerUnit(salaryPerUnit),
+	pricePerUnit(pricePerUnit)
+{}
+
+ConstructionJob::~ConstructionJob() {
+	
+}
+
+calendar_t ConstructionJob::getNextEnterHour(
+	worker_t worker,
+	const Calendar& calendar
+) {
+	auto it = this->workers.find((Character*)worker);
+
+	if (it == this->workers.end()) {
+		return Calendar::NOTIME;
+	}
+
+	if (!it->second.willWork)
+		return Calendar::NOTIME;
+
+	return it->second.meeting;
+}
+
+calendar_t ConstructionJob::getNextLeaveHour(
+	worker_t worker,
+	const Calendar& calendar
+) {
+	auto it = this->workers.find((Character*)worker);
+	if (it == this->workers.end())
+		return Calendar::NOTIME;
+	
+	if (it->second.willWork)
+		return Calendar::NOTIME;
+
+	return it->second.meeting;
+}
+
+int ConstructionJob::getSalary(
+	worker_t worker,
+	const Calendar& calendar
+) {
+	auto it = this->workers.find((Character*)worker);
+	if (it == this->workers.end())
+		return 0;
+
+	auto& data = it->second;
+	float f = std::floor(data.toPay);
+	data.toPay -= f;
+	return (int)f;
+}
+
+
+Vector<int> ConstructionJob::getEmployeeSite(
+	worker_t worker,
+	Vector<int> loc,
+	Building* building,
+	const Calendar& calendar
+) {
+	return loc;
+}
+
+void ConstructionJob::work(
+	worker_t worker,
+	Vector<int> loc,
+	Building* building,
+	Game& game
+) {
+	Building* workBuilding = building;
+	if (!workBuilding) {
+		workBuilding = game.getBuilding(loc.x, loc.y).building;
+	}
+
+	if (!workBuilding) {
+		throw std::runtime_error{"Missing work building"};
+	}
+
+	if (workBuilding->type != BuildingType::CONSTRUCTION)
+		throw std::runtime_error{"A CONSTRUCTION building was expected"};
+
+	auto it = this->workers.find((Character*)worker);
+
+	if (it != this->workers.end()) {
+		it->second.toPay += this->salaryPerUnit;
+	}
+
+	building->construction.completion++;
+
+    if (building->construction.completion < building->construction.total)
+        return;
+
+    /// TODO: place final building (must finish with building->consturction.goal = nullptr)
+
+}
+
+void ConstructionJob::onEnter(
+	worker_t worker,
+	Building* building,
+	const Calendar& calendar
+) {
+	auto it = this->workers.find((Character*)worker);
+	if (it == this->workers.end())
+		return;
+	
+	it->second.meeting = calendar.getFutureInstant(
+		this->finishTime,
+		Calendar::WORKING_DAYS
+	);
+
+	it->second.willWork = false;
+}
+
+void ConstructionJob::onLeave(
+	worker_t worker,
+	Building* building,
+	const Calendar& calendar
+) {
+	auto it = this->workers.find((Character*)worker);
+	if (it == this->workers.end())
+		return;
+	
+	it->second.meeting = calendar.getFutureInstant(
+		this->startTime,
+		Calendar::WORKING_DAYS
+	);
+
+
+	it->second.willWork = true;
+
+}
+
+bool ConstructionJob::hire(
+	Character* worker,
+	Building* building,
+	const JobOffer& offer,
+	const Calendar& calendar
+) {
+	// Check if worker is already in workers
+	if (this->workers.find(worker) != this->workers.end()) {
+		return false; // Worker is already hired
+	}
+
+
+	switch (offer.type) {
+	case JobOfferType::OIL_RAFFINER:
+		if (!this->employeesCounters.workers.canHire()) {return false;}
+		break;
+
+	default:
+		return false;
+	}
+
+	// Add worker to the list with initial data
+	this->workers[worker] = WorkerData{
+		0.0f,
+		true,
+		calendar.getFutureInstant(
+			this->startTime,
+			Calendar::WORKING_DAYS
+		)
+	};
+
+
+	return true;
+}
+
+void ConstructionJob::fire(Character* worker) {
+	// Find and remove the worker from the list
+	this->workers.erase(worker);
+}
+
+
+void ConstructionJob::forAllWorkers(
+	std::function<void(Character*)> fn
+) {
+	for (auto i: this->workers) {
+		fn(i.first);
+	}
+}
+
+bool ConstructionJob::searchJobOffer(
+	const Character* candidate,
+	JobOffer& offer
+) const {
+	if (this->employeesCounters.workers.canHire()) {
+		offer.type = JobOfferType::OIL_RAFFINER;
+		offer.salaryEstimation = int(this->salaryPerUnit * 200);
+		return true;
+	}
+
+	return false;
+}
+
+
+
+
+uint32_t* ConstructionJob::getPanelData() {
+	throw std::runtime_error{"TODO"};
+}
+
+
+void ConstructionJob::setPanelData(const uint32_t* data) {
+
+}
+
+
+
+float ConstructionJob::getPricePerUnit(const Building* building) const {
+	if (building->oilField.refined >= 1.0f)
+		return this->pricePerUnit;
+
+	return 1e20f; // A lot : cannot be bought
+}
+
+float ConstructionJob::buy(Building* building, int money) {
+	float Units = (float)money / this->pricePerUnit;
+
+
+	// Enough refined oil to buy
+	if (building->oilField.refined >= Units) {
+		building->oilField.refined -= Units;
+		this->give(money);
+		return Units;
+	}
+
+	return 0;
+}

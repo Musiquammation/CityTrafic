@@ -26,3 +26,4 @@ class PathHandler;
 struct OilFieldJob;
 struct AgricultorJob;
 struct CashierJob;
+struct ConstructionJob;
