@@ -64,5 +64,11 @@ public:
 		JobOffer& bestOffer
 	);
 
+	Vector<int> searchHome(
+		int maxRent,
+		float cx,
+		float cy
+	);
+
 	~Game();
 };

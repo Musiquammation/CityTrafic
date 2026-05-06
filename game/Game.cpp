@@ -187,6 +187,41 @@ Vector<int> Game::searchJob(
 }
 
 
+Vector<int> Game::searchHome(
+	int maxRent,
+	float cx,
+	float cy
+) {
+	for (auto it = this->map.buildings_begin();
+		it != this->map.buildings_end();
+		it++
+	) {
+		auto building = it->second;
+		if (
+			building->type != BuildingType::HOME ||
+			building->home.left <= 0 ||
+			building->home.rent > maxRent
+		) {
+			continue;
+		}
+
+
+
+		Vector<int> pos = it->first;
+		int dx = pos.x - cx;
+		int dy = pos.y - cy;
+		float dist = sqrtf(float(dx*dx + dy*dy));
+		if (dist > 64.0f)
+			continue;
+
+		return pos;
+	}
+
+	return {INT32_MIN, INT32_MIN};
+}
+
+
+
 Game::~Game() {
 
 }

@@ -18,7 +18,8 @@ enum class CharacterState {
 	WALK,
 	INSIDE,
 	OUTSIDE,
-	DRIVE
+	DRIVE,
+	WAIT
 };
 
 class Character {
@@ -65,6 +66,10 @@ class Character {
 		struct {
 
 		} outside;
+
+		struct {
+			int couldown;
+		} wait;
 
 		struct {
 			ActionCode state;

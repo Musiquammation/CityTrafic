@@ -186,6 +186,13 @@ watchDef:
 	python3 scripts/syncDef.py
 
 
+# graphActivities
+
+.PHONY: graphActivities
+
+graphActivities:
+	python3 scripts/produceGraph.py  > draft/activitiesGraph.txt
+
 # =========================
 # CLEAN
 # =========================

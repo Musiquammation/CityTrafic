@@ -6,7 +6,7 @@
 #include <cstring>
 
 #ifndef TIME_MODE
-#define TIME_MODE 1
+#define TIME_MODE -1
 #endif
 
 void runThread(Pool* pool) {

@@ -43,6 +43,8 @@ static inline float frac(float x) {
 	all(collectFuel)\
 	all(walkToCar)\
 	all(goHome)\
+		fst(enshureHome)\
+		all(searchHomeRoutine)\
 	\
 	run(drive)\
 	run(walk)\
@@ -58,6 +60,7 @@ static inline float frac(float x) {
 	run(leaveWork)\
 	run(passWork)\
 	run(checkHomeOwnership)\
+	run(searchHome)\
 	run(checkFuelLarge)\
 	run(isAtHome)\
 	run(locateFuelStation)\
@@ -71,6 +74,7 @@ static inline float frac(float x) {
 	run(orientGrocery)\
 	run(buySeeds)\
 	run(waitSeedsConsumption)\
+	run(couldown_homeSearch)\
 			
 		
 
@@ -355,6 +359,39 @@ struct CharacterFriend {
 		c->home.x = INT32_MIN; // no home
 		building->home_removeCharacter(c);
 		return ActionCode::FAILURE;
+	}
+
+	def(couldown_homeSearch) {
+		printStatus("couldown_homeSearch\n");
+		setCharacter();
+		
+		if (c->state != CharacterState::WAIT) {
+			c->setState(CharacterState::WAIT);
+			c->data.wait.couldown = 60;
+			printStatus("  started\n");
+			return ActionCode::PENDING;
+		}
+
+		c->data.wait.couldown--;
+		if (c->data.wait.couldown <= 0) {
+			c->setState(CharacterState::OUTSIDE);
+			return ActionCode::SUCCESS;
+		}
+
+		return ActionCode::PENDING;
+	}
+
+	def(searchHome){
+		printStatus("searchHome\n");
+		setCharacter();
+
+		auto home = game.searchHome(c->money/2, c->x, c->y);
+		printStatus("  got %d %d\n", home.x, home.y);
+		if (home.x == INT32_MIN)
+			return ActionCode::FAILURE;	
+		
+		c->home = home;
+		return ActionCode::SUCCESS;	
 	}
 
 	def(isAtHome) {
@@ -643,13 +680,23 @@ graph(restAtHome,
 
 graph(goHome,
 	&enshureCarFuel,
-	&checkHomeOwnership,
+	&enshureHome,
 	&walkToCar,
 	&locateHome,
 	&drive,
 	&orientHome,
 	&walk,
 	&enter
+);
+
+graph(enshureHome,
+	&checkHomeOwnership,
+	&searchHomeRoutine
+);
+
+graph(searchHomeRoutine,
+	&couldown_homeSearch,
+	&searchHome
 );
 
 
