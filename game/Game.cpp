@@ -1,5 +1,6 @@
 #include "Game.hpp"
 
+#include "CellInstruction.hpp"
 #include "JobOffer.hpp"
 #include "Car.hpp"
 #include "Character.hpp"
@@ -84,6 +85,30 @@ BuildingInfo Game::getBuilding(int x, int y) const {
 	return this->map.getBuilding(x, y);
 }
 
+void Game::destroyBuilding(BuildingInfo info) {
+	auto bounds = info.building->getSize();
+
+	bounds.x += info.x;
+	bounds.y += info.y;
+
+	info.building->destroy(*this);
+	delete info.building;
+
+
+	// Clear area
+	cell_t arg = (cell_t)CellInstruction::BUILDING << 4;
+	for (int y = info.y; y < bounds.y; y++) { 
+		for (int x = info.x; x < bounds.x; x++) {
+			this->getEditCell(x,y)->setType(
+				CellType::NONE,
+				*this,
+				arg
+			);
+		}
+	}
+}
+
+
 
 
 
@@ -156,12 +181,8 @@ Vector<int> Game::searchJob(
 			bestScore = score;
 			bestLoc = loc;
 			bestOffer = offer;
-		}	
-	
-	}
-
-	/// TODO: searchJob
-	
+		}
+	}	
 	return bestLoc;
 }
 

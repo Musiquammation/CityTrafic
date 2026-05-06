@@ -57,7 +57,6 @@ export async function runPanel(args: arg_t) {
 
 	appendArgs(requestWriter, args);
 
-	debugger;
 	sendSocket(requestWriter.toArrayBuffer());
 
 	const reader = await wait(requestId);

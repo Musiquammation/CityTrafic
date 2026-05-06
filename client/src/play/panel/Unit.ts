@@ -142,9 +142,9 @@ export namespace units {
 		}
 	}
 
-	export const btn: Unit<boolean> = {
+	export const button: Unit<boolean> = {
 		read: reader => {
-			return (reader.readUint32() != 0);
+			return false;
 		},
 
 		write: (writer, data) => {

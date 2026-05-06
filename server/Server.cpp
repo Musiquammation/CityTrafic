@@ -31,18 +31,10 @@
 	#define MAP_PRECISION 8 /* for vscode */
 #endif
 
-enum PanelVariantType {
-	BUILDING,
-	JOB
-};
 
-struct PanelVariant {
-	PanelVariantType type;
+struct PanelLocator {
 	const uint8_t* ptr;
-	union {
-		Building* building;
-		Job* job;
-	};
+	BuildingInfo info;
 };
 
 
@@ -53,7 +45,7 @@ struct PanelVariant {
 #define retRes() {*(uint32_t*)response =  (uint32_t)(res - response - 4); return response;}
 
 
-PanelVariant getVariant(const Game& game, const uint8_t* ptr) {
+PanelLocator getPanelLocation(const Game& game, const uint8_t* ptr) {
 	// Recognize object
 	auto x = take(int32_t);
 	if (x == (int)-0x80000000) {
@@ -67,9 +59,8 @@ PanelVariant getVariant(const Game& game, const uint8_t* ptr) {
 	}
 
 	return {
-		PanelVariantType::BUILDING,
 		ptr,
-		{.building = info.building}
+		info
 	};
 }
 
@@ -343,38 +334,25 @@ uint8_t* Server::getPanel(Client* client, const uint8_t* ptr) {
 
 	if (writeMode) {
 		auto requestId = take(uint16_t);
-		auto v = getVariant(*game, ptr);
+		auto v = getPanelLocation(*game, ptr);
 		ptr = v.ptr;
 
-		switch (v.type) {
-		case PanelVariantType::BUILDING:
-			v.building->setPanelData((uint32_t*)ptr, *game);
-			break;
+		if (!v.info.building->setPanelData((uint32_t*)ptr, *game))
+			return nullptr;
 
-		case PanelVariantType::JOB:
-			v.job->setPanelData((uint32_t*)ptr);
-			break;
-		}
 
+		// Destroy building
+		game->destroyBuilding(v.info);
 
 		return nullptr;
 	}
 
 
 	auto requestId = take(uint16_t);
-	auto v = getVariant(*game, ptr);
+	auto v = getPanelLocation(*game, ptr);
 	ptr = v.ptr;
 
-	uint32_t* data;
-	switch (v.type) {
-	case PanelVariantType::BUILDING:
-		data = v.building->getPanelData(*game);
-		break;
-
-	case PanelVariantType::JOB:
-		data = v.job->getPanelData();
-		break;
-	}
+	uint32_t* data = v.info.building->getPanelData(*game);
 
 	auto msgLength = data[0];
 	auto panelId = data[1];

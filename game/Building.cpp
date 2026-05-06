@@ -445,13 +445,18 @@ uint32_t* Building::getPanelData(const Game& game) {
 	return nullptr;
 }
 
-void Building::setPanelData(const uint32_t* data, Game& game) {
+bool Building::setPanelData(const uint32_t* data, Game& game) {
 	#define flt(x) ((*(uint32_t*)&x))
 
 	switch (this->type) {
 	case BuildingType::HOME:
 	{
 		this->home.rent = data[0];
+
+		// Destroy building
+		if (data[1]) {
+			return true;
+		}
 		break;
 	}
 
@@ -502,6 +507,8 @@ void Building::setPanelData(const uint32_t* data, Game& game) {
 	}
 
 	#undef flt
+
+	return false;
 }
 
 Job* Building::getJob() {

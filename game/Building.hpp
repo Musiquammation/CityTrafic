@@ -99,7 +99,7 @@ struct Building {
 	int getConstructionCost() const;
 
 	uint32_t* getPanelData(const Game& game);
-	void setPanelData(const uint32_t* data, Game& game);
+	bool setPanelData(const uint32_t* data, Game& game);
 
 	Job* getJob();
 

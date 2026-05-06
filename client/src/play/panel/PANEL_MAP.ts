@@ -8,8 +8,9 @@ export const PANEL_MAP = new Map<number, PanelDescriptor>();
 PANEL_MAP.set(PANEL_IDS.BUILDING_HOME, {
 	title: "Home",
 	fields: [
-		new NamedUnit("Rent", units.i32),
-		new NamedUnit("Capacity", units.i32)
+		new NamedUnit("Rent", units.mut_i32),
+		new NamedUnit("Capacity", units.i32),
+		new NamedUnit("Destroy", units.button)
 	]
 });
 

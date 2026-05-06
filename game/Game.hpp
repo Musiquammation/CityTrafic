@@ -46,6 +46,7 @@ public:
 	Car* spawnCar(int x, int y, Direction direction);
 	Car* getCar(int x, int y);
 	BuildingInfo getBuilding(int x, int y) const;
+	void destroyBuilding(BuildingInfo info);
 
 	const Map& getMap() const {return this->map;}
 	Map& getMap() {return this->map;}

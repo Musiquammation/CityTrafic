@@ -79,7 +79,6 @@ function print(
 	list.forEach((item, index) => {
 		let displayValue = item.value;
 
-		// Formatage selon le type
 		if (item.type === 'float' && typeof item.value === 'number') {
 			displayValue = item.value.toFixed(3);
 		} else if (item.type === 'int') {
@@ -90,7 +89,7 @@ function print(
 		const textY = topY + padding + (index * lineHeight);
 
 
-		ctx.fillStyle = "white"; // Vert style "debug"
+		ctx.fillStyle = "white";
 		ctx.fillText(text, startX + padding, textY);
 	});
 }
