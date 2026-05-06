@@ -154,6 +154,7 @@ struct CharacterFriend {
 			}
 		}
 
+		c->status = CharacterStatus::TO_WORK;
 		return ActionCode::SUCCESS;
 	}
 	
@@ -269,6 +270,7 @@ struct CharacterFriend {
 		
 		Job* job = info.building->getJob();
 		job->onLeave(c, nullptr, game.getCalendar());
+		c->status = CharacterStatus::IDLE;
 		return ActionCode::SUCCESS;
 	}
 
@@ -322,6 +324,7 @@ struct CharacterFriend {
 		if ((m > calendar.totalMonth || (
 			m == calendar.totalMonth && calendar.day < 9
 		))) {
+			c->status = CharacterStatus::TO_HOME;
 			return ActionCode::SUCCESS;
 		}
 
@@ -344,6 +347,7 @@ struct CharacterFriend {
 
 			// Mark rent as paid
 			c->nextRentPayMonth = calendar.totalMonth+1;
+			c->status = CharacterStatus::TO_HOME;
 			return ActionCode::SUCCESS;
 		}
 		
@@ -427,14 +431,24 @@ struct CharacterFriend {
 		setCharacter();
 		printStatus("checkFuel\n");
 
-		return ActionCode_get(c->car->getFuel() >= 1.0f);
+		if (c->car->getFuel() >= 1.0f) {
+			return ActionCode::SUCCESS;
+		}
+
+		c->status = CharacterStatus::FILL_FUEL;
+		return ActionCode::FAILURE;
 	}
 
 	def(checkFuelLarge) {
 		setCharacter();
 		printStatus("checkFuelLarge\n");
 
-		return ActionCode_get(c->car->getFuel() >= 10.0f);
+		if (c->car->getFuel() >= 10.0f) {
+			return ActionCode::SUCCESS;
+		}
+
+		c->status = CharacterStatus::FILL_FUEL;
+		return ActionCode::FAILURE;
 	}
 
 	def(hasWork) {
@@ -468,7 +482,12 @@ struct CharacterFriend {
 		printStatus("checkFood\n");
 		printStatus("  seeds=%.3f\n", c->seeds);
 
-		return ActionCode_get(c->seeds > Character::CHECK_SEEDS);
+		if (c->seeds > Character::CHECK_SEEDS) {
+			return ActionCode::SUCCESS;
+		}
+
+		c->status = CharacterStatus::EAT;
+		return ActionCode::FAILURE;
 	}
 
 	def(locateGrocery) {
@@ -515,6 +534,7 @@ struct CharacterFriend {
 
 		static constexpr float DELAY_PER_SEED = 1.1f;
 		c->data.inside.grocery.delay = (int)ceilf(seedsBought * DELAY_PER_SEED);
+		c->status = CharacterStatus::IDLE;
 		return ActionCode::SUCCESS;
 	}
 

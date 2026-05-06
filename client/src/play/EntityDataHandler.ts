@@ -20,9 +20,9 @@ const natures: nature_t[] = [
 
 const statusList = [
 	"idle",
-	"to home",
-	"to work",
-	"fill fuel",
+	"home",
+	"work",
+	"fuel",
 	"eat"	
 ];
 
