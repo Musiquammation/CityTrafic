@@ -153,50 +153,10 @@ int main() {
 
 #elif MAIN_TEST_ID == 2
 
-
 #include <iostream>
 
-struct Params {
-    double a;
-    double b;
-};
-
-// Calcule a et b tels que f(2) = low_time*3600 et f(4) = huge_time*3600
-constexpr Params solve_ab_updated(double low_time, double huge_time) {
-    const double y1 = low_time * 3600.0;
-    const double y2 = huge_time * 3600.0;
-
-    // Nouvelle formule pour b basée sur f(4) = y2
-    // b = (2*y2 - 4*y1) / (16*y1 - 4*y2)
-    const double b = (2.0 * y2 - 4.0 * y1) / (16.0 * y1 - 4.0 * y2);
-
-    // a reste y1 / (x + bx^2) avec x=2
-    const double a = y1 / (2.0 + 4.0 * b);
-
-    return {a, b};
-}
-
 int main() {
-    // Avec LOW=2 et HUGE=10
-    constexpr Params p = solve_ab_updated(2.0, 10.0);
-
-    std::cout << "Pour f(2)=2h et f(4)=10h ";
-    std::cout << "a = " << p.a << "\n";
-    std::cout << "b = " << p.b << "\n";
-
-    // Vérification : f(x) = a * (x + b * x^2)
-    auto f = [&](double x) { return p.a * (x + p.b * x * x); };
-    
-    std::cout << "f(1)/3600 = " << f(1) / 3600.0 << " (doit valoir 10)\n";
-    std::cout << "f(2)/3600 = " << f(2) / 3600.0 << " (doit valoir 10)\n";
-    std::cout << "f(3)/3600 = " << f(3) / 3600.0 << " (doit valoir 10)\n";
-    std::cout << "f(4)/3600 = " << f(4) / 3600.0 << " (doit valoir 10)\n";
-    std::cout << "f(5)/3600 = " << f(5) / 3600.0 << " (doit valoir 10)\n";
-    std::cout << "f(6)/3600 = " << f(6) / 3600.0 << " (doit valoir 10)\n";
-    std::cout << "f(7)/3600 = " << f(7) / 3600.0 << " (doit valoir 10)\n";
-    std::cout << "f(8)/3600 = " << f(8) / 3600.0 << " (doit valoir 10)\n";
-
-    return 0;
+	return 0;
 }
 
 #endif

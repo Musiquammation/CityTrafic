@@ -27,3 +27,7 @@ void Job::destroy(Game& game, int owner) {
 		c->leaveJob(game);
 	});
 }
+
+int Job::getMoney() const {
+	return this->money;
+}

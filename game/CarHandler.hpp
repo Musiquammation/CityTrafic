@@ -19,7 +19,6 @@ public:
     friend class Api;
 
     ~CarHandler();
-
     
     Car* spawnCar(int x, int y, Direction direction);
     void updateCars(Game* game);
