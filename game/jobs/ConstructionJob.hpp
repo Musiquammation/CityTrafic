@@ -21,8 +21,7 @@ class ConstructionJob: public Job {
 
 public:
 	ConstructionJob(
-		float salaryPerUnit,
-		float pricePerUnit
+		float salaryPerUnit
 	);
 
 	~ConstructionJob();
@@ -36,7 +35,6 @@ public:
 	instant_t finishTime = {15,0};
 
 	float salaryPerUnit;
-	float pricePerUnit;
 
 
 
@@ -100,8 +98,5 @@ public:
 
 	uint32_t* getPanelData() override;
 	void setPanelData(const uint32_t* data) override;
-
-	float getPricePerUnit(const Building* building) const;
-	float buy(Building* building, int money);
 
 };

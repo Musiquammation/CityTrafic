@@ -9,6 +9,7 @@
 #include "direction.hpp"
 #include "jobs/OilFieldJob.hpp"
 #include "jobs/CashierJob.hpp"
+#include "jobs/ConstructionJob.hpp"
 
 #include <stdio.h>
 
@@ -16,12 +17,14 @@
 #define take(T) ({ T _v = *(T*)ptr; ptr = (uint8_t*)ptr + sizeof(T); _v; })
 #define align(ptr,n) {ptr += n;}
 
+#define def(name) static const void* name(\
+	Game& game,\
+	const void* ptr,\
+	Player* player\
+)
+
 struct GameCommand {
-static const void* test(
-	Game& game,
-	const void* ptr,
-	Player* player
-) {
+def(test) {
 	int x = take(int32_t);
 	int y = take(int32_t);
 	int w = take(int32_t);
@@ -103,11 +106,7 @@ static const void* test(
 }
 
 
-static const void* erase(
-	Game& game,
-	const void* ptr,
-	Player* player
-) {
+def(erase) {
 	int x = take(int32_t);
 	int y = take(int32_t);
 
@@ -120,11 +119,7 @@ static const void* erase(
 
 }
 
-static const void* placeSingleRoad(
-	Game& game,
-	const void* ptr,
-	Player* player
-) {
+def(placeSingleRoad) {
 	int x = take(int32_t);
 	int y = take(int32_t);
 
@@ -136,11 +131,7 @@ static const void* placeSingleRoad(
 	return ptr;
 }
 
-static const void* parking(
-	Game& game,
-	const void* ptr,
-	Player* player
-) {
+def(parking) {
 	int x = take(int32_t);
 	int y = take(int32_t);
 
@@ -153,11 +144,7 @@ static const void* parking(
 
 }
 
-static const void* direction(
-	Game& game,
-	const void* ptr,
-	Player* player
-) {
+def(direction) {
 	int x = take(int32_t);
 	int y = take(int32_t);
 	cell_t args = take(uint16_t);
@@ -171,7 +158,37 @@ static const void* direction(
 
 }
 
+def(placeHome) {
+	int x = take(int32_t);
+	int y = take(int32_t);
+	int constructionSalary = take(int32_t);
+	int capacity = take(int32_t);
+	int rent = take(int32_t);
+	int playerId = game.getPlayerId(player);
 
+	auto building = Building::create_home(playerId, capacity, rent);
+	auto constructionJob = new ConstructionJob{
+		(float)constructionSalary / (float)building->getConstructionCost()
+	};
+	auto construction = Building::create_construction(
+		constructionJob,
+		building,
+		playerId
+	);
+
+	if (!game.map.addBuilding(x, y, construction, game)) {
+		delete construction;
+		delete building;
+		delete constructionJob;
+	}
+
+
+	return nullptr;
+}
+
+def(placeGrossery) {
+	return nullptr;
+}
 
 
 };
@@ -222,6 +239,13 @@ const void* runGameCommand(
 
 	case CommandCode::DIRECTION:
 		return GameCommand::direction(game, ptr, player);
+
+	case CommandCode::PLACE_HOME:
+		return GameCommand::placeHome(game, ptr, player);
+
+	case CommandCode::PLACE_GROSSERY:
+		return GameCommand::placeGrossery(game, ptr, player);
+
 	}
 
 	return ptr;

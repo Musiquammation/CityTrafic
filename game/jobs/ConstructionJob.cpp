@@ -9,11 +9,9 @@
 #include <math.h>
 
 ConstructionJob::ConstructionJob(
-	float salaryPerUnit,
-	float pricePerUnit
+	float salaryPerUnit
 ):
-	salaryPerUnit(salaryPerUnit),
-	pricePerUnit(pricePerUnit)
+	salaryPerUnit(salaryPerUnit)
 {}
 
 ConstructionJob::~ConstructionJob() {
@@ -219,23 +217,3 @@ void ConstructionJob::setPanelData(const uint32_t* data) {
 
 
 
-float ConstructionJob::getPricePerUnit(const Building* building) const {
-	if (building->oilField.refined >= 1.0f)
-		return this->pricePerUnit;
-
-	return 1e20f; // A lot : cannot be bought
-}
-
-float ConstructionJob::buy(Building* building, int money) {
-	float Units = (float)money / this->pricePerUnit;
-
-
-	// Enough refined oil to buy
-	if (building->oilField.refined >= Units) {
-		building->oilField.refined -= Units;
-		this->give(money);
-		return Units;
-	}
-
-	return 0;
-}

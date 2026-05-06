@@ -192,11 +192,32 @@ int Building::fillLeaveList(Vector<int> list[]) const {
 	return (int)(ptr-list);
 }
 
+
+
+struct Param {
+	float a;
+	float b;
+};
+static constexpr Param solveConstSettings(float low_time, float huge_time) {
+	float y1 = low_time * 3600.0f;
+    float y2 = huge_time * 3600.0f;
+
+    float b = (2.0f * y2 - 4.0f * y1) / (16.0f * y1 - 4.0f * y2);
+    float a = y1 / (2.0f + 4.0f * b);
+
+    return {a, b};
+}
+
+static const auto SOLVE_SETTINGS = solveConstSettings(2, 12);
+
+
 int Building::getConstructionCost() const {
 	switch (this->type) {
 	case BuildingType::HOME:
 	{
-		return 36'000; // 10mn (realtime)
+		float c = (float)this->home.capacity;
+		float cost = SOLVE_SETTINGS.a * (c + SOLVE_SETTINGS.b * c*c);
+		return (int)ceilf(cost);
 	}
 	case BuildingType::OIL_FIELD:
 	{
