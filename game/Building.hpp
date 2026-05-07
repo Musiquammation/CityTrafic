@@ -112,7 +112,7 @@ struct Building {
 	bool home_removeCharacter(Character* c);
 
 	void fileSave(WriteStream& stream);
-	void fileLoad(ReadStream& stream, const std::unordered_map<Job*, Job*>& job);
+	void fileLoad(ReadStream& stream, const std::unordered_map<Job*, Job*>& jobs);
 
 	~Building();
 };

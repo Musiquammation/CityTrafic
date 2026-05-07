@@ -663,20 +663,76 @@ void Building::fileSave(WriteStream &stream) {
 			break;
 		}
 
+		default: {
+			throw std::runtime_error{"Not implemented"};
+		}
 	}
 }
 
 
+
+template<typename T>
+static T* get(
+	const std::unordered_map<Job*, Job*>& jobs,
+	const T* key
+) {
+	if (auto it = jobs.find((Job*)key); it != jobs.end()) {
+		auto j = dynamic_cast<T*> (it->second);
+		if (!j) {
+			throw std::runtime_error{"Invalid type for job"};
+		}
+	}
+
+	throw std::runtime_error{"Job not found"};
+}
+
 void Building::fileLoad(
 	ReadStream &stream,
-	const std::unordered_map<Job*, Job*>& job
+	const std::unordered_map<Job*, Job*>& jobs
 ) {
 	stream.read(this->type);
 	stream.read(this->owner);
 
 
+	switch (this->type) {
+		case BuildingType::HOME: {
+			stream.read(this->home.left);
+			stream.read(this->home.capacity);
+			stream.read(this->home.rent);
 
-	/// TODO: fill
+			this->home.characters = new Character*[this->home.capacity];
+			for (int i = 0; i < this->home.capacity; i++) {
+				stream.read(this->home.characters[i]);
+			}
+			break;
+		}
+
+		case BuildingType::OIL_FIELD: {
+			stream.read(this->oilField);
+			this->oilField.job = get<OilFieldJob>(jobs, this->oilField.job);
+			break;
+		}
+
+		case BuildingType::PLANTATION: {
+			stream.read(this->plantation);
+			this->plantation.job = get<AgricultorJob>(jobs, this->plantation.job);
+			break;
+		}
+		case BuildingType::GROCERY: {
+			stream.read(this->grocery);
+			this->grocery.job = get<CashierJob>(jobs, this->grocery.job);
+			break;
+		}
+		case BuildingType::CONSTRUCTION: {
+			stream.read(this->construction);
+			this->construction.job = get<ConstructionJob>(jobs, this->construction.job);
+			break;
+		}
+
+		default: {
+			throw std::runtime_error{"Not implemented"};
+		}
+	}
 
 
 
