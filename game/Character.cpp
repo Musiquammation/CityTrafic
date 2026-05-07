@@ -1,5 +1,7 @@
 #include "Character.hpp"
 
+#include <cstring>
+
 #include "Job.hpp"
 #include "pathfinder.hpp"
 #include "Car.hpp"
@@ -9,6 +11,7 @@
 #include "actions/action_character.hpp"
 
 #include "DebugLogger.hpp"
+#include "utils/streams.hpp"
 static DebugLogger printSpec{"Spec", false};
 static DebugLogger print{"Character", true};
 static DebugLogger printSeeds{"Seeds", false};
@@ -141,26 +144,12 @@ Character* Character::createClientCharacter(float x, float y) {
 }
 
 Character* Character::spawnCharacter(const Map& map, int x, int y) {
-	auto info = map.getBuilding(x, y);
-	if (!info.building)
-		return nullptr;
-
-	if (info.building->isFull())
-		return nullptr;
-
-
 	auto c = new Character;
-	int index = info.building->enter(c);
-	if (index < 0) {
-		delete c;
-		return nullptr;
-	}
 
 	c->x = (float)x + .5f;
 	c->y = (float)y + .5f;
-	c->state = CharacterState::INSIDE;
+	c->state = CharacterState::OUTSIDE;
 	c->money = 0;
-	c->data.inside.index = index;
 	c->pointId = 0;
 
 	return c;
@@ -504,7 +493,83 @@ uint32_t* Character::sendData(uint32_t* ptr) {
 	return ptr;
 }
 
+void Character::saveData(WriteStream& stream) {
+	switch (this->state) {
+		case CharacterState::CLIENT:
+			return;
 
+		case CharacterState::WALK: {
+			stream.write(this->data.walk.anchor);
+			stream.write(this->data.walk.position);
+			stream.write(this->data.walk.step);
+			auto len = (int)std::strlen(this->data.walk.path);
+			stream.write(len);
+			stream.copy(this->data.walk.path, len);
+			return;
+		}
+
+		case CharacterState::INSIDE: {
+			stream.write(this->data.inside);
+			return;
+		}
+
+		case CharacterState::OUTSIDE: {
+			return;
+		}
+
+		case CharacterState::DRIVE: {
+			stream.write(this->data.drive);
+			return;
+		}
+
+		case CharacterState::WAIT: {
+			stream.write(this->data.wait);
+			return;
+		}
+
+	}
+}
+
+void Character::openData(ReadStream& stream) {
+	switch (this->state) {
+		case CharacterState::CLIENT:
+			return;
+
+		case CharacterState::WALK: {
+			stream.read(this->data.walk.anchor);
+			stream.read(this->data.walk.position);
+			stream.read(this->data.walk.step);
+
+			int len;
+			stream.read(len);
+
+			this->data.walk.path = (char*) malloc(len+1);
+			stream.copy(this->data.walk.path, len);
+			this->data.walk.path[len] = '\0';
+
+			return;
+		}
+
+		case CharacterState::INSIDE: {
+			stream.read(this->data.inside);
+			return;
+		}
+
+		case CharacterState::OUTSIDE: {
+			return;
+		}
+
+		case CharacterState::DRIVE: {
+			stream.read(this->data.drive);
+			return;
+		}
+
+		case CharacterState::WAIT: {
+			stream.read(this->data.wait);
+			return;
+		}
+	}
+}
 
 Character::~Character() {
 	this->cleanupState();	

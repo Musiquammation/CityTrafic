@@ -65,6 +65,9 @@ void jobSerializator::save(WriteStream &stream, const Job *job) {
 		stream.write(j->startTime);
 		stream.write(j->finishTime);
 		stream.write(j->employeesCounters);
+		for (auto& [_, v]: j->workers) {
+			printf("=> %ld\n", v.meeting);
+		}
 		saveMap(stream, j->workers);
 		return;
 	}
@@ -94,9 +97,7 @@ static void openMap(
 
 
 Job *jobSerializator::open(ReadStream &stream, const std::unordered_map<Character*, Character*>& characterMap) {
-	auto type = stream.read<Types>();
-
-	switch (type) {
+	switch (stream.read<Types>()) {
 		case Types::AGRICULTOR: {
 			float salaryPerSeed = stream.read<float>();
 			float pricePerSeed = stream.read<float>();

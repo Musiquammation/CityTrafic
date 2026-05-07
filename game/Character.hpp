@@ -67,12 +67,12 @@ class Character {
 		} outside;
 
 		struct {
-			int couldown;
-		} wait;
-
-		struct {
 			ActionCode state;
 		} drive;
+
+		struct {
+			int cooldown;
+		} wait;
 
 	} data;
 
@@ -132,6 +132,8 @@ public:
 	bool isAtHome(const Game& game) const;
 
 	uint32_t* sendData(uint32_t* ptr);
+	void saveData(WriteStream& stream);
+	void openData(ReadStream& stream);
 
 	Character();
 	~Character();

@@ -16,6 +16,7 @@ class PathHandler {
 
 
 public:
+	friend struct serialize;
 	template<bool B = freeArray, std::enable_if_t<B, int> = 1>
 	PathHandler() {}
 

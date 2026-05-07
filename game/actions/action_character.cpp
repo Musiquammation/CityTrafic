@@ -367,13 +367,13 @@ struct CharacterFriend {
 		
 		if (c->state != CharacterState::WAIT) {
 			c->setState(CharacterState::WAIT);
-			c->data.wait.couldown = 60;
+			c->data.wait.cooldown = 60;
 			printStatus("  started\n");
 			return ActionCode::PENDING;
 		}
 
-		c->data.wait.couldown--;
-		if (c->data.wait.couldown <= 0) {
+		c->data.wait.cooldown--;
+		if (c->data.wait.cooldown <= 0) {
 			c->setState(CharacterState::OUTSIDE);
 			return ActionCode::SUCCESS;
 		}

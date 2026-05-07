@@ -17,6 +17,7 @@ int main(int argc, char** argv) {
 	if (poolNum > 1) {poolNum--;}
 
     Server server{poolNum};
+	server.openSavedGames();
     server.run(port); 
 
     return 0;

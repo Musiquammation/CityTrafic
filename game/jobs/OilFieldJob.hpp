@@ -26,7 +26,7 @@ public:
 		float pricePerLiter
 	);
 
-	~OilFieldJob();
+	~OilFieldJob() override;
 
 
 	struct {

@@ -630,7 +630,7 @@ bool Building::home_removeCharacter(Character* c) {
 	return false;
 }
 
-void Building::fileSave(WriteStream &stream) {
+void Building::fileSave(WriteStream &stream) const {
 	stream.write(this->type);
 	stream.write(this->owner);
 
@@ -681,6 +681,8 @@ static T* get(
 		if (!j) {
 			throw std::runtime_error{"Invalid type for job"};
 		}
+
+		return j;
 	}
 
 	throw std::runtime_error{"Job not found"};

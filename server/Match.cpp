@@ -4,7 +4,7 @@
 #include <game/Game.hpp>
 
 #ifndef AUTOSAVE_COULDOWN
-#define AUTOSAVE_COULDOWN 10 /* 10mn for testing */
+#define AUTOSAVE_COULDOWN 3 /* 3mn for testing */
 #endif
 
 Match::Match(Pool* pool, hash_t hash):

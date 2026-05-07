@@ -111,7 +111,7 @@ struct Building {
 	bool home_addCharacter(Character* c);
 	bool home_removeCharacter(Character* c);
 
-	void fileSave(WriteStream& stream);
+	void fileSave(WriteStream& stream) const;
 	void fileLoad(ReadStream& stream, const std::unordered_map<Job*, Job*>& jobs);
 
 	~Building();

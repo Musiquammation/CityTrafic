@@ -30,7 +30,9 @@ class Server {
 	void deleteMatch(hash_t hash);
 	Match* getMatch(hash_t hash);
 
+
 public:
 	Server(int poolNum);
+	void openSavedGames();
 	void run(int port);
 };

@@ -104,7 +104,10 @@ calendar_t Calendar::getFutureInstant(instant_t time, const int* days) const {
         }
 
         if (isAllowed) {
-            calendar_t potentialIndicator = getTime(totalDay + offset, time);
+            calendar_t potentialIndicator = getTime(
+            	this->totalDay + offset,
+            	time
+            	);
             
             if (offset == 0) {
                 if (potentialIndicator > this->indicator) {

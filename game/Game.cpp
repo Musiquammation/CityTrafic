@@ -225,7 +225,7 @@ Vector<int> Game::searchHome(
 Game::Game(int width, int height):
 	map(width, height)
 {
-	
+	printf("build\n");
 }
 
 

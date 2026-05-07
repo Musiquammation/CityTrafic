@@ -29,6 +29,7 @@ private:
 	float fuelCapacity;
 
 	friend class Api;
+	friend struct serialize;
 
 
 public:

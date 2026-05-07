@@ -12,11 +12,7 @@
 #define TIME_MODE -1
 #endif
 
-
-#ifndef SAVEGAME_FOLDERPATH
-#define SAVEGAME_FOLDERPATH "saves/"
-#endif
-
+#include "SaveGamePathFolder.hpp"
 
 static void saveGame(hash_t hash, const Game& game) {
 	std::string path{SAVEGAME_FOLDERPATH};
@@ -92,6 +88,7 @@ void Pool::joinThread() {
 
 Match* Pool::createMatch(hash_t hash) {
 	auto match = new Match{this, hash};
+	printf("hash %ld\n", hash);
 	
 	std::lock_guard<std::mutex> structureLock{this->structureMutex};
 

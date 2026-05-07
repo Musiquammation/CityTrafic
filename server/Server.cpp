@@ -6,6 +6,7 @@
 #include "Pool.hpp"
 #include "Client.hpp"
 #include "Match.hpp"
+#include "SaveGamePathFolder.hpp"
 
 #include <game/hash.hpp>
 #include <game/Game.hpp>
@@ -22,8 +23,10 @@
 #include <stdint.h>
 #include <string.h>
 #include <cmath>
+#include <filesystem>
 
-
+#include "game/serialization/serialize.hpp"
+#include "game/utils/streams.hpp"
 
 
 #ifndef MAP_PRECISION
@@ -437,4 +440,22 @@ void Server::deleteMatch(hash_t hash) {
 Match* Server::getMatch(hash_t hash) {
 	Pool* pool = &this->pools[hash % this->poolNum];
 	return pool->getMatch(hash);
+}
+
+void Server::openSavedGames() {
+	for (const auto& entry : std::filesystem::recursive_directory_iterator(SAVEGAME_FOLDERPATH)) {
+		if (entry.is_regular_file()) {
+			auto path = entry.path().string();
+			std::cout << "Opening " << path << std::endl;
+			ReadStream stream{path};
+
+			// 16 last characters are the name of the hash
+			hash_t hash = hash_toHash(path.c_str() + path.size() - 16);
+			auto match = this->createMatch(hash);
+			auto game = match->getGame<true>();
+			serialize::open(*game, stream);
+		}
+	}
+
+
 }

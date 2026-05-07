@@ -9,6 +9,7 @@ uint64_t hash_generate();
 void hash_longCopy(uint8_t* dst, const uint8_t* src);
 
 void hash_toHexa(hash_t hash, char* dst);
+hash_t hash_toHash(const char* src);
 
 #define hash_move(ptr) {ptr += 16;}
 

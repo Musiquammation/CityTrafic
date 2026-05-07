@@ -9,12 +9,13 @@
 
 
 class ActionExecutor {
-	const ActionNode* const root;
+	const ActionNode* root;
 	const ActionNode* currentNode;
-	void* const args;
+	void* args;
 	std::vector<int> list;
-	void(*const destructor)(void* args);
+	void(*destructor)(void* args);
 
+	friend struct serialize;
 public:
 	static void FREE_DESTRUCTOR(void* args);
 
