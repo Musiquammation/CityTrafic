@@ -8,3 +8,5 @@ server/wasm
 uWebSockets
 ts-server
 venv
+.idea
+saves
