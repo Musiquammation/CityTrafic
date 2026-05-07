@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Traffic</title>
+		<link rel="stylesheet" href="index.css">
+	</head>
+	<body>
+		
+		<div id="gameView" class="view hidden">
+			<canvas id="gameCanvas"></canvas>
+			<div id="fps"></div>
+			<div id="handPanel"></div>
+			
+			<div id="gameCalendar" class="sideGamePanel">
+				<div id="gameDay">Monday, 1st April</div>
+				<div id="gameYear">Year 0000</div>
+				<div id="gameHour">00:00</div>
+			</div>
+
+			<div id="gameMoney" class="sideGamePanel">212$</div>
+
+			<div id="turnSelector" class="hidden">
+				<div class="ts-panel">
+					<div class="ts-row" id="ts-row-0"></div>
+					<div class="ts-row" id="ts-row-1"></div>
+					<div class="ts-actions">
+					<button id="ts-cancel">Annuler</button>
+					<button id="ts-ok" class="ts-ok">OK</button>
+					</div>
+				</div>
+			</div>
+
+			<div id="dataPanelList"></div>
+        </div>
+
+		<div id="homeView" class="view hidden">
+			<button id="home-createSession">Create session</button>
+			<button id="home-joinSession">Join session</button>
+		</div>
+
+		<script>
+			window.IMG_ROOT_PATH = "/CityTrafic/public/";
+			window.DEBUG = false;
+			window.SERV_ADDRESS = "wss://5.51.5.55.sslip.io:3705";
+			window.WASM_PATH = "CityTrafic/public/wasm/api.wasm"
+
+			import("/CityTrafic/public/bundle.js").then(() => window.startGame());
+		</script>
+	</body>
+</html>
