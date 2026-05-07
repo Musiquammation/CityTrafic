@@ -118,3 +118,67 @@ calendar_t Calendar::getFutureInstant(instant_t time, const int* days) const {
 
     return NOTIME;
 }
+
+void Calendar::updateIndicator(calendar_t indicator) {
+	// Update the main absolute indicator
+	this->indicator = indicator;
+
+	// Temporary value for decomposition
+	calendar_t remainingMinutes = indicator;
+
+	// Reset basic fields
+	minute = (int)(remainingMinutes % 60);
+	calendar_t totalHours = remainingMinutes / 60;
+
+	hour = (int)(totalHours % 24);
+	calendar_t totalDays = totalHours / 24;
+
+	// Update daily trackers
+	this->totalDay = totalDays;
+	this->dayIndicator = totalDays * 24 * 60;
+
+	// Assuming the calendar starts on Monday (as per WEEK_DAYS array order)
+	this->weekDay = (int)(totalDays % 7);
+
+	// Decompose days into Years, Months, and Days
+	year = 0; // Or your starting base year (e.g., 2000)
+	month = 0;
+	day = 0;
+
+	// Calculate Years
+	while (true) {
+		bool isLeap = ((year % 4 == 0 && year % 100 != 0) || (year % 400 == 0));
+		calendar_t daysInYear = isLeap ? 366 : 365;
+
+		if (totalDays < daysInYear) break;
+
+		totalDays -= daysInYear;
+		year++;
+	}
+
+	// Calculate Months
+	while (true) {
+		int daysInMonth = MONTH_DAYS[month];
+		if (daysInMonth == -1) {
+			// February leap year check
+			bool isLeap = ((year % 4 == 0 && year % 100 != 0) || (year % 400 == 0));
+			daysInMonth = isLeap ? 29 : 28;
+		}
+
+		if (totalDays < (calendar_t)daysInMonth) break;
+
+		totalDays -= (calendar_t)daysInMonth;
+		month++;
+
+		if (month >= 12) {
+			month = 0;
+			year++;
+		}
+	}
+
+	// Remaining days
+	this->day = (int)totalDays;
+
+	// Clear the fractional rest to avoid synchronization jumps
+	this->rest = 0.0f;
+}

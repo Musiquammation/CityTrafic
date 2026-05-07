@@ -4,9 +4,9 @@
 
 #include "../jobs/AgricultorJob.hpp"
 #include "../utils/streams.hpp"
-#include "game/jobs/CashierJob.hpp"
-#include "game/jobs/ConstructionJob.hpp"
-#include "game/jobs/OilFieldJob.hpp"
+#include "../jobs/CashierJob.hpp"
+#include "../jobs/ConstructionJob.hpp"
+#include "../jobs/OilFieldJob.hpp"
 
 
 enum class Types: int {

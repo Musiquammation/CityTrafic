@@ -122,7 +122,7 @@ void serialize::open(Game &game, ReadStream &stream) {
 	}
 
 	// Calendar
-	stream.read(game.calendar.indicator);
+	game.calendar.updateIndicator(stream.read<calendar_t>());
 
 	// Players
 	size_t playerCount;

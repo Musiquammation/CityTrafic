@@ -34,5 +34,7 @@ public:
 		instant_t time,
 		const int* days
 	) const;
+
+	void updateIndicator(calendar_t indicator);
 	
 };
