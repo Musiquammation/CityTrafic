@@ -16,6 +16,7 @@ protected:
 public:
 	static constexpr int NO_LOCATION = INT32_MIN;
 
+	
 	void give(int money);
 	int pay(int money);
 	int getMoney() const;

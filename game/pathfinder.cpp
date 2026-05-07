@@ -1,6 +1,7 @@
-
 #include "pathfinder.hpp"
 
+#include "Cell.hpp"
+#include "CellType.hpp"
 #include "PathHandler.hpp"
 #include "Map.hpp"
 #include "Direction.hpp"

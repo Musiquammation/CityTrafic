@@ -16,7 +16,8 @@ class PathHandler {
 
 
 public:
-	PathHandler() requires (freeArray) = default;
+	template<bool B = freeArray, std::enable_if_t<B, int> = 1>
+	PathHandler() {}
 
 	template<bool freeArraySrc>
 	PathHandler(const PathHandler<freeArraySrc>& src);

@@ -2,8 +2,8 @@
 
 #include "declarations.hpp"
 #include "Direction.hpp"
-
 #include <unordered_map>
+
 
 
 struct pair_hash {
@@ -17,6 +17,7 @@ class CarHandler {
 
 public:
     friend class Api;
+    friend struct serialize;
 
     ~CarHandler();
     

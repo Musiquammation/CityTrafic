@@ -23,6 +23,9 @@ class PathHandler;
 
 
 
+struct WriteStream;
+struct ReadStream;
+
 struct OilFieldJob;
 struct AgricultorJob;
 struct CashierJob;

@@ -110,5 +110,8 @@ struct Building {
 	bool home_addCharacter(Character* c);
 	bool home_removeCharacter(Character* c);
 
+	void fileSave(WriteStream& stream);
+	void fileLoad(ReadStream& stream);
+
 	~Building();
 };

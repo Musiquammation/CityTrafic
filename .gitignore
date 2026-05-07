@@ -5,6 +5,6 @@ client/dist
 client/wasm
 server/wasm
 .vscode
+.idea
 uWebSockets
-ts-server
 venv

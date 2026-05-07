@@ -5,6 +5,7 @@
 
 class CharacterHandler {
 	friend class Api;
+	friend struct serialize;
 	std::vector<Character*> characters;
 
 public:

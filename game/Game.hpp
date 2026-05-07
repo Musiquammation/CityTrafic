@@ -24,6 +24,7 @@ private:
 
 	
 public:
+	friend struct serialize;
 	friend struct GameCommand;
 	friend class Api;
 	friend class Server;

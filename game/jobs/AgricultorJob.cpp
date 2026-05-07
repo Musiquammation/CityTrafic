@@ -6,7 +6,8 @@
 #include "../Calendar.hpp"
 #include "../Building.hpp"
 
-#include <math.h>
+#include <cmath>
+#include <stdexcept>
 
 AgricultorJob::AgricultorJob(
 	float salaryPerSeed,

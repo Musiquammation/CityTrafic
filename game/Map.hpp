@@ -3,7 +3,6 @@
 #include "declarations.hpp"
 
 #include "Vector.hpp"
-#include "Cell.hpp"
 #include "BuildingInfo.hpp"
 #include "BuildingType.hpp"
 
@@ -41,6 +40,7 @@ class Map {
 
 
 public:
+	friend struct serialize;
 	friend class Api;
 
 	Map(int width, int height);

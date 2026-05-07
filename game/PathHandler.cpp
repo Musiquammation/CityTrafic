@@ -1,6 +1,8 @@
 #include "PathHandler.hpp"
 #include <limits.h>
-#include <stdexcept>
+
+
+
 
 template<>
 PathHandler<true>::~PathHandler() {
@@ -39,7 +41,7 @@ void PathHandler<true>::fill(Vector<int>* array, uint8_t* bitArray, int length) 
 
 template<>
 void PathHandler<false>::fill(Vector<int>* array, uint8_t* bitArray, int length) {
-		static_assert(1, "fill() is disabled for PathHandler<true>");
+	static_assert(1, "fill() is disabled for PathHandler<true>");
 }
 
 template<bool freeArray>

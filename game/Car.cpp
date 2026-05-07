@@ -2,12 +2,15 @@
 
 
 #include "Character.hpp"
+#include "DebugLogger.hpp"
 #include "getDanger.hpp"
 #include "Game.hpp"
 #include "Cell.hpp"
 #include "pathfinder.hpp"
-#include "debugFile.hpp"
+#include <cstdio>
 
+
+static DebugLogger print{"Car"};
 
 Car::Car(int x, int y, Direction direction, float fuelCapacity):
 	x(x), y(y),
