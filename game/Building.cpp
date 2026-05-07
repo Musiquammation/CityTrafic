@@ -1,5 +1,7 @@
 #include "Building.hpp"
 
+#include <unistd.h>
+
 #include "PanelId.hpp"
 #include "Game.hpp"
 #include "Character.hpp"
@@ -10,6 +12,7 @@
 #include "jobs/ConstructionJob.hpp"
 
 #include "DebugLogger.hpp"
+#include "utils/streams.hpp"
 DebugLogger print{"Building"};
 
 
@@ -627,13 +630,50 @@ bool Building::home_removeCharacter(Character* c) {
 	return false;
 }
 
+void Building::fileSave(WriteStream &stream) {
+	stream.write(this->type);
+	stream.write(this->owner);
+
+	switch (this->type) {
+		case BuildingType::HOME: {
+			stream.write(this->home.left);
+			stream.write(this->home.capacity);
+			stream.write(this->home.rent);
+			for (int i = 0; i < this->home.capacity; i++) {
+				stream.write(this->home.characters[i]);
+			}
+			break;
+		}
+
+		case BuildingType::OIL_FIELD: {
+			stream.write(this->oilField);
+			break;
+		}
+
+		case BuildingType::PLANTATION: {
+			stream.write(this->plantation);
+			break;
+		}
+		case BuildingType::GROCERY: {
+			stream.write(this->grocery);
+			break;
+		}
+		case BuildingType::CONSTRUCTION: {
+			stream.write(this->construction);
+			break;
+		}
+
+	}
+}
 
 
+void Building::fileLoad(ReadStream &stream) {
+	stream.read(this->type);
+	stream.read(this->owner);
 
+	/// TODO: fill
 
-
-
-
+}
 
 Building::~Building() {
 	#if TESTING_SERV
