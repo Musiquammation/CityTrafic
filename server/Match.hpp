@@ -8,9 +8,12 @@
 #include <vector>
 #include <set>
 
+#include "game/calendar_t.hpp"
+
 struct Match {
 private:
 	Game* const game;
+	calendar_t nextAutoSave;
 
 public:
 	hash_t const hash;
@@ -27,6 +30,8 @@ public:
 
 	template<bool serv>
 	GameOwner<serv> getGame();
+
+	bool checkAutoSave();
 
 	Match(Pool* pool, hash_t hash);
 	~Match();

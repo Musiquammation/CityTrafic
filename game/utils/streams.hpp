@@ -4,9 +4,12 @@
 #include <string>
 
 struct WriteStream {
+private:
 	std::ofstream file;
 
+public:
 	WriteStream(const std::string& path);
+	~WriteStream();
 
 	void copy(const void* src, size_t length);
 
@@ -22,8 +25,12 @@ struct WriteStream {
 
 
 struct ReadStream {
+private:
 	std::ifstream file;
+
+public:
 	ReadStream(const std::string& path);
+	~ReadStream();
 
 	void copy(void* dst, size_t length);
 

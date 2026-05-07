@@ -3,10 +3,15 @@
 #include <algorithm>
 #include <game/Game.hpp>
 
+#ifndef AUTOSAVE_COULDOWN
+#define AUTOSAVE_COULDOWN 10 /* 10mn for testing */
+#endif
+
 Match::Match(Pool* pool, hash_t hash):
     game(new Game{32, 32}),
     hash(hash),
-    pool(pool)
+    pool(pool),
+    nextAutoSave(AUTOSAVE_COULDOWN)
 {}
 
 Match::~Match() {
@@ -34,6 +39,17 @@ template<bool serv>
 GameOwner<serv> Match::getGame() {
     return GameOwner<serv>{this->game, this->pool, this->hash};
 }
+
+bool Match::checkAutoSave() {
+    auto indicator = game->getCalendar().indicator;
+    if (indicator < this->nextAutoSave) {
+        return false;
+    }
+
+    this->nextAutoSave = indicator + AUTOSAVE_COULDOWN;
+    return true;
+}
+
 
 template GameOwner<false> Match::getGame<false>();
 template GameOwner<true> Match::getGame<true>();

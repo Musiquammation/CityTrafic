@@ -5,9 +5,38 @@
 #include <game/Game.hpp>
 #include <cstring>
 
+#include "game/serialization/serialize.hpp"
+#include "game/utils/streams.hpp"
+
 #ifndef TIME_MODE
 #define TIME_MODE -1
 #endif
+
+
+#ifndef SAVEGAME_FOLDERPATH
+#define SAVEGAME_FOLDERPATH "saves/"
+#endif
+
+
+static void saveGame(hash_t hash, const Game& game) {
+	std::string path{SAVEGAME_FOLDERPATH};
+
+	// Get path
+	{
+		char hexaHash[17];
+		hash_toHexa(hash, hexaHash);
+		hexaHash[16] = '\0';
+
+
+		// Open file
+		path += hexaHash;
+	}
+
+	printf("Saving %s\n", path.c_str());
+	WriteStream stream{path};
+	serialize::save(game, stream);
+	printf("Saved  %s\n", path.c_str());
+}
 
 void runThread(Pool* pool) {
 	using clock = std::chrono::steady_clock;
@@ -28,9 +57,16 @@ void runThread(Pool* pool) {
 		// Run
 		{
 			std::lock_guard<std::mutex> structureLock{pool->structureMutex};
-			for (auto& match : pool->matchs) {
-				auto game = match.second->getGame<false>();
+			for (auto [key, match] : pool->matchs) {
+				auto game = match->getGame<false>();
+
+				// Play game
 				game->frame();
+
+				// Check autosave
+				if (match->checkAutoSave()) {
+					saveGame(key, *game);
+				}
 			}
 		}
 

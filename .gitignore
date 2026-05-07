@@ -8,3 +8,4 @@ server/wasm
 .idea
 uWebSockets
 venv
+saves
