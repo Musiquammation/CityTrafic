@@ -103,6 +103,7 @@ void serialize::open(Game &game, ReadStream &stream) {
 
 	// Load characters
 	size_t charCount;
+	std::unordered_map<Character*, Character*> characterMap;
 	stream.read(charCount);
 	for (size_t i = 0; i < charCount; ++i) {
 		Character* oldPtr;
@@ -110,6 +111,7 @@ void serialize::open(Game &game, ReadStream &stream) {
 
 		Character* c = new Character{};
 		stream.read(*c);
+		characterMap[oldPtr] = c;
 
 		// Update car pointer using hash map
 		if (c->car) {
@@ -133,10 +135,10 @@ void serialize::open(Game &game, ReadStream &stream) {
 	std::unordered_map<Job*, Job*> jobMap;
 	// Jobs
 	while (true) {
-		Job* oldJobPtr = stream.read<Job*>();
+		auto oldJobPtr = stream.read<Job*>();
 		if (oldJobPtr == nullptr) break;
 
-		Job* job = jobSerializator::load(stream);
+		Job* job = jobSerializator::open(stream, characterMap);
 		jobMap[oldJobPtr] = job;
 	}
 
@@ -149,7 +151,7 @@ void serialize::open(Game &game, ReadStream &stream) {
 		Vector<int> p;
 		stream.read(p);
 
-		Building* b = new Building();
+		auto* b = new Building();
 		game.map.buildings[p] = b;
 		b->fileLoad(stream, jobMap);
 		game.map.buildings[p] = b;

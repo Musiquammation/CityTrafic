@@ -18,6 +18,7 @@ class ConstructionJob: public Job {
 	
 	std::map<Character*, WorkerData> workers;
 	
+	friend struct jobSerializator;
 
 public:
 	ConstructionJob(
