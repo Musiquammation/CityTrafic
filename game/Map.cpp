@@ -24,14 +24,12 @@ Map::Map(int x, int y, int width, int height)
 		(width-x) * (height-y),
 		sizeof(Cell)
 	);
-	printf("constructA %p\n", this->cells);
 }
 
 Map::Map(int width, int height)
 	: x(0), y(0), width(width), height(height) {
 
 	this->cells = (Cell*)calloc(width * height, sizeof(Cell));
-	printf("constructB %p\n", this->cells);
 }
 
 

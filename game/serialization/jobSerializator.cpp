@@ -65,9 +65,6 @@ void jobSerializator::save(WriteStream &stream, const Job *job) {
 		stream.write(j->startTime);
 		stream.write(j->finishTime);
 		stream.write(j->employeesCounters);
-		for (auto& [_, v]: j->workers) {
-			printf("=> %ld\n", v.meeting);
-		}
 		saveMap(stream, j->workers);
 		return;
 	}
