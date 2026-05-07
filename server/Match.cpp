@@ -4,7 +4,7 @@
 #include <game/Game.hpp>
 
 Match::Match(Pool* pool, hash_t hash):
-    game(new Game{}),
+    game(new Game{32, 32}),
     hash(hash),
     pool(pool)
 {}

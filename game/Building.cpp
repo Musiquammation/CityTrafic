@@ -667,11 +667,18 @@ void Building::fileSave(WriteStream &stream) {
 }
 
 
-void Building::fileLoad(ReadStream &stream) {
+void Building::fileLoad(
+	ReadStream &stream,
+	const std::unordered_map<Job*, Job*>& job
+) {
 	stream.read(this->type);
 	stream.read(this->owner);
 
+
+
 	/// TODO: fill
+
+
 
 }
 

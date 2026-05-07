@@ -17,6 +17,15 @@
 
 const Cell _outCellBuffer = {.data = 0};
 
+Map::Map(int x, int y, int width, int height)
+: x(x), y(y), width(width), height(height)
+{
+	this->cells = (Cell*)calloc(
+		(width-x) * (height-y),
+		sizeof(Cell)
+	);
+}
+
 Map::Map(int width, int height)
 	: x(0), y(0), width(width), height(height) {
 

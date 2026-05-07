@@ -1,5 +1,9 @@
 #include "Direction.hpp"
 
+#include <stdexcept>
+
+#include "Vector.hpp"
+
 Vector<int> Direction_getVector(Direction dir) {
 	return DIRECTION_VECTORS[(int)dir];
 }

@@ -222,6 +222,11 @@ Vector<int> Game::searchHome(
 	return {INT32_MIN, INT32_MIN};
 }
 
+Game::Game(int width, int height):
+	map(width, height)
+{
+	
+}
 
 
 Game::~Game() {

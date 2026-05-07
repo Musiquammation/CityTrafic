@@ -1,5 +1,7 @@
 #include "serialize.hpp"
 
+#include <cmath>
+
 #include "jobSerializator.hpp"
 #include "../utils/streams.hpp"
 #include "../Game.hpp"
@@ -65,7 +67,91 @@ void serialize::save(const Game &game, WriteStream &stream) {
 
 
 void serialize::open(Game &game, ReadStream &stream) {
+	// Load map dimensions
 
+	game.map = Map{
+		stream.read<int>(),
+		stream.read<int>(),
+		stream.read<int>(),
+		stream.read<int>(),
+	};
+
+	// Restore map cells
+	int mapLength = (game.map.width - game.map.x) * (game.map.height - game.map.y);
+
+
+	// Map to link old pointers to new instances
+	std::unordered_map<Car*, Car*> carMap;
+
+	// Load cars
+	size_t carCount;
+	stream.read(carCount);
+	for (size_t i = 0; i < carCount; ++i) {
+		Car* oldPtr;
+		stream.read(oldPtr);
+
+		Car* newCar = (Car*)::operator new(sizeof(Car));
+		stream.read(*newCar);
+
+		game.carHandler.cars[{
+			(int)std::floor(newCar->x),
+			(int)std::floor(newCar->y),
+		}] = newCar;
+
+		carMap[oldPtr] = newCar;
+	}
+
+	// Load characters
+	size_t charCount;
+	stream.read(charCount);
+	for (size_t i = 0; i < charCount; ++i) {
+		Character* oldPtr;
+		stream.read(oldPtr);
+
+		Character* c = new Character{};
+		stream.read(*c);
+
+		// Update car pointer using hash map
+		if (c->car) {
+			c->car = carMap[c->car];
+		}
+
+		game.characterHandler.characters.push_back(c);
+	}
+
+	// Calendar
+	stream.read(game.calendar.indicator);
+
+	// Players
+	size_t playerCount;
+	stream.read(playerCount);
+	game.players.resize(playerCount);
+	for (auto& player : game.players) {
+		stream.read(player);
+	}
+
+	std::unordered_map<Job*, Job*> jobMap;
+	// Jobs
+	while (true) {
+		Job* oldJobPtr = stream.read<Job*>();
+		if (oldJobPtr == nullptr) break;
+
+		Job* job = jobSerializator::load(stream);
+		jobMap[oldJobPtr] = job;
+	}
+
+	// Buildings
+	size_t buildCount;
+	stream.read(buildCount);
+
+
+	for (size_t i = 0; i < buildCount; ++i) {
+		Vector<int> p;
+		stream.read(p);
+
+		Building* b = new Building();
+		game.map.buildings[p] = b;
+		b->fileLoad(stream, jobMap);
+		game.map.buildings[p] = b;
+	}
 }
-
-

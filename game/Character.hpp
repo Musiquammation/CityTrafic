@@ -41,7 +41,6 @@ class Character {
 	float seeds = MAX_SEEDS;
 
 
-	Character();
 
 	union {
 		struct {
@@ -82,7 +81,7 @@ class Character {
 	ActionCode walk(Game& game);
 
 	friend struct actionNodes::character::CharacterFriend;
-
+	friend struct serialize;
 public:
 	float x;
 	float y;
@@ -134,5 +133,6 @@ public:
 
 	uint32_t* sendData(uint32_t* ptr);
 
+	Character();
 	~Character();
 };

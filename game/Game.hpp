@@ -12,7 +12,7 @@
 
 class Game {
 private:
-	Map map{32,32};
+	Map map;
 	CarHandler carHandler{};
 	CharacterHandler characterHandler{};
 	Calendar calendar;
@@ -71,5 +71,7 @@ public:
 		int cy
 	);
 
+	Game(int width, int height);
+	Game(): Game(32,32) {}
 	~Game();
 };

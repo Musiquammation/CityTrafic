@@ -3,6 +3,7 @@
 #include "Vector.hpp"
 #include "declarations.hpp"
 #include <stdint.h>
+#include <unordered_map>
 
 #include "BuildingType.hpp"
 
@@ -111,7 +112,7 @@ struct Building {
 	bool home_removeCharacter(Character* c);
 
 	void fileSave(WriteStream& stream);
-	void fileLoad(ReadStream& stream);
+	void fileLoad(ReadStream& stream, const std::unordered_map<Job*, Job*>& job);
 
 	~Building();
 };

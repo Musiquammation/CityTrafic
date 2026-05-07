@@ -37,7 +37,7 @@ RedCerr rcerr;
 #include "debugFile.hpp"
 
 int main() {
-	Game game{};
+	Game game{32, 32};
 
 	int crossX = 19;
 	int crossY = 6;

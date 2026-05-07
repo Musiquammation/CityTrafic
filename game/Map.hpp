@@ -43,6 +43,7 @@ public:
 	friend struct serialize;
 	friend class Api;
 
+	Map(int x, int y, int width, int height);
 	Map(int width, int height);
 	~Map();
 
