@@ -161,7 +161,7 @@ bool OilFieldJob::hire(
 
 	switch (offer.type) {
 	case JobOfferType::OIL_RAFFINER:
-		if (!this->employeesCounters.raffiners.canHire()) {return false;}
+		if (!this->employeesCounters.raffiners.hire()) {return false;}
 		break;
 
 	default:

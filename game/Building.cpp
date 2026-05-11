@@ -71,13 +71,12 @@ Building* Building::create_plantation(
 	AgricultorJob* job,
 	int owner,
 	int delay
-
 ) {
 	auto b = new Building;
 	b->owner = owner;
 	b->type = BuildingType::PLANTATION;
 	b->plantation.job = job;
-	b->plantation.couldown = delay;
+	b->plantation.cooldown = delay;
 	b->plantation.delay = delay;
 	b->plantation.stock = 0.0f;
 	return b;
@@ -426,7 +425,9 @@ uint32_t* Building::getPanelData(const Game& game) {
 
 		/// TODO: that
 		result[0] = COUNT;
-		result[1] = (uint32_t)-1;
+		result[1] = (uint32_t)PanelId::BUILDING_PLANTATION;
+		result[2] = flt(this->plantation.stock);
+
 
 		return result;
 	}

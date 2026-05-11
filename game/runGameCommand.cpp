@@ -11,7 +11,8 @@
 #include "jobs/CashierJob.hpp"
 #include "jobs/ConstructionJob.hpp"
 
-#include <stdio.h>
+
+#include "jobs/AgricultorJob.hpp"
 
 
 #define take(T) ({ T _v = *(T*)ptr; ptr = (uint8_t*)ptr + sizeof(T); _v; })
@@ -78,18 +79,19 @@ def(test) {
 	int playerId = game.getPlayerId(player);
 	
 	auto home = Building::create_home(playerId, 3, 500);
-	game.map.addBuilding(10, 11, home, game);
+	game.map.addBuilding(10, 15, home, game);
 
-	auto character = Character::spawnCharacter(game.getMap(), 10, 11);
-	if (character) {
-		character->give(2000);
-		character->setCar(car);
-		game.characterHandler.pushCharacter(character);
+	for (int i = 0; i < 3; i++) {
+		if (auto character = Character::spawnCharacter(game.getMap(), 10, 11)) {
+			character->give(2000);
+			character->setCar(car);
+			game.characterHandler.pushCharacter(character);
+		}
 	}
 
 	auto oilJob = new OilFieldJob{1.9f, 2.0f};
 	oilJob->give(10000);
-	oilJob->employeesCounters.raffiners.goal = 5;
+	oilJob->employeesCounters.raffiners.goal = 1;
 	auto oilField = Building::create_oilField(oilJob, playerId, 1000.0f, 50000, 4);
 	game.map.addBuilding(1, 5, oilField, game);
 	oilField->oilField.refined += 100;
@@ -99,7 +101,9 @@ def(test) {
 	game.map.addBuilding(15, 1, grocery, game);
 	grocery->grocery.stock += 1000.0f;
 
-
+	auto agricultureJob = new AgricultorJob{0.5f, 0.4f};
+	agricultureJob->employeesCounters.agricultors.goal = 1;
+	game.map.addBuilding(8, 20, Building::create_plantation(agricultureJob, playerId, 10), game);
 
 
 	return ptr;

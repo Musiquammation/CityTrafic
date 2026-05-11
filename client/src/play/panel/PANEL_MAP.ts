@@ -33,7 +33,7 @@ PANEL_MAP.set(PANEL_IDS.BUILDING_OIL_FIELD, {
 PANEL_MAP.set(PANEL_IDS.BUILDING_PLANTATION, {
 	title: "Plantation",
 	fields: [
-		new NamedUnit("Test", units.f32),
+		new NamedUnit("Seeds", units.f32),
 	]
 });
 
@@ -60,6 +60,7 @@ PANEL_MAP.set(PANEL_IDS.BUILDING_CONSTRUCTION, {
 		new NamedUnit("Goal employees", units.mut_i32),
 	]
 });
+
 
 PANEL_MAP.set(PANEL_IDS.BUILDING_WAREHOUSE, {
 	title: "Warehouse",

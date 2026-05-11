@@ -93,9 +93,9 @@ bool AgricultorJob::work(
 	if (workBuilding->type != BuildingType::PLANTATION)
 		throw std::runtime_error{"A PLANTATION building was expected"};
 
-	workBuilding->plantation.couldown--;
-	if (workBuilding->plantation.couldown <= 0) {
-		workBuilding->plantation.couldown += workBuilding->plantation.delay;
+	workBuilding->plantation.cooldown--;
+	if (workBuilding->plantation.cooldown <= 0) {
+		workBuilding->plantation.cooldown += workBuilding->plantation.delay;
 		workBuilding->plantation.stock += 1.0f;
 	}
 
@@ -159,7 +159,7 @@ bool AgricultorJob::hire(
 
 	switch (offer.type) {
 	case JobOfferType::AGRICULTOR:
-		if (!this->employeesCounters.agricultors.canHire()) {return false;}
+		if (!this->employeesCounters.agricultors.hire()) {return false;}
 		break;
 
 	default:

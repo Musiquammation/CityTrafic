@@ -182,7 +182,7 @@ bool CashierJob::hire(
 
 	switch (offer.type) {
 	case JobOfferType::CASHIER :
-		if (!this->employeesCounters.cashiers.canHire()) {return false;}
+		if (!this->employeesCounters.cashiers.hire()) {return false;}
 		break;
 
 	default:

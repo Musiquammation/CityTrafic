@@ -538,7 +538,9 @@ Vector<int> Map::searchParkingSpot(
 				auto cell = this->getCell(x, y);
 				
 				// Check if the cell is a parking spot and is currently unoccupied
-				if (cell->getType() == CellType::PARKING && !cell->hasCar()) {
+				if (cell->getType() == CellType::PARKING && (
+					!cell->hasCar() || (lx == x && ly == y)
+				)) {
 					// Calculate squared distance to the secondary point (lx, ly)
 					int dx = x-lx;
 					int dy = y-ly;

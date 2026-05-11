@@ -36,7 +36,7 @@ struct Building {
 
 		struct {
 			AgricultorJob* job;
-			int couldown;
+			int cooldown;
 			int delay;
 			float stock;
 		} plantation;

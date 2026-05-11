@@ -1,5 +1,7 @@
 #include "action_character.hpp"
 
+#include <stdexcept>
+
 #include "ActionNode.hpp"
 #include "actionTemplates.hpp"
 
@@ -16,8 +18,11 @@
 
 #include "../DebugLogger.hpp"
 
-static DebugLogger printStatus{"Status", true};
-static DebugLogger print{"Action", true};
+static DebugLogger _printStatus{"Status", true};
+#define printStatus(label, ...) \
+	_printStatus("[%p] " label, _data __VA_OPT__(,) __VA_ARGS__)
+
+static DebugLogger print{"Action", false};
 static DebugLogger printWalk{"Walk", false};
 static DebugLogger printDrive{"Drive", false};
 

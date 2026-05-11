@@ -221,12 +221,12 @@ bool Car::drive(Character* driver, int destX, int destY, Map& map) {
 		this->direction
 	);
 
-	
 
 	if (success) {
 		// Append driver
 		this->driver = driver;
-		this->pathIsFinished = false;
+
+		this->pathIsFinished = (this->x == spot.x && this->y == spot.y);
 
 		// Add parking spot
 		auto nextCell = map.getEditCell(spot.x, spot.y);

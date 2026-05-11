@@ -5,4 +5,5 @@ struct EmployeesCounter {
 	int goal = 0;
 
 	bool canHire() const;
+	bool hire();
 };

@@ -156,7 +156,7 @@ bool ConstructionJob::hire(
 
 	switch (offer.type) {
 	case JobOfferType::CONSTRUCTION:
-		if (!this->employeesCounters.workers.canHire()) {return false;}
+		if (!this->employeesCounters.workers.hire()) {return false;}
 		break;
 
 	default:

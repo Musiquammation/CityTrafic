@@ -211,7 +211,7 @@ bool TruckJob::hire(
 
 	switch (offer.type) {
 	case JobOfferType::TRUCK :
-		if (!this->employeesCounters.truckers.canHire()) {return false;}
+		if (!this->employeesCounters.truckers.hire()) {return false;}
 		break;
 
 	default:

@@ -62,7 +62,11 @@ export async function runPanel(args: arg_t) {
 	const reader = await wait(requestId);
 
 	const panelId = reader.readUint32();
-	const descriptor = PANEL_MAP.get(panelId)!;
+	const descriptor = PANEL_MAP.get(panelId);
+
+	if(!descriptor) {
+		throw new Error("Descriptor not found");
+	}
 
 	const element = document.createElement("div");
 	// Build element
