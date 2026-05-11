@@ -72,11 +72,11 @@ Vector<int> ConstructionJob::getEmployeeSite(
 	return loc;
 }
 
-void ConstructionJob::work(
+bool ConstructionJob::work(
 	worker_t worker,
 	Vector<int> loc,
-	Building* building,
-	Game& game
+	Building *building,
+	Game &game
 ) {
 	Building* workBuilding = building;
 	if (!workBuilding) {
@@ -99,10 +99,11 @@ void ConstructionJob::work(
 	building->construction.completion++;
 
     if (building->construction.completion < building->construction.total)
-        return;
+        return false;
 
     /// TODO: place final building (must finish with building->consturction.goal = nullptr)
 
+	return true;
 }
 
 void ConstructionJob::onEnter(

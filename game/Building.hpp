@@ -7,6 +7,8 @@
 
 #include "BuildingType.hpp"
 
+class TruckJob;
+
 struct Building {
 	BuildingType type;
 	int owner;
@@ -53,6 +55,11 @@ struct Building {
 			int completion;
 			int total;
 		} construction;
+
+		struct {
+			TruckJob* job;
+
+		} warehouse;
 	};
 	
 	

@@ -4,7 +4,8 @@ enum class JobOfferType {
     OIL_RAFFINER,
     AGRICULTOR,
     CASHIER,
-    CONSTRUCTION
+    CONSTRUCTION,
+    TRUCK
 };
 
 struct JobOffer {

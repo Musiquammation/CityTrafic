@@ -1,5 +1,4 @@
-#include "ActionNode.hpp"
-
+#pragma once
 #include "../declarations.hpp"
 
 namespace actionNodes {

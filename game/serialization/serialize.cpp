@@ -1,6 +1,7 @@
 #include "serialize.hpp"
 
 #include <cmath>
+#include <game/actions/ActionNode.hpp>
 
 #include "jobSerializator.hpp"
 #include "../utils/streams.hpp"

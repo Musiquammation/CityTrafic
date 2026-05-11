@@ -26,9 +26,6 @@ static DebugLogger printDrive{"Drive", false};
 
 startns(character)
 
-static inline float frac(float x) {
-	return x - std::floor(x);
-}
 
 #define LIST(all, fst, run, link)\
 	fst(result)\

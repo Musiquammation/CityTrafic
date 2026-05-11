@@ -1,7 +1,5 @@
 #include "Server.hpp"
 
-#include "declarations.hpp"
-
 #include "ClientId.hpp"
 #include "Pool.hpp"
 #include "Client.hpp"
@@ -13,13 +11,9 @@
 #include <game/Map.hpp>
 #include <game/Building.hpp>
 #include <game/Character.hpp>
-#include <game/Job.hpp>
 #include <game/runGameCommand.hpp>
-#include <game/updateNet_helper.hpp>
 
 
-#include <iostream>
-#include <vector>
 #include <stdint.h>
 #include <string.h>
 #include <cmath>
@@ -112,6 +106,11 @@ uint8_t* Server::connect(Client* client, const uint8_t* ptr) {
 		match = this->getMatch(sessionHash);
 	}
 
+
+	if (!match) {
+		throw std::runtime_error{"Match not found"};
+	}
+
 	push(hash_t, sessionHash);
 
 	// Add player
@@ -123,9 +122,6 @@ uint8_t* Server::connect(Client* client, const uint8_t* ptr) {
 		client->cellsLayerId = game->map.addEditedCellsLayer();
 	}
 
-	if (!match) {
-		throw std::runtime_error{"Match not found"};
-	}
 
 	match->pushClient(client);
 
@@ -446,7 +442,7 @@ void Server::openSavedGames() {
 	for (const auto& entry : std::filesystem::recursive_directory_iterator(SAVEGAME_FOLDERPATH)) {
 		if (entry.is_regular_file()) {
 			auto path = entry.path().string();
-			std::cout << "Opening " << path << std::endl;
+			printf("Opening %s\n", path.c_str());
 			ReadStream stream{path};
 
 			// 16 last characters are the name of the hash

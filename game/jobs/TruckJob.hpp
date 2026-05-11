@@ -1,42 +1,38 @@
-#pragma once
-
-#include "EmployeesCounter.hpp"
-
-#include "../Job.hpp"
-#include "../calendar_t.hpp"
-
+#pragma  once
 #include <map>
 
+#include "EmployeesCounter.hpp"
+#include "../Job.hpp"
 
-class ConstructionJob: public Job {
+class ActionExecutor;
+class TruckJob: public Job {
+	static float evalSalary(float efficiency);
+
 	struct WorkerData {
 		float toPay;
 		bool willWork;
 		calendar_t meeting;
+		calendar_t entryHour;
+		ActionExecutor* executor;
+
+		~WorkerData();
 	};
 
-	
 	std::map<Character*, WorkerData> workers;
-	
 	friend struct jobSerializator;
 
+	float salaryPerHour = 0.0f;
+
 public:
-	ConstructionJob(
-		float salaryPerUnit
-	);
-
-	~ConstructionJob();
-
+	TruckJob();
+	~TruckJob() override;
 
 	struct {
-		EmployeesCounter workers;
+		EmployeesCounter truckers;
 	} employeesCounters;
 
-	instant_t startTime = {7,0};
-	instant_t finishTime = {15,0};
-
-	float salaryPerUnit;
-
+	instant_t startTime = {5,0};
+	instant_t finishTime = {12,0};
 
 
 	calendar_t getNextEnterHour(
@@ -80,7 +76,7 @@ public:
 		Building* building,
 		const Calendar& calendar
 	) override;
-	
+
 	bool hire(
 		Character* worker,
 		Building* building,
@@ -99,5 +95,4 @@ public:
 
 	uint32_t* getPanelData() override;
 	void setPanelData(const uint32_t* data) override;
-
 };

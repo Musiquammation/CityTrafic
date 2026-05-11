@@ -1,6 +1,5 @@
 #include "Building.hpp"
 
-#include <unistd.h>
 
 #include "PanelId.hpp"
 #include "Game.hpp"
@@ -12,19 +11,21 @@
 #include "jobs/ConstructionJob.hpp"
 
 #include "DebugLogger.hpp"
+#include "jobs/TruckJob.hpp"
 #include "utils/streams.hpp"
 DebugLogger print{"Building"};
 
 
-#include <math.h>
-#include <stdint.h>
+#include <cmath>
+#include <cstdint>
 
 const Vector<int> SIZES[] = {
 	{2,2},    // home
 	{-1,-1},  // oil field
 	{8,4},    // plantation
 	{3,3},    // grocery
-	{-1,-1}   // construction
+	{-1,-1},  // construction
+	{8, 8},   // building type
 };
 
 Building* Building::create_home(
@@ -162,6 +163,12 @@ int Building::fillEntryList(Vector<int> list[]) const {
 	case BuildingType::CONSTRUCTION:
 		*ptr++ = {0, 0};
 		break;
+
+	case BuildingType::WAREHOUSE:
+		for (int i = 0; i < 8; i++)
+			*ptr++ = {i, 7};
+
+		break;
 		
 	}
 
@@ -194,6 +201,12 @@ int Building::fillLeaveList(Vector<int> list[]) const {
 		*ptr++ = {0, 0};
 		break;
 
+	case BuildingType::WAREHOUSE:
+		for (int i = 0; i < 8; i++)
+			*ptr++ = {i, 7};
+
+		break;
+
 
 	}
 
@@ -221,28 +234,32 @@ static const auto SOLVE_SETTINGS = solveConstSettings(2, 12);
 
 int Building::getConstructionCost() const {
 	switch (this->type) {
-	case BuildingType::HOME:
-	{
+	case BuildingType::HOME: {
 		float c = (float)this->home.capacity;
 		float cost = SOLVE_SETTINGS.a * (c + SOLVE_SETTINGS.b * c*c);
 		return (int)ceilf(cost);
 	}
-	case BuildingType::OIL_FIELD:
-	{
+
+	case BuildingType::OIL_FIELD: {
 		return 2'000'000'000;
 	}
-	case BuildingType::PLANTATION:
-	{
+
+	case BuildingType::PLANTATION: {
 		return 2'000'000'000;;
 	}
-	case BuildingType::GROCERY:
-	{
+
+	case BuildingType::GROCERY: {
 		return 2'000'000'000;;
 	}
-	case BuildingType::CONSTRUCTION:
-	{
+
+	case BuildingType::CONSTRUCTION: {
 		return 0;
 	}
+
+	case BuildingType::WAREHOUSE: {
+		return 300;
+	}
+
 
 
 	}
@@ -287,9 +304,13 @@ int Building::enter(Character* c) {
 	case BuildingType::CONSTRUCTION:
 		return 0;
 
+
+	case BuildingType::WAREHOUSE: {
+		return 0;
 	}
 
 
+	}
 	return -1;
 }
 
@@ -322,6 +343,10 @@ void Building::leave(int position) {
 	{
 		break;
 	}
+
+	case BuildingType::WAREHOUSE: {
+		break;
+	}
 	}
 
 }
@@ -347,7 +372,9 @@ bool Building::isFull() const {
 	case BuildingType::CONSTRUCTION:
 		return false;
 
-	}
+	case BuildingType::WAREHOUSE:
+		return false;
+}
 
 	return true;
 }
@@ -436,6 +463,20 @@ uint32_t* Building::getPanelData(const Game& game) {
 		return result;
 	}
 
+	case BuildingType::WAREHOUSE: {
+		static constexpr int COUNT = 2;
+		auto job = this->construction.job;
+		auto result = (uint32_t*)malloc(sizeof(uint32_t)*(COUNT+2));
+
+		printf("called\n");
+		result[0] = COUNT; // length (as uint32_t)
+		result[1] = (uint32_t)PanelId::BUILDING_WAREHOUSE;
+		result[2] = job->employeesCounters.workers.current;
+		result[3] = job->employeesCounters.workers.goal;
+
+		return result;
+	}
+
 
 	}
 
@@ -499,7 +540,14 @@ bool Building::setPanelData(const uint32_t* data, Game& game) {
 	case BuildingType::CONSTRUCTION:
 	{
 		auto job = this->construction.job;
-		job->employeesCounters.workers.goal = data[0];
+		job->employeesCounters.workers.goal = (int)data[0];
+		break;
+	}
+
+	case BuildingType::WAREHOUSE:
+	{
+		auto job = this->warehouse.job;
+		job->employeesCounters.truckers.goal = (int)data[0];
 		break;
 	}
 
@@ -512,20 +560,23 @@ bool Building::setPanelData(const uint32_t* data, Game& game) {
 
 Job* Building::getJob() {
 	switch (this->type) {
-	case BuildingType::HOME:
-		return nullptr;
-	
-	case BuildingType::OIL_FIELD:
-		return this->oilField.job;
+		case BuildingType::HOME:
+			return nullptr;
 
-	case BuildingType::PLANTATION:
-		return this->plantation.job;
+		case BuildingType::OIL_FIELD:
+			return this->oilField.job;
 
-	case BuildingType::GROCERY:
-		return this->grocery.job;
+		case BuildingType::PLANTATION:
+			return this->plantation.job;
 
-	case BuildingType::CONSTRUCTION:
-		return this->construction.job;
+		case BuildingType::GROCERY:
+			return this->grocery.job;
+
+		case BuildingType::CONSTRUCTION:
+			return this->construction.job;
+
+		case BuildingType::WAREHOUSE:
+			return  this->warehouse.job;
 	}
 
 	return nullptr;
@@ -570,6 +621,11 @@ void Building::destroy(Game& game) {
 			goal->destroy(game);
 			delete goal;
 		}
+		break;
+	}
+
+	case BuildingType::WAREHOUSE: {
+
 		break;
 	}
 	}

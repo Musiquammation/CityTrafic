@@ -24,7 +24,7 @@ class CashierJob: public Job {
 public:
 	CashierJob();
 
-	~CashierJob();
+	~CashierJob() override;
 
 	static float evalSalary(float efficiency);
 	static float evalEfficiency(float salary);
@@ -66,11 +66,11 @@ public:
 	) override;
 
 
-	void work(
+	bool work(
 		worker_t worker,
 		Vector<int> loc,
-		Building* building,
-		Game& game
+		Building *building,
+		Game &game
 	) override;
 
 	void onEnter(

@@ -1,50 +1,43 @@
-#include "CashierJob.hpp"
+#include "TruckJob.hpp"
 
 #include "../JobOffer.hpp"
 #include "../Game.hpp"
-#include "../Map.hpp"
 #include "../Calendar.hpp"
 #include "../Building.hpp"
 
 #include <math.h>
+#include <stdexcept>
 
-CashierJob::CashierJob() {
-	
+#include "../ActionExecutor.hpp"
+#include "../Character.hpp"
+#include "../actions/action_character.hpp"
+#include "../actions/action_truck.hpp"
+
+TruckJob::WorkerData::~WorkerData() {
+	delete this->executor;
 }
 
-CashierJob::~CashierJob() {
-	
+TruckJob::TruckJob() {
+
 }
+
+TruckJob::~TruckJob() {
+
+}
+
+
 
 static constexpr float EFFICIENCY_COST = 6.0f;
 static constexpr float EFFICIENCY_RATIO = 0.75f;
-float CashierJob::evalSalary(float efficiency) {
+float TruckJob::evalSalary(float efficiency) {
 	static constexpr float S = EFFICIENCY_COST;
 	static constexpr float R = EFFICIENCY_RATIO;
 	return R * (efficiency + efficiency*efficiency*
 			(1.0f/(S*S)));
 }
 
-float CashierJob::evalEfficiency(float salary) {
-	static constexpr float S = EFFICIENCY_COST; 
-	static constexpr float R = EFFICIENCY_RATIO;
 
-    float discriminant = S * S + (4.0f * salary) / S;
-    if (discriminant < 0.0f) {
-        return -1.0f; // no real solution
-    }
-
-    float sqrt_term = sqrtf(discriminant);
-
-    // stable form of the positive root
-    float e = (-S * S + S * sqrt_term) * 0.5f;
-
-    return e;
-}
-
-
-
-calendar_t CashierJob::getNextEnterHour(
+calendar_t TruckJob::getNextEnterHour(
 	worker_t worker,
 	const Calendar& calendar
 ) {
@@ -60,21 +53,21 @@ calendar_t CashierJob::getNextEnterHour(
 	return it->second.meeting;
 }
 
-calendar_t CashierJob::getNextLeaveHour(
+calendar_t TruckJob::getNextLeaveHour(
 	worker_t worker,
 	const Calendar& calendar
 ) {
 	auto it = this->workers.find((Character*)worker);
 	if (it == this->workers.end())
 		return Calendar::NOTIME;
-	
+
 	if (it->second.willWork)
 		return Calendar::NOTIME;
 
 	return it->second.meeting;
 }
 
-int CashierJob::getSalary(
+int TruckJob::getSalary(
 	worker_t worker,
 	const Calendar& calendar
 ) {
@@ -89,7 +82,7 @@ int CashierJob::getSalary(
 }
 
 
-Vector<int> CashierJob::getEmployeeSite(
+Vector<int> TruckJob::getEmployeeSite(
 	worker_t worker,
 	Vector<int> loc,
 	Building* building,
@@ -106,13 +99,13 @@ static Building* getBuilding(Game& game, Vector<int> loc) {
 		throw std::runtime_error{"Missing work building"};
 	}
 
-	if (building->type != BuildingType::GROCERY)
-		throw std::runtime_error{"A GROCERY building was expected"};
+	if (building->type != BuildingType::WAREHOUSE)
+		throw std::runtime_error{"A WAREHOUSE building was expected"};
 
 	return building;
 }
 
-bool CashierJob::work(
+bool TruckJob::work(
 	worker_t worker,
 	Vector<int> loc,
 	Building *building,
@@ -123,12 +116,18 @@ bool CashierJob::work(
 		workBuilding = getBuilding(game, loc);
 	}
 
-	// TODO: implement cashier work logic on workBuilding
+	if (auto it = this->workers.find((Character*)worker); it != this->workers.end()) {
+		auto& data = it->second;
+		if (data.executor->run(game, (Character*)worker)) {
+			// Finished
+			return true;
+		}
+	}
 
-	return true;
+	return false;
 }
 
-void CashierJob::onEnter(
+void TruckJob::onEnter(
 	worker_t worker,
 	Building* building,
 	const Calendar& calendar
@@ -136,17 +135,36 @@ void CashierJob::onEnter(
 	auto it = this->workers.find((Character*)worker);
 	if (it == this->workers.end())
 		return;
-	
-	it->second.meeting = calendar.getFutureInstant(
+
+	auto& data = it->second;
+	data.meeting = calendar.getFutureInstant(
 		this->finishTime,
 		Calendar::WORKING_DAYS
 	);
 
-	it->second.entryHour = calendar.indicator;
-	it->second.willWork = false;
+	data.entryHour = calendar.indicator;
+	data.willWork = false;
+
+
+	if (data.executor) {
+		throw std::runtime_error{"Executor must be empty"};
+	}
+
+
+	/// TODO: fill targets
+	throw std::runtime_error{"TODO: fill targets"};
+	Vector<int> * targets = nullptr;
+	int length = 0;
+
+
+	data.executor = actionNodes::truck::createExecutor(
+		(Character*)worker,
+		targets,
+		length
+	);
 }
 
-void CashierJob::onLeave(
+void TruckJob::onLeave(
 	worker_t worker,
 	Building* building,
 	const Calendar& calendar
@@ -154,7 +172,7 @@ void CashierJob::onLeave(
 	auto it = this->workers.find((Character*)worker);
 	if (it == this->workers.end())
 		return;
-	
+
 	it->second.meeting = calendar.getFutureInstant(
 		this->startTime,
 		Calendar::WORKING_DAYS
@@ -164,11 +182,12 @@ void CashierJob::onLeave(
 	int elapsed = int(calendar.indicator - it->second.entryHour);
 	it->second.willWork = true;
 	it->second.toPay += (float)elapsed * (this->salaryPerHour/60);
-		
 
+	delete it->second.executor;
+	it->second.executor = nullptr;
 }
 
-bool CashierJob::hire(
+bool TruckJob::hire(
 	Character* worker,
 	Building* building,
 	const JobOffer& offer,
@@ -181,8 +200,8 @@ bool CashierJob::hire(
 
 
 	switch (offer.type) {
-	case JobOfferType::CASHIER :
-		if (!this->employeesCounters.cashiers.canHire()) {return false;}
+	case JobOfferType::TRUCK :
+		if (!this->employeesCounters.truckers.canHire()) {return false;}
 		break;
 
 	default:
@@ -195,23 +214,23 @@ bool CashierJob::hire(
 		.willWork = true,
 		.meeting = calendar.getFutureInstant(
 			this->startTime,
-			Calendar::DECALED_DAYS
+			Calendar::WORKING_DAYS
 		),
-		.entryHour = Calendar::NOTIME
-		
+		.entryHour = Calendar::NOTIME,
+		.executor = nullptr
 	};
 
 
 	return true;
 }
 
-void CashierJob::fire(Character* worker) {
+void TruckJob::fire(Character* worker) {
 	// Find and remove the worker from the list
 	this->workers.erase(worker);
 }
 
 
-void CashierJob::forAllWorkers(
+void TruckJob::forAllWorkers(
 	std::function<void(Character*)> fn
 ) {
 	for (auto i: this->workers) {
@@ -219,12 +238,12 @@ void CashierJob::forAllWorkers(
 	}
 }
 
-bool CashierJob::searchJobOffer(
+bool TruckJob::searchJobOffer(
 	const Character* candidate,
 	JobOffer& offer
 ) const {
-	if (this->employeesCounters.cashiers.canHire()) {
-		offer.type = JobOfferType::CASHIER;
+	if (this->employeesCounters.truckers.canHire()) {
+		offer.type = JobOfferType::TRUCK;
 		offer.salaryEstimation = int(this->salaryPerHour * 200);
 		return true;
 	}
@@ -235,33 +254,12 @@ bool CashierJob::searchJobOffer(
 
 
 
-uint32_t* CashierJob::getPanelData() {
+uint32_t* TruckJob::getPanelData() {
 	throw std::runtime_error{"TODO"};
 }
 
 
-void CashierJob::setPanelData(const uint32_t* data) {
-
-}
-
-
-void CashierJob::setSalary(Game& game, Building* building, float salary) {
-	this->salaryPerHour = salary;
-
-	if (!building) {
-		return;
-	}
-	building->grocery.cashierEfficiency = evalEfficiency(salary);
-}
-
-
-void CashierJob::setEfficiency(Game& game, Building* building, float efficiency) {
-	this->salaryPerHour = evalSalary(efficiency);
-
-	if (!building) {
-		return;
-	}
-	building->grocery.cashierEfficiency = efficiency;
+void TruckJob::setPanelData(const uint32_t* data) {
 
 }
 

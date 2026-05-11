@@ -48,11 +48,11 @@ public:
 		const Calendar& calendar
 	) = 0;
 
-	virtual void work(
+	virtual bool work(
 		worker_t worker,
 		Vector<int> loc,
-		Building* building,
-		Game& game
+		Building *building,
+		Game &game
 	) = 0;
 
 

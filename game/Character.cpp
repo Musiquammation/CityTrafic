@@ -16,7 +16,6 @@ static DebugLogger printSpec{"Spec", false};
 static DebugLogger print{"Character", true};
 static DebugLogger printSeeds{"Seeds", false};
 
-#include <stdio.h>
 #include <math.h>
 
 Character::Character():

@@ -7,6 +7,7 @@
 #include "../Building.hpp"
 
 #include <math.h>
+#include <stdexcept>
 
 OilFieldJob::OilFieldJob(
 	float salaryPerLiter,
@@ -74,11 +75,11 @@ Vector<int> OilFieldJob::getEmployeeSite(
 	return loc;
 }
 
-void OilFieldJob::work(
+bool OilFieldJob::work(
 	worker_t worker,
 	Vector<int> loc,
-	Building* building,
-	Game& game
+	Building *building,
+	Game &game
 ) {
 	Building* workBuilding = building;
 	if (!workBuilding) {
@@ -105,6 +106,9 @@ void OilFieldJob::work(
 
 	building->oilField.refined += d;
 	building->oilField.crude = n;
+
+
+	return true;
 }
 
 void OilFieldJob::onEnter(

@@ -4,8 +4,7 @@
 #include "ServerId.hpp"
 
 #include <uWebSockets/src/App.h>
-#include <thread>
-#include <stdlib.h>
+#include <cstdlib>
 
 
 void Server::run(int port) {
@@ -67,6 +66,7 @@ void Server::run(int port) {
 					get(GET_CHARACTER, getCharacter);
 					get(GET_CAR, getCar);
                     get(ERROR, onerror);
+                	default: res = nullptr;
                 }
     
                 #undef get

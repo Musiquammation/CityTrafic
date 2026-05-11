@@ -8,8 +8,10 @@
 #include "game/serialization/serialize.hpp"
 #include "game/utils/streams.hpp"
 
+
+
 #ifndef TIME_MODE
-#define TIME_MODE -1
+#define TIME_MODE 0
 #endif
 
 #include "SaveGamePathFolder.hpp"

@@ -75,11 +75,11 @@ Vector<int> AgricultorJob::getEmployeeSite(
 	return loc;
 }
 
-void AgricultorJob::work(
+bool AgricultorJob::work(
 	worker_t worker,
 	Vector<int> loc,
-	Building* building,
-	Game& game
+	Building *building,
+	Game &game
 ) {
 	Building* workBuilding = building;
 	if (!workBuilding) {
@@ -106,6 +106,7 @@ void AgricultorJob::work(
 			(float)workBuilding->plantation.delay;
 	}
 
+	return false;
 }
 
 void AgricultorJob::onEnter(
