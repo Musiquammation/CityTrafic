@@ -82,11 +82,10 @@ def(test) {
 	game.map.addBuilding(10, 15, home, game);
 
 	for (int i = 0; i < 3; i++) {
-		if (auto character = Character::spawnCharacter(game.getMap(), 10, 11)) {
-			character->give(2000);
-			character->setCar(car);
-			game.characterHandler.pushCharacter(character);
-		}
+		auto character = Character::spawnCharacter(game.getMap(), 10, 11);
+		character->give(2000);
+		character->setCar(car);
+		game.characterHandler.pushCharacter(character);
 	}
 
 	auto oilJob = new OilFieldJob{1.9f, 2.0f};
