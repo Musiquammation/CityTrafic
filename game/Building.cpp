@@ -5,6 +5,8 @@
 #include "Game.hpp"
 #include "Character.hpp"
 
+#include <game/BuildingType.hpp>
+#include <game/Vector.hpp>
 #include "jobs/OilFieldJob.hpp"
 #include "jobs/AgricultorJob.hpp"
 #include "jobs/CashierJob.hpp"
@@ -229,7 +231,7 @@ static constexpr Param solveConstSettings(float low_time, float huge_time) {
     return {a, b};
 }
 
-static const auto SOLVE_SETTINGS = solveConstSettings(2, 12);
+static constexpr auto SOLVE_SETTINGS = solveConstSettings(2, 12);
 
 
 int Building::getConstructionCost() const {
@@ -616,8 +618,7 @@ void Building::destroy(Game& game) {
 
 	case BuildingType::CONSTRUCTION:
 	{
-		auto goal = this->construction.goal;
-		if (goal) {
+		if (auto goal = this->construction.goal) {
 			goal->destroy(game);
 			delete goal;
 		}
@@ -791,10 +792,46 @@ void Building::fileLoad(
 			throw std::runtime_error{"Not implemented"};
 		}
 	}
-
-
-
 }
+
+
+
+
+Vector<int> Building::getTruckImports(const Map& map, Vector<int> loc) const {
+	switch (this->type) {
+		case BuildingType::GROCERY: {
+			// Search for plantations
+			Vector best = {INT32_MIN, INT32_MIN};
+			int bestDist = INT32_MAX;
+			for (
+				auto it = map.buildings_begin();
+				it != map.buildings_end();
+				++it
+			) {
+				if (it->second->type != BuildingType::PLANTATION)
+					continue;
+				
+				auto pos = it->first;
+				int dx = pos.x - loc.x;
+				int dy = pos.y - loc.y;
+				int dist = dx * dx + dy * dy;
+				if (dist < bestDist) {
+					bestDist = dist;
+					best = pos;
+				}
+			}
+
+			return best;
+		}
+			
+
+		default:
+			return {INT32_MIN, INT32_MIN};
+	}
+}
+
+
+
 
 Building::~Building() {
 	#if TESTING_SERV

@@ -9,3 +9,4 @@ server/wasm
 uWebSockets
 venv
 saves
+.clangd

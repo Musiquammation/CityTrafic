@@ -25,6 +25,10 @@ Node* getListNode(Node* root, const std::vector<int>& list, bool ignoreLast = fa
 			node = node->all.children[idx];
 			break;
 
+		case ActionNodeType::LOOP:
+			node = node->loop.child;
+			break;
+
 		case ActionNodeType::RUNNER:
 			throw std::runtime_error{"Invalid action node type in getListNode"};
 		}
@@ -95,8 +99,6 @@ bool ActionExecutor::run(Game& game, Character* character) {
 
 			// Collect result of execution
 			if (prevResult == ActionCode::FAILURE) {				
-				Node* parent = getListNode(this->root, this->list);
-
 				int idx = this->list.back();
 				idx++;
 
@@ -129,8 +131,6 @@ bool ActionExecutor::run(Game& game, Character* character) {
 
 			// Collect result of execution
 			if (prevResult == ActionCode::SUCCESS) {				
-				Node* parent = getListNode(this->root, this->list);
-
 				int idx = this->list.back();
 				idx++;
 
@@ -151,6 +151,26 @@ bool ActionExecutor::run(Game& game, Character* character) {
 			prevResult = ActionCode::FAILURE;
 			goto callParent;
 		}
+
+		case ActionNodeType::LOOP: {
+			// First iteration
+			if (prevResult == ActionCode::PENDING) {
+				this->list.push_back(0);
+				node = node->first.children[0];
+				break;
+			}
+
+			if (prevResult == ActionCode::SUCCESS) {
+				// Call child to restart
+				prevResult = ActionCode::PENDING;
+				break;
+			}
+
+			// Loop finished: call parent
+			prevResult = ActionCode::SUCCESS;
+			goto callParent;
+		}
+
 		}
 
 		continue;
@@ -160,7 +180,7 @@ bool ActionExecutor::run(Game& game, Character* character) {
 		this->list.pop_back(); // delete child
 		node = getListNode(this->root, this->list, true);
 
-	} while (this->list.size());
+	} while (!this->list.empty());
 
 	
 

@@ -112,13 +112,13 @@ bool AgricultorJob::work(
 void AgricultorJob::onEnter(
 	worker_t worker,
 	Building* building,
-	const Calendar& calendar
+	Game &game
 ) {
 	auto it = this->workers.find((Character*)worker);
 	if (it == this->workers.end())
 		return;
 	
-	it->second.meeting = calendar.getFutureInstant(
+	it->second.meeting = game.getCalendar().getFutureInstant(
 		this->finishTime,
 		Calendar::WORKING_DAYS
 	);

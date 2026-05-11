@@ -10,7 +10,6 @@
 
 #include "../ActionExecutor.hpp"
 #include "../Character.hpp"
-#include "../actions/action_character.hpp"
 #include "../actions/action_truck.hpp"
 
 TruckJob::WorkerData::~WorkerData() {
@@ -130,19 +129,19 @@ bool TruckJob::work(
 void TruckJob::onEnter(
 	worker_t worker,
 	Building* building,
-	const Calendar& calendar
+	Game &game
 ) {
 	auto it = this->workers.find((Character*)worker);
 	if (it == this->workers.end())
 		return;
 
 	auto& data = it->second;
-	data.meeting = calendar.getFutureInstant(
+	data.meeting = game.getCalendar().getFutureInstant(
 		this->finishTime,
 		Calendar::WORKING_DAYS
 	);
 
-	data.entryHour = calendar.indicator;
+	data.entryHour = game.getCalendar().indicator;
 	data.willWork = false;
 
 
@@ -151,11 +150,22 @@ void TruckJob::onEnter(
 	}
 
 
-	/// TODO: fill targets
-	throw std::runtime_error{"TODO: fill targets"};
-	Vector<int> * targets = nullptr;
-	int length = 0;
 
+	// Get targets
+	const auto& map = game.getMap();
+	std::vector<Vector<int>> targetVect;
+	for (auto it = map.buildings_begin(); it != map.buildings_end(); ++it) {
+		auto p = it->second->getTruckImports(map, it->first);
+		targetVect.push_back(p);
+		targetVect.push_back(it->first);
+	}
+
+	int length = (int)targetVect.size();
+	auto targets = new Vector<int>[length];
+
+	for (int i = 0; i < length; ++i) {
+		targets[i] = targetVect[i];
+	}
 
 	data.executor = actionNodes::truck::createExecutor(
 		(Character*)worker,
@@ -260,7 +270,7 @@ uint32_t* TruckJob::getPanelData() {
 
 
 void TruckJob::setPanelData(const uint32_t* data) {
-
+	
 }
 
 

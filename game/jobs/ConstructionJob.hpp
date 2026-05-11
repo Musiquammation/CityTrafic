@@ -72,7 +72,7 @@ public:
 	void onEnter(
 		worker_t worker,
 		Building* building,
-		const Calendar& calendar
+		Game &game
 	) override;
 
 	void onLeave(

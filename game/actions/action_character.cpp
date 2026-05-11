@@ -27,7 +27,7 @@ static DebugLogger printDrive{"Drive", false};
 startns(character)
 
 
-#define LIST(all, fst, run, link)\
+#define LIST(all, fst, run, loop, link)\
 	fst(result)\
 		all(work)\
 			fst(enshureWork)\
@@ -257,7 +257,7 @@ struct CharacterFriend {
 			return ActionCode::FAILURE;
 
 		Job* job = info.building->getJob();
-		job->onEnter(c, info.building, game.getCalendar());
+		job->onEnter(c, info.building, game);
 		return ActionCode::SUCCESS;
 	}
 

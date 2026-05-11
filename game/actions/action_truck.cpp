@@ -2,8 +2,6 @@
 
 #include "actionTemplates.hpp"
 
-#include "../Game.hpp"
-#include "../Map.hpp"
 #include "../Character.hpp"
 
 
@@ -15,20 +13,59 @@ static DebugLogger print{"ActionTruck", true};
 startns(truck)
 
 
-#define LIST(all, fst, run, link)\
+#define LIST(all, fst, run, loop, link)\
 	fst(result)\
+		link(leave)\
+		loop(main_loop)\
+			all(main_all)\
+				run(hasOtherCommands)\
+		link(enter)\
+	run(leave)\
+	run(enter)\
 
-struct CharacterFriend {
-};
+
+
+
 
 
 
 declList();
 
-
 graph(result,
-
+	&leave,
+	&main_loop,
+	&enter
 );
+
+graph(main_loop,
+	&main_all
+);
+
+graph(main_all,
+	&hasOtherCommands
+);
+
+
+#define setCharacter() Character* c = (Character*)_data;
+
+struct CharacterFriend {
+	def(leave) {
+		setCharacter();
+		c->makeOutside(game);
+		return ActionCode::SUCCESS;
+	}
+
+	def(enter) {
+		setCharacter();
+		bool r = c->makeInside(game);
+		return ActionCode_get(r);
+	}
+
+
+	def(hasOtherCommands) {
+		return ActionCode::SUCCESS;
+	}
+};
 
 
 const ActionNode* init() {

@@ -89,6 +89,10 @@ public:
 
 	auto buildings_begin() {return buildings.begin();}
 	auto buildings_end() {return buildings.end();}
+
+	auto buildings_begin() const {return buildings.begin();}
+	auto buildings_end() const {return buildings.end();}
+
 };
 
 extern const Cell _outCellBuffer;

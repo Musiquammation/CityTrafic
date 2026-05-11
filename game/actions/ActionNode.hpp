@@ -7,7 +7,8 @@
 enum class ActionNodeType {
 	RUNNER,
 	FIRST,
-	ALL
+	ALL,
+	LOOP
 };
 
 struct ActionNode {
@@ -27,6 +28,10 @@ struct ActionNode {
 			const ActionNode* const* children;
 			int length;
 		} all;
+
+		struct {
+			const ActionNode* child;
+		} loop;
 	};
 };
 

@@ -11,6 +11,7 @@
 #include "../Building.hpp"
 #include "../Cell.hpp"
 #include "../cell_t.hpp"
+#include "../actions/ActionNode.hpp"
 #include "../actions/action_character.hpp"
 
 void serialize::save(const Game &game, WriteStream &stream) {
@@ -175,6 +176,10 @@ void serialize::open(Game &game, ReadStream &stream) {
 
 					case ActionNodeType::FIRST:
 						node = node->first.children[c->executor.list[i]];
+						break;
+
+					case ActionNodeType::LOOP :
+						node = node->loop.child;
 						break;
 
 					case ActionNodeType::RUNNER:

@@ -121,5 +121,7 @@ struct Building {
 	void fileSave(WriteStream& stream) const;
 	void fileLoad(ReadStream& stream, const std::unordered_map<Job*, Job*>& jobs);
 
+	Vector<int> getTruckImports(const Map& map, Vector<int> loc) const;
+
 	~Building();
 };
