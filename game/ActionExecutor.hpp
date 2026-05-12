@@ -26,6 +26,7 @@ public:
 	);
 	~ActionExecutor();
 
+	void* getArgs() const;
 	bool run(Game& game);
 	void restart();
 };

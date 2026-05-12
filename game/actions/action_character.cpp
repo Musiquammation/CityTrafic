@@ -18,7 +18,7 @@
 
 #include "../DebugLogger.hpp"
 
-static DebugLogger _printStatus{"Status", true};
+static DebugLogger _printStatus{"Status", false};
 #define printStatus(label, ...) \
 	_printStatus("[%p] " label, _data __VA_OPT__(,) __VA_ARGS__)
 
@@ -326,7 +326,7 @@ struct CharacterFriend {
 		if (calendar.indicator > hour) 
 			return ActionCode::SUCCESS;
 
-		job->work(c, Vector<int>{0, 0}, info.building, game);
+		job->work(c, c->jobLoc, info.building, game);
 		return ActionCode::PENDING;
 	}
 

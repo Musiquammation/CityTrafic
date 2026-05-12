@@ -13,6 +13,10 @@ namespace actionNodes::character {
 	struct CharacterFriend;
 }
 
+namespace actionNodes::truck {
+	struct CharacterFriend;
+}
+
 enum class CharacterState {
 	CLIENT,
 	WALK,
@@ -82,14 +86,17 @@ class Character {
 	ActionCode walk(Game& game);
 
 	friend struct actionNodes::character::CharacterFriend;
+	friend struct actionNodes::truck::CharacterFriend;
 	friend struct serialize;
 public:
 	float x;
 	float y;
 
+
 	static Character* createClientCharacter(float x, float y);
 	static Character* spawnCharacter(const Map& map, int x, int y);
 	static float evalFullLiterSafetyCost(float completion);
+
 
 	bool makeWalk(Game& game, int destX, int destY);
 	bool makeDrive(Map& map, int destX, int destY);

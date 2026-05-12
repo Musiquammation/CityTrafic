@@ -13,8 +13,10 @@
 #include "jobs/ConstructionJob.hpp"
 
 #include "DebugLogger.hpp"
+#include "actions/actionTemplates.hpp"
 #include "jobs/TruckImport.hpp"
 #include "jobs/TruckJob.hpp"
+#include "jobs/TRUCK_CAPACITY.hpp"
 #include "utils/streams.hpp"
 
 DebugLogger print{"Building"};
@@ -850,6 +852,39 @@ bool Building::fillTruckImports(
 }
 
 
+constexpr float SEEDS_CONVERSION = 0.05f;
+
+void Building::truckImport(const TruckImport *list, float units) {
+	switch (this->type) {
+		case BuildingType::GROCERY: {
+			this->grocery.stock += units * (1.0f/SEEDS_CONVERSION);
+			print("Grocery stock: %f\n", this->grocery.stock);
+			break;
+		}
+
+		default:
+			break;
+	}
+}
+
+float Building::truckExport(float units) {
+	switch (this->type) {
+		case BuildingType::PLANTATION: {
+			float n = units + this->plantation.stock * SEEDS_CONVERSION;
+			if (n >= TRUCK_CAPACITY) {
+				this->plantation.stock -= (TRUCK_CAPACITY-units) / SEEDS_CONVERSION;
+				print("Plantation stock: %f\n", this->plantation.stock);
+				return TRUCK_CAPACITY;
+			}
+			print("Plantation stock empty\n");
+			this->plantation.stock = 0;
+			return n;
+		}
+
+		default:
+			return units;
+	}
+}
 
 
 Building::~Building() {

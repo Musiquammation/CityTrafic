@@ -217,15 +217,22 @@ bool Character::makeWalk(Game& game, int destX, int destY) {
 	return true;
 }
 
+#include <stdio.h>
 bool Character::makeDrive(Map& map, int destX, int destY) {
-	if (!this->car)
+	if (!this->car) {
+		printf("no car\n");
 		return false;
+	}
 
-	if (!this->car->drive(this, destX, destY, map))
+	if (!this->car->drive(this, destX, destY, map)) {
+		printf("cannot drive\n");
 		return false;
-		
+	}
+
 	this->setState(CharacterState::DRIVE);
 	this->data.drive.state = ActionCode::PENDING;
+	printf("drive ok\n");
+
 	return true;
 }
 

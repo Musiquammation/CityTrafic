@@ -133,5 +133,8 @@ struct Building {
 		std::vector<TruckImport> &importList
 	) const;
 
+	void truckImport(const TruckImport* list, float units);
+	float truckExport(float units);
+
 	~Building();
 };

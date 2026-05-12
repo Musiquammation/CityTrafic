@@ -75,7 +75,7 @@ def vertical_prefix(prefix):
 def print_tree(node, graphs, types, prefix="", is_last=True, is_root=True, depth=0, state={"prev_depth": 0, "prev_was_last": False}):
     if not is_root:
         if state["prev_was_last"] and depth < state["prev_depth"]:
-            print(vertical_prefix(prefix) + "|")
+            print(vertical_prefix(prefix) + "│")
 
     if is_root:
         label = node

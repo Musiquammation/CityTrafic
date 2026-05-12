@@ -1,5 +1,7 @@
 #include "runGameCommand.hpp"
+
 #include "CommandCode.hpp"
+#include "Direction.hpp"
 
 #include "Game.hpp"
 #include "Character.hpp"
@@ -10,6 +12,10 @@
 #include "jobs/OilFieldJob.hpp"
 #include "jobs/CashierJob.hpp"
 #include "jobs/ConstructionJob.hpp"
+
+#include <stdio.h>
+
+#include "jobs/TruckJob.hpp"
 
 
 #include "jobs/AgricultorJob.hpp"
@@ -23,9 +29,6 @@
 	const void* ptr,\
 	Player* player\
 )
-#include <stdio.h>
-
-#include "jobs/TruckJob.hpp"
 
 struct GameCommand {
 def(test) {
@@ -69,7 +72,7 @@ def(test) {
 
 	Car* cars[] = {
 		game.spawnCar(13, 13, Direction::DOWN),
-		game.spawnCar(6, 14, Direction::UP),
+		// game.spawnCar(6, 14, Direction::UP),
 		// game.spawnCar(13, 17, Direction::UP),
 	};
 
@@ -77,9 +80,9 @@ def(test) {
 	int playerId = game.getPlayerId(player);
 	
 	auto home = Building::create_home(playerId, 3, 500);
-	game.map.addBuilding(10, 15, home, game);
+	game.map.addBuilding(10, 4, home, game);
 
-	for (int i = 0; i < 2; i++) {
+	for (int i = 0; i < 1; i++) {
 		auto character = Character::spawnCharacter(game.getMap(), 10, 11);
 		character->give(2000);
 		character->setCar(cars[0]);
@@ -96,10 +99,10 @@ def(test) {
 	game.map.addBuilding(1, 5, oilField, game);
 	oilField->oilField.refined += 100;*/
 
-	/*auto cashierJob = new CashierJob{};
+	auto cashierJob = new CashierJob{};
 	auto grocery = Building::create_grocery(cashierJob, playerId);
-	game.map.addBuilding(15, 1, grocery, game);
-	grocery->grocery.stock += 1000.0f;*/
+	game.map.addBuilding(2, 1, grocery, game);
+	grocery->grocery.stock += 1000.0f;
 
 	auto agricultureJob = new AgricultorJob{0.5f, 0.4f};
 	agricultureJob->employeesCounters.agricultors.goal = 1;

@@ -1,4 +1,5 @@
 #pragma once
+#include "../calendar_t.hpp"
 #include "../declarations.hpp"
 #include "../Vector.hpp"
 
@@ -10,8 +11,12 @@ namespace actionNodes {
 		struct Data {
 			Character* character;
 			TruckImport* targets;
-			int capacity;
+			int length;
 			int current;
+			int previousFirstImport;
+			float units;
+			calendar_t finishIndicator;
+			Vector<int> warehouse;
 
 			~Data();
 		};
@@ -21,7 +26,8 @@ namespace actionNodes {
 		ActionExecutor* createExecutor(
 			Character* c,
 			TruckImport* targets,
-			int capacity
+			int capacity,
+			calendar_t finishIndicator
 		);
 	}
 }

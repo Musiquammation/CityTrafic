@@ -1,7 +1,7 @@
 #include "Calendar.hpp"
 
 // constexpr float DAYS_PER_HOUR = 365.0f/(24*7);
-constexpr float DAYS_PER_HOUR = 365.0f/(6);
+constexpr float DAYS_PER_HOUR = 365.0f/(12);
 
 // Number of days per month (-1 = February, handled separately)
 const int Calendar::MONTH_DAYS[12] = {
@@ -37,6 +37,10 @@ const int Calendar::DECALED_DAYS[6] = {
 };
 const int Calendar::EXTENDED_DAYS[7] = {
 	0, 1, 2, 3, 4, 5, -1
+};
+
+const int Calendar::EVERY_DAYS[8] = {
+	0, 1, 2, 3, 4, 5, 6, -1
 };
 
 

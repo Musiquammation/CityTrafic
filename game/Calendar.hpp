@@ -13,6 +13,7 @@ public:
 	static const int WORKING_DAYS[6]; // Monday-Friday
 	static const int DECALED_DAYS[6]; // Tuesday-Saturday
 	static const int EXTENDED_DAYS[7]; // Monday-Saturday
+	static const int EVERY_DAYS[8]; // Monday-Sunday
 
 	static constexpr calendar_t NOTIME = (calendar_t)(-1);
 	static calendar_t getTime(calendar_t day, instant_t time);

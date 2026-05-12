@@ -39,6 +39,7 @@ class Map {
 	int height;
 
 	Map& operator=(const Map&) = default;
+	Map(const Map&) = default;
 
 
 public:

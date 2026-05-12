@@ -15,6 +15,7 @@
 #include "../actions/action_truck.hpp"
 
 
+
 enum {
 	DECALAGE_RESET = 1000
 };
@@ -111,13 +112,23 @@ bool TruckJob::work(
 	Building *building,
 	Game &game
 ) {
+
 	Building* workBuilding = building;
 	if (!workBuilding) {
 		workBuilding = getBuilding(game, loc);
 	}
 
-	if (auto it = this->workers.find((Character*)worker); it != this->workers.end()) {
+	if (
+		auto it = this->workers.find((Character*)worker);
+		it != this->workers.end()
+	) {
 		auto& data = it->second;
+
+		if (data.executor) {
+			auto d = (actionNodes::truck::Data*)(data.executor->getArgs());
+			d->warehouse = loc;
+		}
+
 		if (data.executor == nullptr || data.executor->run(game)) {
 			// Work is finished
 			return true;
@@ -185,10 +196,16 @@ void TruckJob::onEnter(
 			targets[i] = targetVect[(i + decalage) % length];
 		}
 
+		short finishHour = this->finishTime.hour;
+		if (finishHour < 0) {finishHour += 24;}
 		data.executor = actionNodes::truck::createExecutor(
 			(Character*)worker,
 			targets,
-			length
+			length,
+			game.getCalendar().getFutureInstant(instant_t{
+				finishHour,
+				this->finishTime.minute
+			}, Calendar::EVERY_DAYS)
 		);
 
 	}

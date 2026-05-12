@@ -1,4 +1,7 @@
 #include "ActionExecutor.hpp"
+
+#include <iostream>
+
 #include "actions/ActionNode.hpp"
 
 #include <stdexcept>
@@ -59,10 +62,17 @@ ActionExecutor::~ActionExecutor() {
 	if (this->destructor == nullptr)
 		return;
 
-	if (this->destructor == ActionExecutor::FREE_DESTRUCTOR)
+	if (this->destructor == ActionExecutor::FREE_DESTRUCTOR) {
 		free(this->args);
+		return;
+	}
 
 	this->destructor(this->args);
+}
+
+
+void *ActionExecutor::getArgs() const {
+	return this->args;
 }
 
 bool ActionExecutor::run(Game& game) {
@@ -125,7 +135,7 @@ bool ActionExecutor::run(Game& game) {
 			// First iteration
 			if (prevResult == ActionCode::PENDING) {
 				this->list.push_back(0);
-				node = node->first.children[0];
+				node = node->all.children[0];
 				break;
 			}
 
@@ -156,13 +166,14 @@ bool ActionExecutor::run(Game& game) {
 			// First iteration
 			if (prevResult == ActionCode::PENDING) {
 				this->list.push_back(0);
-				node = node->first.children[0];
+				node = node->loop.child;
 				break;
 			}
 
 			if (prevResult == ActionCode::SUCCESS) {
 				// Call child to restart
 				prevResult = ActionCode::PENDING;
+				node = node->loop.child;
 				break;
 			}
 
