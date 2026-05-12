@@ -11,7 +11,7 @@
 
 
 #ifndef TIME_MODE
-#define TIME_MODE -1
+#define TIME_MODE 0
 #endif
 
 #include "SaveGamePathFolder.hpp"
@@ -42,7 +42,7 @@ void runThread(Pool* pool) {
 	using clock = std::chrono::steady_clock;
 
 	#if TIME_MODE == 0 // fast
-	const auto FRAME_TIME = std::chrono::microseconds(16667/4);
+	const auto FRAME_TIME = std::chrono::microseconds(16667/5);
 	#elif TIME_MODE == 1 // slow
 	const auto FRAME_TIME = std::chrono::microseconds(16667*16);
 	#else // basic

@@ -13,8 +13,10 @@
 #include "jobs/ConstructionJob.hpp"
 
 #include "DebugLogger.hpp"
+#include "jobs/TruckImport.hpp"
 #include "jobs/TruckJob.hpp"
 #include "utils/streams.hpp"
+
 DebugLogger print{"Building"};
 
 
@@ -808,7 +810,7 @@ void Building::fileLoad(
 bool Building::fillTruckImports(
 	const Map& map,
 	Vector<int> loc,
-	std::vector<Vector<int>>& importList
+	std::vector<TruckImport>& importList
 ) const {
 	switch (this->type) {
 		case BuildingType::GROCERY: {
@@ -833,7 +835,11 @@ bool Building::fillTruckImports(
 				}
 			}
 
-			importList.push_back(best);
+			importList.push_back(TruckImport{
+				.x = best.x,
+				.y = best.y,
+				.id = TruckImportId::SEEDS
+			});
 			return true;
 		}
 			

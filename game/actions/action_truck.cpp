@@ -6,6 +6,7 @@
 
 
 #include "../DebugLogger.hpp"
+#include "../jobs/TruckImport.hpp"
 
 static DebugLogger print{"ActionTruck", true};
 
@@ -18,10 +19,17 @@ startns(truck)
 		link(leave)\
 		loop(main_loop)\
 			all(main_all)\
-				run(hasOtherCommands)\
+				run(locateClient)\
+				link(drive)\
+				run(applyClient)\
+				run(nextClient)\
 		link(enter)\
 	run(leave)\
 	run(enter)\
+	run(drive)\
+	run(walk)\
+	run(locateWarehouse)\
+	run(orientWarehouse)\
 
 
 
@@ -34,6 +42,10 @@ declList();
 graph(result,
 	&leave,
 	&main_loop,
+	&locateWarehouse,
+	&drive,
+	&orientWarehouse,
+	&walk,
 	&enter
 );
 
@@ -42,7 +54,10 @@ graph(main_loop,
 );
 
 graph(main_all,
-	&hasOtherCommands
+	&locateClient,
+	&drive,
+	&applyClient,
+	&nextClient
 );
 
 
@@ -50,19 +65,51 @@ graph(main_all,
 struct CharacterFriend {
 	def(leave) {
 		setData();
-		// c->makeOutside(game);
+		data->character->makeOutside(game);
 		return ActionCode::SUCCESS;
 	}
 
 	def(enter) {
 		setData();
-		// bool r = c->makeInside(game);
-		// return ActionCode_get(r);
-		return ActionCode::PENDING;
+		bool r = data->character->makeInside(game);
+		print("  result=%d\n", r);
+		return ActionCode_get(r);
 	}
 
 
-	def(hasOtherCommands) {
+
+	def(locateClient) {
+		setData();
+		return ActionCode::SUCCESS;
+	}
+
+	def(applyClient) {
+		setData();
+		return ActionCode::SUCCESS;
+	}
+
+	def(nextClient) {
+		setData();
+		return ActionCode::SUCCESS;
+	}
+
+	def(walk) {
+		setData();
+		return ActionCode::SUCCESS;
+	}
+
+	def(drive) {
+		setData();
+		return ActionCode::SUCCESS;
+	}
+
+	def(locateWarehouse) {
+		setData();
+		return ActionCode::SUCCESS;
+	}
+
+	def(orientWarehouse) {
+		setData();
 		return ActionCode::SUCCESS;
 	}
 };
@@ -74,7 +121,7 @@ const ActionNode* init() {
 
 	initialized = true;
 
-		// Override makeFnc
+	// Override makeFnc
 	#undef makeFnc
 	#define makeFnc(name) name = ActionNode{ \
 	.type = ActionNodeType::RUNNER, \
@@ -92,7 +139,7 @@ static void destroyData(void* data) {
 
 ActionExecutor* createExecutor(
 	Character* c,
-	Vector<int>* targets,
+	TruckImport* targets,
 	int capacity
 ) {
 	auto data = new Data{
@@ -111,7 +158,7 @@ ActionExecutor* createExecutor(
 
 
 Data::~Data() {
-	delete this->targets;
+	delete[] this->targets;
 }
 
 

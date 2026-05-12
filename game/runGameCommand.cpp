@@ -73,6 +73,7 @@ def(test) {
 		// game.spawnCar(13, 17, Direction::UP),
 	};
 
+
 	int playerId = game.getPlayerId(player);
 	
 	auto home = Building::create_home(playerId, 3, 500);
@@ -83,6 +84,9 @@ def(test) {
 		character->give(2000);
 		character->setCar(cars[0]);
 		game.characterHandler.pushCharacter(character);
+
+		printf("Character #%d: %p\n", i, character);
+
 	}
 
 	/*auto oilJob = new OilFieldJob{1.9f, 2.0f};

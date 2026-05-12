@@ -3,12 +3,13 @@
 #include "../Vector.hpp"
 
 class ActionExecutor;
+struct TruckImport;
 
 namespace actionNodes {
 	namespace truck {
 		struct Data {
-			Character* c;
-			Vector<int>* targets;
+			Character* character;
+			TruckImport* targets;
 			int capacity;
 			int current;
 
@@ -19,7 +20,7 @@ namespace actionNodes {
 
 		ActionExecutor* createExecutor(
 			Character* c,
-			Vector<int>* targets,
+			TruckImport* targets,
 			int capacity
 		);
 	}

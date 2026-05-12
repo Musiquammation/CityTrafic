@@ -8,6 +8,8 @@
 #include <math.h>
 #include <stdexcept>
 
+#include "TruckImport.hpp"
+#include "TruckImportId.hpp"
 #include "../ActionExecutor.hpp"
 #include "../Character.hpp"
 #include "../actions/action_truck.hpp"
@@ -18,7 +20,9 @@ enum {
 };
 
 TruckJob::WorkerData::~WorkerData() {
-	delete this->executor;
+	if (this->executor) {
+		delete this->executor;
+	}
 }
 
 TruckJob::TruckJob() {
@@ -114,8 +118,8 @@ bool TruckJob::work(
 
 	if (auto it = this->workers.find((Character*)worker); it != this->workers.end()) {
 		auto& data = it->second;
-		if (data.executor->run(game)) {
-			// Finished
+		if (data.executor == nullptr || data.executor->run(game)) {
+			// Work is finished
 			return true;
 		}
 	}
@@ -150,7 +154,7 @@ void TruckJob::onEnter(
 
 	// Get targets
 	const auto& map = game.getMap();
-	std::vector<Vector<int>> targetVect;
+	std::vector<TruckImport> targetVect;
 	for (auto it = map.buildings_begin(); it != map.buildings_end(); ++it) {
 		auto r = it->second->fillTruckImports(
 			map,
@@ -159,23 +163,35 @@ void TruckJob::onEnter(
 		);
 
 		if (r) {
-			targetVect.push_back(it->first);
+			// destination point
+			targetVect.push_back(TruckImport{
+				.x = it->first.x,
+				.y = it->first.y,
+				.id = TruckImportId::DESTINATION,
+			});
 		}
 	}
 
-	int length = (int)targetVect.size();
-	auto targets = new Vector<int>[length];
 
-	int decalage = this->importsDecalage;
-	for (int i = 0; i < length; ++i) {
-		targets[i] = targetVect[(i + decalage) % length];
+	if (targetVect.empty()) {
+		data.executor = nullptr;
+
+	} else {
+		int length = (int)targetVect.size();
+		auto targets = new TruckImport[length];
+
+		int decalage = this->importsDecalage;
+		for (int i = 0; i < length; ++i) {
+			targets[i] = targetVect[(i + decalage) % length];
+		}
+
+		data.executor = actionNodes::truck::createExecutor(
+			(Character*)worker,
+			targets,
+			length
+		);
+
 	}
-
-	data.executor = actionNodes::truck::createExecutor(
-		(Character*)worker,
-		targets,
-		length
-	);
 
 
 	// Move decalages
@@ -221,7 +237,7 @@ bool TruckJob::hire(
 
 
 	switch (offer.type) {
-	case JobOfferType::TRUCK :
+	case JobOfferType::TRUCK:
 		if (!this->employeesCounters.truckers.hire()) {return false;}
 		break;
 

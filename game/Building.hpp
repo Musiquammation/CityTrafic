@@ -9,6 +9,7 @@
 #include "BuildingType.hpp"
 
 class TruckJob;
+struct TruckImport;
 
 struct Building {
 	BuildingType type;
@@ -127,9 +128,9 @@ struct Building {
 	void fileLoad(ReadStream& stream, const std::unordered_map<Job*, Job*>& jobs);
 
 	bool fillTruckImports(
-		const Map& map,
+		const Map &map,
 		Vector<int> loc,
-		std::vector<Vector<int>>& importList
+		std::vector<TruckImport> &importList
 	) const;
 
 	~Building();
