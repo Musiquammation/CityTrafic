@@ -269,3 +269,15 @@ bool Car::appendFuel(float fuel) {
 
 	return false;
 }
+
+bool Car::reserveCar() {
+	if (this->driverReserved)
+		return false;
+
+	this->driverReserved = true;
+	return true;
+}
+
+void Car::releaseCar() {
+	this->driverReserved = false;
+}

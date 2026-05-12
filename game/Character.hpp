@@ -31,6 +31,7 @@ class Character {
 	ActionExecutor executor;
 	Vector<int> jobLoc = {INT32_MIN, INT32_MIN};
 	Vector<int> home = {INT32_MIN, INT32_MIN};
+	Vector<int> target = {INT32_MIN, INT32_MIN};
 	CharacterState state;
 	CharacterStatus status = CharacterStatus::IDLE;
 	int money = 0;

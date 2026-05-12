@@ -200,7 +200,7 @@ bool AgricultorJob::searchJobOffer(
 ) const {
 	if (this->employeesCounters.agricultors.canHire()) {
 		offer.type = JobOfferType::AGRICULTOR;
-		offer.salaryEstimation = int(this->salaryPerSeed * 200);
+		offer.salaryEstimation = int(this->salaryPerSeed * 2000);
 		return true;
 	}
 

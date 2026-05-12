@@ -11,12 +11,14 @@
 
 
 #ifndef TIME_MODE
-#define TIME_MODE 0
+#define TIME_MODE -1
 #endif
 
 #include "SaveGamePathFolder.hpp"
 
 static void saveGame(hash_t hash, const Game& game) {
+	return; // Cancel saving
+
 	std::string path{SAVEGAME_FOLDERPATH};
 
 	// Get path

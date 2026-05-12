@@ -38,6 +38,8 @@ class Map {
 	int width;
 	int height;
 
+	Map& operator=(const Map&) = default;
+
 
 public:
 	friend struct serialize;

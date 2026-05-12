@@ -10,3 +10,4 @@ uWebSockets
 venv
 saves
 .clangd
+qodana.yaml

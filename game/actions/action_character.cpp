@@ -47,6 +47,10 @@ startns(character)
 	all(goHome)\
 		fst(enshureHome)\
 		all(searchHomeRoutine)\
+	fst(reachTarget)\
+		all(reachTargetWithCar)\
+		all(reachTargetByWalking)\
+		all(reachTargetFailed)\
 	\
 	run(drive)\
 	run(walk)\
@@ -77,8 +81,17 @@ startns(character)
 	run(buySeeds)\
 	run(waitSeedsConsumption)\
 	run(couldown_homeSearch)\
-			
-		
+	run(locateTarget)\
+	run(orientTarget)\
+	run(checkTarget)\
+	run(emptyTarget)\
+	run(returnSuccess)\
+	run(returnFailure)\
+	run(targetHome)\
+	run(targetWork)\
+	run(targetFuelStation)\
+	run(targetGrocery)\
+
 
 
 
@@ -112,7 +125,20 @@ struct CharacterFriend {
 			return ActionCode::FAILURE;
 
 		return ActionCode_get(character->orientBuilding(game, info));
+	}
 
+	static ActionCode target(Game& game, Character* character, BuildingType type) {
+		auto p = character->getPos();
+		auto& map = game.getMap();
+		auto info = map.searchBuilding(
+			p.x, p.y, type);
+
+		if (!info.building)
+			return ActionCode::FAILURE;
+
+		character->target.x = info.x;
+		character->target.y = info.y;
+		return ActionCode::SUCCESS;
 	}
 
 
@@ -223,8 +249,12 @@ struct CharacterFriend {
 		setCharacter();
 
 		auto info = c->getWorkBuilding(game);
-		if (!info.building) {return ActionCode::FAILURE;}
+		if (!info.building) {
+			printStatus("  locate:failure");
+			return ActionCode::FAILURE;
+		}
 		bool r = c->locateBuilding(game.getMap(), info);
+		printStatus("  locate %d\n", (int)r);
 		return ActionCode_get(r);
 	}
 
@@ -590,8 +620,99 @@ struct CharacterFriend {
 
 
 
-	
-	
+
+	def(locateTarget) {
+		setCharacter();
+		printStatus("locateTarget\n");
+
+		auto& map = game.getMap();
+		auto info = map.getBuilding(c->target.x, c->target.y);
+		if (!info.building) {
+			return ActionCode::FAILURE;
+		}
+
+		return ActionCode_get(
+			c->locateBuilding(map, info)
+		);
+	}
+
+	def(orientTarget) {
+		setCharacter();
+		printStatus("orientTarget\n");
+
+		auto info = game.getMap().getBuilding(c->target.x, c->target.y);
+		if (!info.building) {
+			return ActionCode::FAILURE;
+		}
+
+		return ActionCode_get(
+			c->orientBuilding(game, info)
+		);
+	}
+
+
+	def(emptyTarget) {
+		setCharacter();
+		printStatus("emptyTarget\n");
+
+		c->target.x = INT32_MIN;
+		return ActionCode::SUCCESS;
+
+	}
+
+	def(checkTarget) {
+		setCharacter();
+		printStatus("checkTarget\n");
+		return ActionCode_get(c->target.x != INT32_MIN);
+	}
+
+
+	def(returnSuccess) {
+		printStatus("returnSuccess\n");
+		return ActionCode::SUCCESS;
+	}
+
+	def(returnFailure) {
+		printStatus("returnFailure\n");
+		return ActionCode::FAILURE;
+	}
+
+	def(targetHome) {
+		printStatus("targetHome\n");
+		setCharacter();
+
+		auto& map = game.getMap();
+		auto info = c->getHomeBuilding(map);
+		c->target = {info.x, info.y};
+		return ActionCode_get(info.x != INT32_MIN);
+	}
+
+	def(targetWork) {
+		printStatus("targetWork\n");
+		setCharacter();
+
+		auto info = c->getWorkBuilding(game);
+		if (!info.building) {
+			printStatus("  locate:failure");
+			return ActionCode::FAILURE;
+		}
+
+		c->target = {info.x, info.y};
+		return ActionCode_get(info.x != INT32_MIN);
+	}
+
+	def(targetFuelStation) {
+		setCharacter();
+		printStatus("targetFuelStation\n");
+		return target(game, c, BuildingType::OIL_FIELD);
+	}
+
+	def(targetGrocery) {
+		setCharacter();
+		printStatus("targetGrocery\n");
+		return target(game, c, BuildingType::GROCERY);
+	}
+
 };
 
 
@@ -613,12 +734,8 @@ graph(enshureFood,
 
 graph(enshureFood_sub,
 	&leave,
-	&walkToCar,
-	&locateGrocery,
-	&drive,
-	&leave,
-	&orientGrocery,
-	&walk,
+	&targetGrocery,
+	&reachTarget,
 	&enter,
 	&buySeeds,
 	&waitSeedsConsumption,
@@ -635,11 +752,8 @@ graph(work,
 	&mustWork,
 	&leave,
 	&enshureCarFuel,
-	&walkToCar,
-	&locateWork,
-	&drive,
-	&orientWork,
-	&walk,
+	&targetWork,
+	&reachTarget,
 	&enter,
 	&enterWork,
 	&passWork,
@@ -682,13 +796,9 @@ graph(restAtHome,
 );
 
 graph(goHome,
-	&enshureCarFuel,
 	&enshureHome,
-	&walkToCar,
-	&locateHome,
-	&drive,
-	&orientHome,
-	&walk,
+	&targetHome,
+	&reachTarget,
 	&enter
 );
 
@@ -700,6 +810,36 @@ graph(enshureHome,
 graph(searchHomeRoutine,
 	&couldown_homeSearch,
 	&searchHome
+);
+
+graph(reachTarget,
+	&reachTargetWithCar,
+	&reachTargetByWalking,
+	&reachTargetFailed
+);
+
+graph(reachTargetWithCar,
+	&checkTarget,
+	&enshureCarFuel,
+	&walkToCar,
+	&locateTarget,
+	&drive,
+	&orientTarget,
+	&walk,
+	&emptyTarget
+);
+
+graph(reachTargetByWalking,
+	&checkTarget,
+	&orientTarget,
+	&walk,
+	&emptyTarget
+);
+
+graph(reachTargetFailed,
+	&checkTarget,
+	&emptyTarget,
+	&returnFailure
 );
 
 

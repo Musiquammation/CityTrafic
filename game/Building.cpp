@@ -5,8 +5,8 @@
 #include "Game.hpp"
 #include "Character.hpp"
 
-#include <game/BuildingType.hpp>
-#include <game/Vector.hpp>
+#include "BuildingType.hpp"
+#include "Vector.hpp"
 #include "jobs/OilFieldJob.hpp"
 #include "jobs/AgricultorJob.hpp"
 #include "jobs/CashierJob.hpp"
@@ -802,7 +802,7 @@ Vector<int> Building::getTruckImports(const Map& map, Vector<int> loc) const {
 	switch (this->type) {
 		case BuildingType::GROCERY: {
 			// Search for plantations
-			Vector best = {INT32_MIN, INT32_MIN};
+			auto best = Vector<int>{INT32_MIN, INT32_MIN};
 			int bestDist = INT32_MAX;
 			for (
 				auto it = map.buildings_begin();

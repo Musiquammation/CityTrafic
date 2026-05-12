@@ -26,6 +26,7 @@ private:
 	Character* driver = nullptr;
 	bool pathIsFinished = false;
 	float fuel;
+	bool driverReserved;
 	float fuelCapacity;
 
 	friend class Api;
@@ -72,4 +73,7 @@ public:
 
 	float getFuel() const;
 	bool appendFuel(float added);
+
+	bool reserveCar();
+	void releaseCar();
 };
