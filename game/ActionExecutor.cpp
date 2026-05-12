@@ -65,7 +65,7 @@ ActionExecutor::~ActionExecutor() {
 	this->destructor(this->args);
 }
 
-bool ActionExecutor::run(Game& game, Character* character) {
+bool ActionExecutor::run(Game& game) {
 	ActionCode prevResult = ActionCode::PENDING;
 	
 	Node* node = this->currentNode;
@@ -76,7 +76,7 @@ bool ActionExecutor::run(Game& game, Character* character) {
 		switch (node->type) {
 		case ActionNodeType::RUNNER:
 		{
-			auto result = node->runner.run(game, character, this->args);
+			auto result = node->runner.run(game, this->args);
 			if (result == ActionCode::PENDING) {
 				goto exit;
 			}

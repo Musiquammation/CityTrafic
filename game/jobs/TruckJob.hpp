@@ -6,8 +6,6 @@
 
 class ActionExecutor;
 class TruckJob: public Job {
-	static float evalSalary(float efficiency);
-
 	struct WorkerData {
 		float toPay;
 		bool willWork;
@@ -21,11 +19,13 @@ class TruckJob: public Job {
 	std::map<Character*, WorkerData> workers;
 	friend struct jobSerializator;
 
-	float salaryPerHour = 0.0f;
+	int importsDecalage = 0;
 
 public:
 	TruckJob();
 	~TruckJob() override;
+
+	float salaryPerHour = 0.0f;
 
 	struct {
 		EmployeesCounter truckers;

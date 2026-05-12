@@ -360,7 +360,7 @@ void Character::frame(Game& game) {
 		printWarn("Needs are negative (%f\n)", this->seeds);
 	}
 
-	if (this->executor.run(game, this)) {
+	if (this->executor.run(game)) {
 		this->executor.restart();
 	}
 }

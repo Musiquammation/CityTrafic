@@ -65,7 +65,6 @@ PANEL_MAP.set(PANEL_IDS.BUILDING_CONSTRUCTION, {
 PANEL_MAP.set(PANEL_IDS.BUILDING_WAREHOUSE, {
 	title: "Warehouse",
 	fields: [
-		new NamedUnit("Type", units.i32),
 		new NamedUnit("Current employees", units.i32),
 		new NamedUnit("Goal employees", units.mut_i32),
 	]

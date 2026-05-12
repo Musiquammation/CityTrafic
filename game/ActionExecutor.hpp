@@ -26,6 +26,6 @@ public:
 	);
 	~ActionExecutor();
 
-	bool run(Game& game, Character* character);
+	bool run(Game& game);
 	void restart();
 };

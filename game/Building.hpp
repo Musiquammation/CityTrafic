@@ -4,6 +4,7 @@
 #include "declarations.hpp"
 #include <stdint.h>
 #include <unordered_map>
+#include <vector>
 
 #include "BuildingType.hpp"
 
@@ -58,7 +59,6 @@ struct Building {
 
 		struct {
 			TruckJob* job;
-
 		} warehouse;
 	};
 	
@@ -94,6 +94,11 @@ struct Building {
 		int owner
 	);
 
+	static Building *create_warehouse(
+		TruckJob *job,
+		int owner
+	);
+
 
 	int enter(Character* c);
 	void leave(int position);
@@ -121,7 +126,11 @@ struct Building {
 	void fileSave(WriteStream& stream) const;
 	void fileLoad(ReadStream& stream, const std::unordered_map<Job*, Job*>& jobs);
 
-	Vector<int> getTruckImports(const Map& map, Vector<int> loc) const;
+	bool fillTruckImports(
+		const Map& map,
+		Vector<int> loc,
+		std::vector<Vector<int>>& importList
+	) const;
 
 	~Building();
 };

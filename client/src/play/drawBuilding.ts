@@ -21,56 +21,62 @@ export function drawBuilding(
 	size: {width: number, height: number} | null
 ) {
 	switch (type) {
-	case 0: // home
-	{
-		ctx.drawImage(loader.get('home'), 0, 0, 2, 2);
-		return false;
-	}
+		case 0: // home
+		{
+			ctx.drawImage(loader.get('home'), 0, 0, 2, 2);
+			return false;
+		}
 
-	case 1: // oil field
-	{
-		if (!size) {return true;}
+		case 1: // oil field
+		{
+			if (!size) {return true;}
 
-		drawInLoop(
-			loader.get('oil'),
-			ctx,
-			size,
-			1, 1
-		);
-		return false;
-	}
+			drawInLoop(
+				loader.get('oil'),
+				ctx,
+				size,
+				1, 1
+			);
+			return false;
+		}
 
-	case 2: // plantation
-	{
-		if (!size) {return true;}
+		case 2: // plantation
+		{
+			if (!size) {return true;}
 
-		drawInLoop(
-			loader.get('plantation'),
-			ctx,
-			size,
-			1, 1
-		);
-		return true;
-	}
+			drawInLoop(
+				loader.get('plantation'),
+				ctx,
+				size,
+				1, 1
+			);
+			return true;
+		}
 
-	case 3: // grocery
-	{
-		ctx.drawImage(loader.get('grocery'), 0, 0, 3, 3);
-		return false;
-	}
+		case 3: // grocery
+		{
+			ctx.drawImage(loader.get('grocery'), 0, 0, 3, 3);
+			return false;
+		}
 
-	case 4: // construction
-	{
-		if (!size) {return true;}
+		case 4: // construction
+		{
+			if (!size) {return true;}
 
-		drawInLoop(
-			loader.get('constructing'),
-			ctx,
-			size,
-			1, 1
-		);
-		return false;
-	}
+			drawInLoop(
+				loader.get('constructing'),
+				ctx,
+				size,
+				1, 1
+			);
+			return false;
+		}
+
+		case 5: // warehouse
+		{
+			ctx.drawImage(loader.get('warehouse'), 0, 0, 8, 8)
+			return false;
+		}
 	}
 
 	return false;

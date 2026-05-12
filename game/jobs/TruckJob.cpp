@@ -12,6 +12,11 @@
 #include "../Character.hpp"
 #include "../actions/action_truck.hpp"
 
+
+enum {
+	DECALAGE_RESET = 1000
+};
+
 TruckJob::WorkerData::~WorkerData() {
 	delete this->executor;
 }
@@ -26,14 +31,6 @@ TruckJob::~TruckJob() {
 
 
 
-static constexpr float EFFICIENCY_COST = 6.0f;
-static constexpr float EFFICIENCY_RATIO = 0.75f;
-float TruckJob::evalSalary(float efficiency) {
-	static constexpr float S = EFFICIENCY_COST;
-	static constexpr float R = EFFICIENCY_RATIO;
-	return R * (efficiency + efficiency*efficiency*
-			(1.0f/(S*S)));
-}
 
 
 calendar_t TruckJob::getNextEnterHour(
@@ -117,7 +114,7 @@ bool TruckJob::work(
 
 	if (auto it = this->workers.find((Character*)worker); it != this->workers.end()) {
 		auto& data = it->second;
-		if (data.executor->run(game, (Character*)worker)) {
+		if (data.executor->run(game)) {
 			// Finished
 			return true;
 		}
@@ -155,16 +152,23 @@ void TruckJob::onEnter(
 	const auto& map = game.getMap();
 	std::vector<Vector<int>> targetVect;
 	for (auto it = map.buildings_begin(); it != map.buildings_end(); ++it) {
-		auto p = it->second->getTruckImports(map, it->first);
-		targetVect.push_back(p);
-		targetVect.push_back(it->first);
+		auto r = it->second->fillTruckImports(
+			map,
+			it->first,
+			targetVect
+		);
+
+		if (r) {
+			targetVect.push_back(it->first);
+		}
 	}
 
 	int length = (int)targetVect.size();
 	auto targets = new Vector<int>[length];
 
+	int decalage = this->importsDecalage;
 	for (int i = 0; i < length; ++i) {
-		targets[i] = targetVect[i];
+		targets[i] = targetVect[(i + decalage) % length];
 	}
 
 	data.executor = actionNodes::truck::createExecutor(
@@ -172,6 +176,13 @@ void TruckJob::onEnter(
 		targets,
 		length
 	);
+
+
+	// Move decalages
+	this->importsDecalage++;
+	if (this->importsDecalage >= DECALAGE_RESET) {
+		this->importsDecalage -= DECALAGE_RESET;
+	}
 }
 
 void TruckJob::onLeave(

@@ -16,7 +16,7 @@ struct ActionNode {
 
 	union {
 		struct {
-			ActionCode (*run)(Game& game, Character* character, void* data);
+			ActionCode (*run)(Game& game, void* data);
 		} runner;
 
 		struct {

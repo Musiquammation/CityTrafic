@@ -46,19 +46,19 @@ graph(main_all,
 );
 
 
-#define setCharacter() Character* c = (Character*)_data;
 
 struct CharacterFriend {
 	def(leave) {
-		setCharacter();
-		c->makeOutside(game);
+		setData();
+		// c->makeOutside(game);
 		return ActionCode::SUCCESS;
 	}
 
 	def(enter) {
-		setCharacter();
-		bool r = c->makeInside(game);
-		return ActionCode_get(r);
+		setData();
+		// bool r = c->makeInside(game);
+		// return ActionCode_get(r);
+		return ActionCode::PENDING;
 	}
 
 

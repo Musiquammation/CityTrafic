@@ -111,7 +111,16 @@ Building* Building::create_construction(
 	b->construction.total = building->getConstructionCost();
 	return b;
 }
-
+Building* Building::create_warehouse(
+	TruckJob* job,
+	int owner
+) {
+	auto b = new Building;
+	b->owner = owner;
+	b->type = BuildingType::WAREHOUSE;
+	b->warehouse.job = job;
+	return b;
+}
 
 Vector<int> Building::getSize() const {
 	int x = SIZES[(int)this->type].x;
@@ -454,7 +463,6 @@ uint32_t* Building::getPanelData(const Game& game) {
 		auto job = this->construction.job;
 		auto result = (uint32_t*)malloc(sizeof(uint32_t)*(COUNT+2));
 
-		printf("called\n");
 		result[0] = COUNT; // length (as uint32_t)
 		result[1] = (uint32_t)PanelId::BUILDING_CONSTRUCTION;
 		result[2] = (uint32_t)this->construction.goal->type;
@@ -468,14 +476,13 @@ uint32_t* Building::getPanelData(const Game& game) {
 
 	case BuildingType::WAREHOUSE: {
 		static constexpr int COUNT = 2;
-		auto job = this->construction.job;
+		auto job = this->warehouse.job;
 		auto result = (uint32_t*)malloc(sizeof(uint32_t)*(COUNT+2));
 
-		printf("called\n");
 		result[0] = COUNT; // length (as uint32_t)
 		result[1] = (uint32_t)PanelId::BUILDING_WAREHOUSE;
-		result[2] = job->employeesCounters.workers.current;
-		result[3] = job->employeesCounters.workers.goal;
+		result[2] = job->employeesCounters.truckers.current;
+		result[3] = job->employeesCounters.truckers.goal;
 
 		return result;
 	}
@@ -798,7 +805,11 @@ void Building::fileLoad(
 
 
 
-Vector<int> Building::getTruckImports(const Map& map, Vector<int> loc) const {
+bool Building::fillTruckImports(
+	const Map& map,
+	Vector<int> loc,
+	std::vector<Vector<int>>& importList
+) const {
 	switch (this->type) {
 		case BuildingType::GROCERY: {
 			// Search for plantations
@@ -822,12 +833,13 @@ Vector<int> Building::getTruckImports(const Map& map, Vector<int> loc) const {
 				}
 			}
 
-			return best;
+			importList.push_back(best);
+			return true;
 		}
 			
 
 		default:
-			return {INT32_MIN, INT32_MIN};
+			return false;
 	}
 }
 

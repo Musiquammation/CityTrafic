@@ -573,7 +573,7 @@ struct CharacterFriend {
 		setCharacter();
 		printStatus("buySeeds\n");
 
-		auto p = character->getPos();
+		auto p = c->getPos();
 		auto& map = game.getMap();
 		auto info = map.searchBuilding(
 			p.x, p.y, BuildingType::GROCERY);
@@ -615,10 +615,6 @@ struct CharacterFriend {
 
 		return ActionCode::PENDING;
 	}
-
-
-
-
 
 
 	def(locateTarget) {
