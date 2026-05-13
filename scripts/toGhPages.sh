@@ -31,4 +31,3 @@ cp -r draft/tmp/api.wasm public/wasm/api.wasm
 cp -r draft/tmp/bundle.js public/bundle.js
 cp -r draft/tmp/worker.js public/worker.js
 
-rm -r draft/tmp
