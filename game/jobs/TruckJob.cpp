@@ -148,9 +148,11 @@ void TruckJob::onEnter(
 		return;
 
 	auto& data = it->second;
-	data.meeting = game.getCalendar().getFutureInstant(
+	const auto prevMeeting = data.meeting;
+	data.meeting = Calendar::getFutureInstant(
+		prevMeeting,
 		this->finishTime,
-		Calendar::WORKING_DAYS
+		nullptr
 	);
 
 	data.entryHour = game.getCalendar().indicator;
@@ -202,10 +204,14 @@ void TruckJob::onEnter(
 			(Character*)worker,
 			targets,
 			length,
-			game.getCalendar().getFutureInstant(instant_t{
-				finishHour,
-				this->finishTime.minute
-			}, Calendar::EVERY_DAYS)
+			game.getCalendar().getFutureInstant(
+				prevMeeting,
+				instant_t{
+					finishHour,
+					this->finishTime.minute
+				},
+				nullptr
+			)
 		);
 
 	}
@@ -227,18 +233,20 @@ void TruckJob::onLeave(
 	if (it == this->workers.end())
 		return;
 
-	it->second.meeting = calendar.getFutureInstant(
+	auto& data = it->second;
+	data.meeting = Calendar::getFutureInstant(
+		calendar.indicator,
 		this->startTime,
 		Calendar::WORKING_DAYS
 	);
 
 
-	int elapsed = int(calendar.indicator - it->second.entryHour);
-	it->second.willWork = true;
-	it->second.toPay += (float)elapsed * (this->salaryPerHour/60);
+	int elapsed = int(calendar.indicator - data.entryHour);
+	data.willWork = true;
+	data.toPay += (float)elapsed * (this->salaryPerHour/60);
 
-	delete it->second.executor;
-	it->second.executor = nullptr;
+	delete data.executor;
+	data.executor = nullptr;
 }
 
 bool TruckJob::hire(
@@ -266,7 +274,8 @@ bool TruckJob::hire(
 	this->workers[worker] = WorkerData{
 		.toPay = 0.0f,
 		.willWork = true,
-		.meeting = calendar.getFutureInstant(
+		.meeting = Calendar::getFutureInstant(
+			calendar.indicator,
 			this->startTime,
 			Calendar::WORKING_DAYS
 		),

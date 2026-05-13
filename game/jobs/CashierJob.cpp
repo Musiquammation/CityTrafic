@@ -136,14 +136,16 @@ void CashierJob::onEnter(
 	auto it = this->workers.find((Character*)worker);
 	if (it == this->workers.end())
 		return;
-	
-	it->second.meeting = game.getCalendar().getFutureInstant(
+
+	auto& data = it->second;
+	data.meeting = Calendar::getFutureInstant(
+		data.meeting,
 		this->finishTime,
-		Calendar::WORKING_DAYS
+		nullptr
 	);
 
-	it->second.entryHour = game.getCalendar().indicator;
-	it->second.willWork = false;
+	data.willWork = false;
+	data.entryHour = game.getCalendar().indicator;
 }
 
 void CashierJob::onLeave(
@@ -155,17 +157,16 @@ void CashierJob::onLeave(
 	if (it == this->workers.end())
 		return;
 	
-	it->second.meeting = calendar.getFutureInstant(
+	auto& data = it->second;
+	data.meeting = Calendar::getFutureInstant(
+		calendar.indicator,
 		this->startTime,
 		Calendar::WORKING_DAYS
 	);
 
-
-	int elapsed = int(calendar.indicator - it->second.entryHour);
-	it->second.willWork = true;
-	it->second.toPay += (float)elapsed * (this->salaryPerHour/60);
-		
-
+	int elapsed = int(calendar.indicator - data.entryHour);
+	data.willWork = true;
+	data.toPay += (float)elapsed * (this->salaryPerHour/60);
 }
 
 bool CashierJob::hire(
@@ -193,8 +194,9 @@ bool CashierJob::hire(
 	this->workers[worker] = WorkerData{
 		.toPay = 0.0f,
 		.willWork = true,
-		.meeting = calendar.getFutureInstant(
-			this->startTime,
+		.meeting = Calendar::getFutureInstant(
+			calendar.indicator,
+			this->finishTime,
 			Calendar::DECALED_DAYS
 		),
 		.entryHour = Calendar::NOTIME

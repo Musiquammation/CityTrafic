@@ -92,36 +92,47 @@ calendar_t Calendar::getTime(calendar_t day, instant_t instant) {
 		+ instant.minute;
 }
 
+#include <stdio.h>
+calendar_t Calendar::getFutureInstant(calendar_t base, instant_t time, const int* days) {
+	calendar_t base_totalDay = base / (60*24);
+	calendar_t base_weekDay = base_totalDay % 7;
 
-calendar_t Calendar::getFutureInstant(instant_t time, const int* days) const {
-    for (int offset = 0; offset < 7; offset++) {
-        int targetWeekDay = (this->weekDay + offset) % 7;
-        
-        bool isAllowed = false;
-        for (int i = 0; days[i] != -1; i++) {
-            if (days[i] == targetWeekDay) {
-                isAllowed = true;
-                break;
-            }
-        }
 
-        if (isAllowed) {
-            calendar_t potentialIndicator = getTime(
-            	this->totalDay + offset,
-            	time
-            	);
-            
-            if (offset == 0) {
-                if (potentialIndicator > this->indicator) {
-                    return potentialIndicator;
-                }
-            } else {
-                return potentialIndicator;
-            }
-        }
-    }
+	for (calendar_t offset = 0; offset < 7; offset++) {
+		int targetWeekDay = int((base_weekDay + offset) % 7);
 
-    return NOTIME;
+		bool isAllowed;
+		if (days) {
+			isAllowed = false;
+			for (int i = 0; days[i] != -1; i++) {
+				if (days[i] == targetWeekDay) {
+					isAllowed = true;
+					break;
+				}
+			}
+		} else {
+			isAllowed = true;
+		}
+
+		if (isAllowed) {
+			calendar_t potentialIndicator = getTime(
+				base_totalDay + offset,
+				time
+			);
+
+			if (offset == 0) {
+				if (potentialIndicator > base) {
+					printf("date[direct] %ld\n", potentialIndicator);
+					return potentialIndicator;
+				}
+			} else {
+				printf("date[relatd] %ld\n", potentialIndicator);
+				return potentialIndicator;
+			}
+		}
+	}
+
+	return NOTIME;
 }
 
 void Calendar::updateIndicator(calendar_t indicator) {

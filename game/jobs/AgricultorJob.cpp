@@ -117,13 +117,15 @@ void AgricultorJob::onEnter(
 	auto it = this->workers.find((Character*)worker);
 	if (it == this->workers.end())
 		return;
-	
-	it->second.meeting = game.getCalendar().getFutureInstant(
+
+	auto& data = it->second;
+	data.meeting = Calendar::getFutureInstant(
+		data.meeting,
 		this->finishTime,
-		Calendar::WORKING_DAYS
+		nullptr
 	);
 
-	it->second.willWork = false;
+	data.willWork = false;
 }
 
 void AgricultorJob::onLeave(
@@ -134,14 +136,16 @@ void AgricultorJob::onLeave(
 	auto it = this->workers.find((Character*)worker);
 	if (it == this->workers.end())
 		return;
-	
-	it->second.meeting = calendar.getFutureInstant(
-		this->startTime,
+
+	auto& data = it->second;
+	data.meeting = Calendar::getFutureInstant(
+		calendar.indicator,
+		this->finishTime,
 		Calendar::WORKING_DAYS
 	);
 
 
-	it->second.willWork = true;
+	data.willWork = true;
 
 }
 
@@ -170,7 +174,8 @@ bool AgricultorJob::hire(
 	this->workers[worker] = WorkerData{
 		0.0f,
 		true,
-		calendar.getFutureInstant(
+		Calendar::getFutureInstant(
+			calendar.indicator,
 			this->startTime,
 			Calendar::WORKING_DAYS
 		)

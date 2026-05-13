@@ -71,9 +71,9 @@ def(test) {
 
 
 	Car* cars[] = {
-		game.spawnCar(13, 13, Direction::DOWN),
+		game.spawnCar(16, 13, Direction::DOWN),
 		// game.spawnCar(6, 14, Direction::UP),
-		// game.spawnCar(13, 17, Direction::UP),
+		// game.spawnCar(16, 17, Direction::UP),
 	};
 
 
@@ -92,26 +92,27 @@ def(test) {
 
 	}
 
-	/*auto oilJob = new OilFieldJob{1.9f, 2.0f};
+	auto oilJob = new OilFieldJob{1.9f, 2.0f};
 	oilJob->give(10000);
 	oilJob->employeesCounters.raffiners.goal = 1;
 	auto oilField = Building::create_oilField(oilJob, playerId, 1000.0f, 50000, 4);
 	game.map.addBuilding(1, 5, oilField, game);
-	oilField->oilField.refined += 100;*/
+	oilField->oilField.refined += 100;
 
-	auto cashierJob = new CashierJob{};
-	auto grocery = Building::create_grocery(cashierJob, playerId);
-	game.map.addBuilding(1, 9, grocery, game);
-	grocery->grocery.stock += 1000.0f;
+	// auto cashierJob = new CashierJob{};
+	// auto grocery = Building::create_grocery(cashierJob, playerId);
+	// game.map.addBuilding(1, 9, grocery, game);
+	// grocery->grocery.stock += 1000.0f;
 
-	auto agricultureJob = new AgricultorJob{0.5f, 0.4f};
-	agricultureJob->employeesCounters.agricultors.goal = 1;
-	game.map.addBuilding(8, 20, Building::create_plantation(agricultureJob, playerId, 10), game);
+	// auto agricultureJob = new AgricultorJob{0.5f, 0.4f};
+	// agricultureJob->employeesCounters.agricultors.goal = 1;
+	// game.map.addBuilding(8, 20, Building::create_plantation(agricultureJob, playerId, 10), game);
 
-	auto truckJob = new TruckJob{};
-	truckJob->salaryPerHour = 15.0f;
-	truckJob->employeesCounters.truckers.goal = 1;
-	game.map.addBuilding(19, 10, Building::create_warehouse(truckJob, playerId), game);
+	// auto truckJob = new TruckJob{};
+	// truckJob->salaryPerHour = 15.0f;
+	// truckJob->employeesCounters.truckers.goal = 1;
+	// game.map.addBuilding(19, 10, Building::create_warehouse(truckJob, playerId), game);
+	//
 
 
 	return ptr;

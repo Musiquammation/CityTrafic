@@ -31,10 +31,11 @@ public:
 	void move();
 
 
-	calendar_t getFutureInstant(
+	static calendar_t getFutureInstant(
+		calendar_t base,
 		instant_t time,
 		const int* days
-	) const;
+	);
 
 	void updateIndicator(calendar_t indicator);
 	
