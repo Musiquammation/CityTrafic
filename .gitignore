@@ -1,12 +1,10 @@
 draft
 bin
 node_modules
-client/dist
-client/wasm
-server/wasm
+client
+server
 .vscode
 uWebSockets
-ts-server
 venv
 .idea
 saves
