@@ -22,11 +22,13 @@
 #include "game/serialization/serialize.hpp"
 #include "game/utils/streams.hpp"
 
+#include "game/DebugLogger.hpp"
+#include "MAP_PRECISION.hpp"
 
-#ifndef MAP_PRECISION
-	#warning "MAP_PRECISION is requires for server"
-	#define MAP_PRECISION 8 /* for vscode */
-#endif
+static DebugLogger print{"Server", true};
+
+
+
 
 
 struct PanelLocator {
@@ -180,11 +182,11 @@ uint8_t* Server::listen(Client* client, const uint8_t* ptr) {
 
 	std::vector<Region> newRegions;
 
-	/// TODO: [optimization] loop on match->visitedPoints and check bounds
+	/// Add new regions
 	for (int ry = ry0; ry <= ry1; ++ry) {
 		for (int rx = rx0; rx <= rx1; ++rx) {
 			uint64_t key = (uint64_t(rx) << 32) | uint32_t(ry);
-			if (match->visitedPoints.find(key) == match->visitedPoints.end()) {
+			if (!client->visitedRegions.contains(key)) {
 				newRegions.push_back({key, rx, ry});
 			}
 		}
@@ -203,7 +205,7 @@ uint8_t* Server::listen(Client* client, const uint8_t* ptr) {
 		if (i.x >= rx0 && i.y >= ry0 && i.x <= rx1 && i.y <= ry1) {
 			uint64_t key = (uint64_t(i.x) << 32) | uint64_t(i.y);
 
-			if (match->visitedPoints.find(key) != match->visitedPoints.end()) {
+			if (client->visitedRegions.contains(key)) {
 				missedInView.push_back({key, i.x, i.y});
 
 				it = editedCells.erase(it);
@@ -211,7 +213,7 @@ uint8_t* Server::listen(Client* client, const uint8_t* ptr) {
 			}
 		}
 
-		it++;
+		++it;
 	}
 
 	// total count
@@ -275,6 +277,11 @@ uint8_t* Server::listen(Client* client, const uint8_t* ptr) {
 	client->viewW = w;
 	client->viewH = h;
 
+	client->bounds.rx0 = rx0;
+	client->bounds.ry0 = ry0;
+	client->bounds.rx1 = rx1;
+	client->bounds.ry1 = ry1;
+
 	retRes();
 }
 
@@ -305,6 +312,8 @@ uint8_t* Server::getUpdates(Client* client, const uint8_t* ptr) {
 		client->updateJobsDate = game->updateJobsDate;
 	}
 
+
+
 	uint32_t* msg = updateNet_helper_write(
 		*game,
 		client->viewX,
@@ -313,12 +322,25 @@ uint8_t* Server::getUpdates(Client* client, const uint8_t* ptr) {
 		client->viewH,
 		(uint8_t)ClientId::UPDATE,
 		player->money,
-		updateClientJobs
+		updateClientJobs,
+		client->cellsLayerId,
+		client->visitedRegions,
+		MAP_PRECISION,
+		client->bounds.rx0,
+		client->bounds.ry0,
+		client->bounds.rx1,
+		client->bounds.ry1
 	);
+
+
+
+	// Remove visited regions
+
+
 
 	uint32_t fullSize = msg[1];
 
-	client->send(msg, fullSize + (uint32_t)sizeof(uint32_t));
+	client->send(msg, int(fullSize + sizeof(uint32_t)));
 
 	return nullptr;
 

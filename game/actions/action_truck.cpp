@@ -12,7 +12,7 @@
 #include "../jobs/TruckImport.hpp"
 
 static DebugLogger print{"ActionTruck", true};
-static DebugLogger _printStatus{"TruckStatus", true};
+static DebugLogger _printStatus{"TruckStatus", false};
 #define printStatus(label, ...) \
 _printStatus("[%p] " label, data->character __VA_OPT__(,) __VA_ARGS__)
 

@@ -46,7 +46,7 @@ void Game::frame() {
 	// Update grid
 	this->map.resetCarMarks();
 	for (auto& [pos, car] : this->carHandler) {
-		auto cell = this->map.getEditCell(car->x, car->y);
+		auto cell = this->map.getShadowEditCell(car->x, car->y);
 		cell->setCarOn();
 	}
 

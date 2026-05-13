@@ -43,17 +43,17 @@ def(test) {
 
 
 	for (int i = 1; i < 18; i++) {
-		game.map.getEditCell(13, i)->setType(CellType::ROAD, game, 0);
+		game.map.getEditCell(16, i)->setType(CellType::ROAD, game, 0);
 		game.map.getEditCell(6, i)->setType(CellType::ROAD, game, 0);
 	}
 
-	for (int i = 6; i < 13; i++) {
+	for (int i = 6; i < 16; i++) {
 		game.map.getEditCell(i, 1)->setType(CellType::ROAD, game, 0);
 		game.map.getEditCell(i, 18)->setType(CellType::ROAD, game, 0);
 	}
 
-	game.map.getEditCell(13, 6)->setType(CellType::PARKING, game, 0);
-	game.map.getEditCell(13, 13)->setType(CellType::PARKING, game, 0);
+	game.map.getEditCell(16, 6)->setType(CellType::PARKING, game, 0);
+	game.map.getEditCell(16, 13)->setType(CellType::PARKING, game, 0);
 	game.map.getEditCell(13, 17)->setType(CellType::PARKING, game, 0);
 	game.map.getEditCell(6, 6)->setType(CellType::PARKING, game, 0);
 	game.map.getEditCell(6, 13)->setType(CellType::PARKING, game, 0);
@@ -62,11 +62,11 @@ def(test) {
 
 	game.map.getEditCell(6, 18)->setType(CellType::DIRECTION, game,
 		direction::setSide(0, 2, 2));
-	game.map.getEditCell(13, 1)->setType(CellType::DIRECTION, game,
+	game.map.getEditCell(16, 1)->setType(CellType::DIRECTION, game,
 		direction::setSide(0, 0, 2));
 	game.map.getEditCell(6, 1)->setType(CellType::DIRECTION, game,
 		direction::setSide(0, 1, 2));
-	game.map.getEditCell(13, 18)->setType(CellType::DIRECTION, game,
+	game.map.getEditCell(16, 18)->setType(CellType::DIRECTION, game,
 		direction::setSide(0, 3, 2));
 
 
@@ -101,7 +101,7 @@ def(test) {
 
 	auto cashierJob = new CashierJob{};
 	auto grocery = Building::create_grocery(cashierJob, playerId);
-	game.map.addBuilding(2, 1, grocery, game);
+	game.map.addBuilding(1, 9, grocery, game);
 	grocery->grocery.stock += 1000.0f;
 
 	auto agricultureJob = new AgricultorJob{0.5f, 0.4f};

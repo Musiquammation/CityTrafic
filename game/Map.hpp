@@ -52,6 +52,7 @@ public:
 
 	void expand(int left, int top, int right, int bottom);
 	Cell* getEditCell(int x, int y);
+	Cell* getShadowEditCell(int x, int y);
 	const Cell* getCell(int x, int y) const;
 	MapSize getMapSize() const;
 

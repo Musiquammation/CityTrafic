@@ -12,6 +12,23 @@ import { ENTITY_ASK_COULDOWN } from "./ENTITY_ASK_COULDOWN";
 
 let REGION_SIZE = 1;
 
+
+function consumeAreas(reader: DataReader) {
+	const areasCount = reader.readUint32();
+	console.log(areasCount, REGION_SIZE);
+
+	for (let count = 0; count < areasCount; count++) {
+		const x0 = reader.readInt32() * REGION_SIZE;
+		const y0 = reader.readInt32() * REGION_SIZE;
+
+		const list = new Uint16Array(REGION_SIZE * REGION_SIZE);
+		for (let i = 0; i < REGION_SIZE * REGION_SIZE; i++)
+			list[i] = reader.readUint16();
+
+		postWorker('setArea', [x0, y0, REGION_SIZE, REGION_SIZE, list], [list.buffer]);
+	}
+}
+
 function net_joinCreated(reader: DataReader) {
 	reader.skip(3);
 	REGION_SIZE = reader.readUint32();
@@ -41,18 +58,7 @@ function net_joinAlive(reader: DataReader) {
 
 function net_areas(reader: DataReader) {
 	reader.skip(3);
-	const areasCount = reader.readUint32();
-
-	for (let count = 0; count < areasCount; count++) {
-		const x0 = reader.readInt32() * REGION_SIZE;
-		const y0 = reader.readInt32() * REGION_SIZE;
-
-		const list = new Uint16Array(REGION_SIZE * REGION_SIZE);
-		for (let i = 0; i < REGION_SIZE * REGION_SIZE; i++)
-			list[i] = reader.readUint16();
-
-		postWorker('setArea', [x0, y0, REGION_SIZE, REGION_SIZE, list], [list.buffer]);
-	}
+	consumeAreas(reader);
 
 	// Notify game camera
 	const state = getGameHandler().getState();
@@ -171,6 +177,8 @@ async function net_getUpdate(reader: DataReader) {
 		}, couldown);
 	}
 
+	// Update map
+	consumeAreas(reader);
 }
 
 function net_panel(reader: DataReader) {

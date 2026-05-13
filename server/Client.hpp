@@ -15,6 +15,14 @@ struct Client {
 	int viewY = 0;
 	int viewW = 0;
 	int viewH = 0;
+
+	struct {
+		int rx0;
+		int ry0;
+		int rx1;
+		int ry1;
+	} bounds;
+
 	clientId_t id = 0;
 	int cellsLayerId = -1;
 	int playerId = -1;

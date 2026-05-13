@@ -229,14 +229,14 @@ bool Car::drive(Character* driver, int destX, int destY, Map& map) {
 		this->pathIsFinished = (this->x == spot.x && this->y == spot.y);
 
 		// Add parking spot
-		auto nextCell = map.getEditCell(spot.x, spot.y);
+		auto nextCell = map.getShadowEditCell(spot.x, spot.y);
 		if (nextCell && nextCell->getType() == CellType::PARKING) {
 			nextCell->data |= (1<<4); // add 'reserved' mark
 		}
 
 
 		// Free parking spot
-		auto prevCell = map.getEditCell(this->x, this->y);
+		auto prevCell = map.getShadowEditCell(this->x, this->y);
 		if (prevCell && prevCell->getType() == CellType::PARKING) {
 			prevCell->data &= ~(1<<4); // remove 'reserved' mark
 		}

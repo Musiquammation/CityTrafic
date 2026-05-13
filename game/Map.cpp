@@ -70,6 +70,7 @@ void Map::expand(int x, int y, int right, int bottom) {
 }
 
 Cell* Map::getEditCell(int x, int y) {
+	printf("edit %d %d %d\n", x, y, MAP_PRECISION);
 	#if TESTING
 	if (x < this->x || x >= this->x + this->width || y < this->y || y >= this->y + this->height) {
 		throw std::range_error{"Cell coordinates out of range"};
@@ -79,11 +80,15 @@ Cell* Map::getEditCell(int x, int y) {
 	for (auto line : this->editedCells) {
 		if (line) {
 			line->insert(Vector<int>{
-				x>>MAP_PRECISION,
-				y>>MAP_PRECISION
+				x/MAP_PRECISION,
+				y/MAP_PRECISION
 			});
 		}
 	}
+	return &this->cells[(y - this->y) * this->width + (x - this->x)];
+}
+
+Cell * Map::getShadowEditCell(int x, int y) {
 	return &this->cells[(y - this->y) * this->width + (x - this->x)];
 }
 
@@ -304,10 +309,11 @@ bool Map::checkBounds(int x, int y, int width, int height) const {
 void Map::copyCells(Cell* dst, int x, int y, int w, int h) const {
 	for (int i  = 0; i < h; i++) {
 		std::memcpy(
-			dst + i * w,
+			dst,
 			this->cells + (y + i - this->y) * this->width + (x - this->x),
 			sizeof(Cell) * w
 		);
+		dst += w;
 	}
 }
 

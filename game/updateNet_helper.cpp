@@ -1,5 +1,7 @@
 #include "updateNet_helper.hpp"
 
+#include <set>
+
 #include "Game.hpp"
 #include "CarHandler.hpp"
 #include "Car.hpp"
@@ -8,16 +10,24 @@
 
 #include <stdint.h>
 
+#include "DebugLogger.hpp"
+
+static DebugLogger print{"net_helper", true};
+
 
 #define push64(val) {*(uint64_t*)ptr = (val); ptr += 2;}
-#define push(val) {*ptr++ = val;}
+#define push(val) {*ptr++ = (uint32_t) val;}
 
 uint32_t* updateNet_helper_write(
 	Game& game,
 	int x, int y, int w, int h,
 	uint8_t clientRequestId,
 	int money,
-	bool updateClientJobs
+	bool updateClientJobs,
+	int cellsLayerId,
+	std::set<uint64_t>& visitedPoints,
+	int mapPrecision,
+	int rx0, int ry0, int rx1, int ry1
 ) {
 	float fx0 = (float)x;
 	float fy0 = (float)y;
@@ -61,23 +71,57 @@ uint32_t* updateNet_helper_write(
 		jobSize = 0;
 	}
 
-	// 64bits alignement
+
+	// Count missed regions
+	struct Region {
+		uint64_t key;
+		int32_t rx, ry;
+	};
+
+	std::vector<Region> missedInView;
+	auto& editedCells = *(game.map.getEditLayer(cellsLayerId));
+
+	for (auto it = editedCells.begin(); it != editedCells.end(); ) {
+		const auto& i = *it;
+
+		if (i.x >= rx0 && i.y >= ry0 && i.x <= rx1 && i.y <= ry1) {
+			uint64_t key = (uint64_t(i.x) << 32) | uint64_t(i.y);
+
+			if (visitedPoints.contains(key)) {
+				missedInView.push_back({key, i.x, i.y});
+
+				it = editedCells.erase(it);
+				continue;
+			}
+		}
+
+		++it;
+	}
+
+
+
+	// 64bits alignment
 	int alignCars = (carsCount % 2 == 1) ? 1:0;
 
 	uint32_t fullSize = sizeof(uint32_t) * (
 		+ 1 // full size
 		+ 1 // money
 		+ 1 // jobSize
-		+ jobSize
+		+ (uint32_t)jobSize
 		+ 2 // date
 		+ 1 // cars count
 		+ carsCount*5 // cars
-		+ alignCars
+		+ (uint32_t)alignCars
 		+ 1 // character count
 		+ charactersCount*4 // characters
+		+ 1 // map length
+		+ (uint32_t)((int)missedInView.size() * (
+			4+4+ // x, y
+			mapPrecision*mapPrecision/2 // data
+		)) // map
 	);
 
-	uint32_t* const buffer = (uint32_t*)malloc(
+	auto const buffer = (uint32_t*)malloc(
 		fullSize +
 		sizeof(uint32_t)
 	);
@@ -141,6 +185,27 @@ uint32_t* updateNet_helper_write(
 			push(*(uint32_t*)&character->x);
 			push(*(uint32_t*)&character->y);
 		}
+	}
+
+
+	// Send updates
+	if (!missedInView.empty()) {print("send %ld\n", missedInView.size());}
+	push(missedInView.size());
+	for (auto r: missedInView) {
+		push(r.rx);
+		push(r.ry);
+		print("cpy %d %d [%d]\n", r.rx, r.ry, mapPrecision);
+
+		game.map.copyCells(
+			(Cell*)ptr,
+			r.rx * mapPrecision,
+			r.ry * mapPrecision,
+			mapPrecision,
+			mapPrecision
+		);
+
+		// move
+		ptr += mapPrecision*mapPrecision/2;
 	}
 
 

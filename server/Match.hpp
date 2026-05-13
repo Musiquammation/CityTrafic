@@ -23,7 +23,6 @@ public:
 	int mapY = 0;
 	int mapW = 32;
 	int mapH = 32;
-	std::set<uint64_t> visitedPoints;
 
 	int pushClient(Client* client);
 	bool popClient(Client* client);
