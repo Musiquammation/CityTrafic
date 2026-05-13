@@ -1,26 +1,24 @@
 import { getGameHandler } from "../gameHandler";
 import { ImageLoader } from "../handler/ImageLoader";
-import { sendCommand } from "../net/sendCommand";
-import { COMMAND_CODES } from "../shared/CommandCode";
 import { handlist } from "./hands/handlist";
 import { HandButton, HandList, HandObject } from "./hands/handtypes";
 import { PlayState } from "./PlayState";
 
 
 
-
 function setElementAsBackground(
-	element: HTMLCanvasElement | HTMLImageElement,
-	div: HTMLElement
+	texture: HTMLCanvasElement | HTMLImageElement,
+	div: HTMLElement,
+	rotated = false
 ) {
-	if (element instanceof HTMLCanvasElement) {
-		element.toBlob(blob => {
-			if (!blob) return;
-			const url = URL.createObjectURL(blob);
-			div.style.backgroundImage = `url(${url})`;
-		});
+	if (texture instanceof HTMLCanvasElement) {
+		div.style.backgroundImage = `url(${texture.toDataURL()})`;
 	} else {
-		div.style.backgroundImage = `url(${element.src})`;
+		div.style.backgroundImage = `url(${texture.src})`;
+	}
+
+	if (rotated) {
+		div.classList.add("rotatedIcon");
 	}
 }
 
@@ -54,7 +52,7 @@ export class HandPanel {
 
 
 
-		const pushButton = (btn: HandButton) => {
+		const pushButton = (btn: HandButton, rotated = false) => {
 			const parentDiv = document.createElement("div");
 			const div = document.createElement("div");
 			const idx = this.list.length;
@@ -70,9 +68,10 @@ export class HandPanel {
 			// Load texture
 			const icons = btn.getIcons();
 			loader.load(icons.list).then(() => {
-				setElementAsBackground(loader.get(icons.first), div);
+				const img = loader.get(icons.first);
+				setElementAsBackground(img, div, rotated);
 			});
-		}	
+		}
 
 		const pushPanel = (list: HandList) => {
 			const parentDiv = document.createElement("div");
@@ -91,7 +90,7 @@ export class HandPanel {
 		pushButton(handlist.road);
 		pushButton(handlist.parking);
 		pushButton(handlist.turn);
-		pushButton(handlist.placeHome);
+		pushButton(handlist.placeHome, true);
 
 
 

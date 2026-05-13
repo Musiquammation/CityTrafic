@@ -51,7 +51,6 @@ canvas {
 
 
 
-
 /* hand panel */
 #handPanel {
 	--cellSize: 48px;
@@ -96,6 +95,8 @@ canvas {
 	height: 100%;
 	border-radius: 4px;
 
+	--rotation: -90deg;
+
 	background-color: black;
 	background-repeat: no-repeat;
 	background-size: cover;
@@ -103,7 +104,7 @@ canvas {
 
 	image-rendering: pixelated;
 
-	transform: translateZ(0) rotate(-90deg) scale(1);
+	transform: translateZ(0) rotate(var(--rotation)) scale(1);
 	transform-origin: center;
 
 	transition: transform 0.25s ease;
@@ -111,7 +112,11 @@ canvas {
 }
 
 #handPanel > div.selected > div {
-	transform: translateZ(0) rotate(-90deg) scale(0.83);
+	transform: translateZ(0) rotate(var(--rotation)) scale(0.83);
+}
+
+#handPanel > div > div.rotatedIcon {
+	--rotation: 0deg;
 }
 
 

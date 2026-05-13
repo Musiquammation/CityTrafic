@@ -77,7 +77,6 @@ export class ImageLoader {
 				const img = await new Promise<HTMLImageElement>((resolve, reject) => {
 					const i = new Image();
 					i.onload = () => {
-						URL.revokeObjectURL(objectUrl); // Nettoyage mémoire
 						resolve(i);
 					};
 					i.onerror = e => reject(e);
@@ -118,7 +117,6 @@ export class ImageLoader {
 				const img = await new Promise<HTMLImageElement>((resolve, reject) => {
 					const i = new Image();
 					i.onload = () => {
-						URL.revokeObjectURL(objectUrl);
 						resolve(i);
 					};
 					i.onerror = e => reject(e);
