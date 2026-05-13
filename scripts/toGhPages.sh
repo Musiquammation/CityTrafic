@@ -25,7 +25,7 @@ git switch gh-pages
 # Copies
 
 cp draft/tmp/index.css index.css
-cp -r draft/tmp/assets public/assets
+cp -r draft/tmp/assets public
 cp -r draft/tmp/api.js public/wasm/api.js
 cp -r draft/tmp/api.wasm public/wasm/api.wasm
 cp -r draft/tmp/bundle.js public/bundle.js
