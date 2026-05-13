@@ -10,3 +10,4 @@ ts-server
 venv
 .idea
 saves
+.clangd
