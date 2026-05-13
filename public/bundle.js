@@ -328,7 +328,6 @@ class ImageLoader {
         const img = await new Promise((resolve, reject) => {
           const i = new Image();
           i.onload = () => {
-            URL.revokeObjectURL(objectUrl);
             resolve(i);
           };
           i.onerror = (e) => reject(e);
@@ -356,7 +355,6 @@ class ImageLoader {
         const img = await new Promise((resolve, reject) => {
           const i = new Image();
           i.onload = () => {
-            URL.revokeObjectURL(objectUrl);
             resolve(i);
           };
           i.onerror = (e) => reject(e);
@@ -919,6 +917,10 @@ function drawBuilding(type, ctx, loader, size) {
       );
       return false;
     }
+    case 5: {
+      ctx.drawImage(loader.get("warehouse"), 0, 0, 8, 8);
+      return false;
+    }
   }
   return false;
 }
@@ -986,6 +988,7 @@ var COMMAND_CODES = /* @__PURE__ */ ((COMMAND_CODES2) => {
   COMMAND_CODES2[COMMAND_CODES2["DIRECTION"] = 4] = "DIRECTION";
   COMMAND_CODES2[COMMAND_CODES2["PLACE_HOME"] = 5] = "PLACE_HOME";
   COMMAND_CODES2[COMMAND_CODES2["PLACE_GROSSERY"] = 6] = "PLACE_GROSSERY";
+  COMMAND_CODES2[COMMAND_CODES2["PLACE_TRUCK"] = 7] = "PLACE_TRUCK";
   return COMMAND_CODES2;
 })(COMMAND_CODES || {});
 const NO_PARENT = new Error("Missing parent element");
@@ -1181,7 +1184,8 @@ var PANEL_IDS = /* @__PURE__ */ ((PANEL_IDS2) => {
   PANEL_IDS2[PANEL_IDS2["BUILDING_PLANTATION"] = 2] = "BUILDING_PLANTATION";
   PANEL_IDS2[PANEL_IDS2["BUILDING_GROCERY"] = 3] = "BUILDING_GROCERY";
   PANEL_IDS2[PANEL_IDS2["BUILDING_CONSTRUCTION"] = 4] = "BUILDING_CONSTRUCTION";
-  PANEL_IDS2[PANEL_IDS2["JOB_OIL_FIELD"] = 5] = "JOB_OIL_FIELD";
+  PANEL_IDS2[PANEL_IDS2["BUILDING_WAREHOUSE"] = 5] = "BUILDING_WAREHOUSE";
+  PANEL_IDS2[PANEL_IDS2["JOB_OIL_FIELD"] = 6] = "JOB_OIL_FIELD";
   return PANEL_IDS2;
 })(PANEL_IDS || {});
 const PANEL_MAP = /* @__PURE__ */ new Map();
@@ -1209,7 +1213,7 @@ PANEL_MAP.set(PANEL_IDS.BUILDING_OIL_FIELD, {
 PANEL_MAP.set(PANEL_IDS.BUILDING_PLANTATION, {
   title: "Plantation",
   fields: [
-    new NamedUnit("Test", units.f32)
+    new NamedUnit("Seeds", units.f32)
   ]
 });
 PANEL_MAP.set(PANEL_IDS.BUILDING_GROCERY, {
@@ -1228,6 +1232,13 @@ PANEL_MAP.set(PANEL_IDS.BUILDING_CONSTRUCTION, {
     new NamedUnit("Type", units.i32),
     new NamedUnit("Completion", units.i32),
     new NamedUnit("Total to reach", units.i32),
+    new NamedUnit("Current employees", units.i32),
+    new NamedUnit("Goal employees", units.mut_i32)
+  ]
+});
+PANEL_MAP.set(PANEL_IDS.BUILDING_WAREHOUSE, {
+  title: "Warehouse",
+  fields: [
     new NamedUnit("Current employees", units.i32),
     new NamedUnit("Goal employees", units.mut_i32)
   ]
@@ -1269,6 +1280,9 @@ async function runPanel(args) {
   const reader = await wait(requestId);
   const panelId = reader.readUint32();
   const descriptor = PANEL_MAP.get(panelId);
+  if (!descriptor) {
+    throw new Error("Descriptor not found");
+  }
   const element = document.createElement("div");
   for (let field of descriptor.fields) {
     const value = field.unit.read(reader);
@@ -1604,14 +1618,14 @@ const placeHome = new HandButton(
   // enable
   (play) => {
     play.handData = {};
-    ask(play, "money", "Total money given to employees (to motivate citizen to get this job)");
+    ask(play, "money", "Total money given to workers (to motivate them to choose this job)");
     ask(
       play,
       "capacity",
       "Capacity (increase construction time)"
     );
     ask(play, "rent", "Rent");
-    return "placeHome";
+    return "home";
   },
   // diseable
   (play) => {
@@ -1637,6 +1651,84 @@ const placeHome = new HandButton(
       writer.writeInt32(data.money);
       writer.writeInt32(data.capacity);
       writer.writeInt32(data.rent);
+    });
+  },
+  // mouseMove
+  (prevX, prevY, x, y, btn, play) => {
+  }
+);
+const placeGrocery = new HandButton(
+  {
+    list: { grocery: "assets/grocery.png" },
+    first: "grocery"
+  },
+  // enable
+  (play) => {
+    play.handData = {};
+    ask(play, "money", "Total money given to workers (to motivate them to choose this job)");
+    return "grocery";
+  },
+  // diseable
+  (play) => {
+    play.handData = null;
+  },
+  // mouseUp
+  (x, y, btn, play) => {
+  },
+  // mouseDown
+  (x, y, btn, play) => {
+    x = Math.floor(x);
+    y = Math.floor(y);
+    const current = play.getCell(x, y);
+    if (btn === HandPanel.RIGHT_BTN && current !== null) {
+      applyDefaultRightClick(x, y, current);
+    }
+    const data = play.handData;
+    if (data === null)
+      return;
+    sendCommand(COMMAND_CODES.PLACE_GROSSERY, (writer) => {
+      writer.writeUint32(x);
+      writer.writeUint32(y);
+      writer.writeInt32(data.money);
+    });
+  },
+  // mouseMove
+  (prevX, prevY, x, y, btn, play) => {
+  }
+);
+new HandButton(
+  {
+    list: { truck: "assets/truck.png" },
+    first: "truck"
+  },
+  // enable
+  (play) => {
+    play.handData = {};
+    ask(play, "money", "Total money given to workers (to motivate them to choose this job)");
+    return "truck";
+  },
+  // diseable
+  (play) => {
+    play.handData = null;
+  },
+  // mouseUp
+  (x, y, btn, play) => {
+  },
+  // mouseDown
+  (x, y, btn, play) => {
+    x = Math.floor(x);
+    y = Math.floor(y);
+    const current = play.getCell(x, y);
+    if (btn === HandPanel.RIGHT_BTN && current !== null) {
+      applyDefaultRightClick(x, y, current);
+    }
+    const data = play.handData;
+    if (data === null)
+      return;
+    sendCommand(COMMAND_CODES.PLACE_TRUCK, (writer) => {
+      writer.writeUint32(x);
+      writer.writeUint32(y);
+      writer.writeInt32(data.money);
     });
   },
   // mouseMove
@@ -1736,17 +1828,17 @@ const handlist = {
       applyTurn(x, y, btn, play, false);
     }
   ),
-  placeHome
+  placeHome,
+  placeGrocery
 };
-function setElementAsBackground(element, div) {
-  if (element instanceof HTMLCanvasElement) {
-    element.toBlob((blob) => {
-      if (!blob) return;
-      const url = URL.createObjectURL(blob);
-      div.style.backgroundImage = `url(${url})`;
-    });
+function setElementAsBackground(texture, div, rotated = false) {
+  if (texture instanceof HTMLCanvasElement) {
+    div.style.backgroundImage = `url(${texture.toDataURL()})`;
   } else {
-    div.style.backgroundImage = `url(${element.src})`;
+    div.style.backgroundImage = `url(${texture.src})`;
+  }
+  if (rotated) {
+    div.classList.add("rotatedIcon");
   }
 }
 const _HandPanel = class _HandPanel {
@@ -1764,7 +1856,7 @@ const _HandPanel = class _HandPanel {
       throw new Error("HandPanel already initialized");
     }
     this.initialized = 1;
-    const pushButton = (btn) => {
+    const pushButton = (btn, rotated = false) => {
       const parentDiv = document.createElement("div");
       const div = document.createElement("div");
       const idx = this.list.length;
@@ -1776,14 +1868,16 @@ const _HandPanel = class _HandPanel {
       this.div.appendChild(parentDiv);
       const icons = btn.getIcons();
       loader.load(icons.list).then(() => {
-        setElementAsBackground(loader.get(icons.first), div);
+        const img = loader.get(icons.first);
+        setElementAsBackground(img, div, rotated);
       });
     };
     pushButton(handlist.erase);
     pushButton(handlist.road);
     pushButton(handlist.parking);
     pushButton(handlist.turn);
-    pushButton(handlist.placeHome);
+    pushButton(handlist.placeHome, true);
+    pushButton(handlist.placeGrocery, true);
     this.select(0, loader);
     this.initialized = 2;
   }
@@ -1802,6 +1896,7 @@ const _HandPanel = class _HandPanel {
     this.list[this.selected].diseable(play);
     const icon = this.list[idx].enable(play);
     this.selected = idx;
+    console.log(icon);
     if (loader && icon) {
       setElementAsBackground(
         loader.get(icon),
@@ -2489,6 +2584,18 @@ class PlayState extends GameState {
 }
 const ENTITY_ASK_COULDOWN = 20;
 let REGION_SIZE = 1;
+function consumeAreas(reader) {
+  const areasCount = reader.readUint32();
+  console.log(areasCount, REGION_SIZE);
+  for (let count = 0; count < areasCount; count++) {
+    const x0 = reader.readInt32() * REGION_SIZE;
+    const y0 = reader.readInt32() * REGION_SIZE;
+    const list = new Uint16Array(REGION_SIZE * REGION_SIZE);
+    for (let i = 0; i < REGION_SIZE * REGION_SIZE; i++)
+      list[i] = reader.readUint16();
+    postWorker("setArea", [x0, y0, REGION_SIZE, REGION_SIZE, list], [list.buffer]);
+  }
+}
 function net_joinCreated(reader) {
   reader.skip(3);
   REGION_SIZE = reader.readUint32();
@@ -2513,15 +2620,7 @@ function net_joinAlive(reader) {
 }
 function net_areas(reader) {
   reader.skip(3);
-  const areasCount = reader.readUint32();
-  for (let count = 0; count < areasCount; count++) {
-    const x0 = reader.readInt32() * REGION_SIZE;
-    const y0 = reader.readInt32() * REGION_SIZE;
-    const list = new Uint16Array(REGION_SIZE * REGION_SIZE);
-    for (let i = 0; i < REGION_SIZE * REGION_SIZE; i++)
-      list[i] = reader.readUint16();
-    postWorker("setArea", [x0, y0, REGION_SIZE, REGION_SIZE, list], [list.buffer]);
-  }
+  consumeAreas(reader);
   const state = getGameHandler().getState();
   if (state instanceof PlayState) {
     state.resetCameraUpdates();
@@ -2607,6 +2706,7 @@ async function net_getUpdate(reader) {
       state.sendAskEntities();
     }, couldown);
   }
+  consumeAreas(reader);
 }
 function net_panel(reader) {
   reader.skip(1);

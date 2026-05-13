@@ -1,0 +1,336 @@
+body, html {
+	margin: 0;
+	padding: 0;
+	overflow: hidden;
+	width: 100%;
+	height: 100%;
+}
+
+canvas {
+	display: block;
+	background: black;
+}
+
+
+#fps {
+	display: block;
+	position: absolute;
+	left: 0px;
+	bottom: 0px;
+	color: green;
+	background-color: #000a;
+	font-family: 'Courier New', Courier, monospace;
+	z-index: 999;
+}
+
+.view {
+	position: absolute;
+	left: 0px;
+	top: 0px;
+	width: 100vw;
+	height: 100vh;
+}
+
+
+
+/* temporary */
+#home-createSession {
+	font-size: 400px;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* hand panel */
+#handPanel {
+	--cellSize: 48px;
+
+	position: fixed;
+	top: 10px;
+	left: 50%;
+	transform: translateX(-50%);
+	
+	width: 500px;
+	max-width: 50vw;
+	height: var(--cellSize);
+
+	display: flex;
+	align-items: center;
+	gap: 4px;
+
+	padding: 2px;
+
+	overflow-x: auto;
+	overflow-y: hidden;
+
+	background: #ddd;
+	border-radius: 4px;
+}
+
+#handPanel > div {
+	width: var(--cellSize);
+	height: var(--cellSize);
+	border-radius: 4px;
+	background-color: gold;
+	flex: 0 0 auto;
+	cursor: pointer;
+
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+#handPanel > div > div {
+	width: 100%;
+	height: 100%;
+	border-radius: 4px;
+
+	--rotation: -90deg;
+
+	background-color: black;
+	background-repeat: no-repeat;
+	background-size: cover;
+	background-position: center;
+
+	image-rendering: pixelated;
+
+	transform: translateZ(0) rotate(var(--rotation)) scale(1);
+	transform-origin: center;
+
+	transition: transform 0.25s ease;
+	will-change: transform;
+}
+
+#handPanel > div.selected > div {
+	transform: translateZ(0) rotate(var(--rotation)) scale(0.83);
+}
+
+#handPanel > div > div.rotatedIcon {
+	--rotation: 0deg;
+}
+
+
+
+
+
+
+
+
+
+#turnSelector {
+	position: fixed;
+	inset: 0;
+	background: rgba(0, 0, 0, 0.45);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	z-index: 1000;
+}
+
+#turnSelector.hidden {
+	display: none;
+}
+
+.ts-panel {
+	background: #fff;
+	border-radius: 10px;
+	padding: 20px 24px;
+	min-width: 320px;
+	display: flex;
+	flex-direction: column;
+	gap: 16px;
+	box-shadow: 0 4px 24px rgba(0,0,0,0.18);
+}
+
+.ts-row {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+}
+
+.ts-row label {
+	font-size: 13px;
+	font-weight: 600;
+	color: #444;
+}
+
+.ts-row select {
+	padding: 6px 8px;
+	border-radius: 6px;
+	border: 1px solid #ccc;
+	font-size: 14px;
+}
+
+.ts-checkboxes {
+	display: flex;
+	gap: 12px;
+	padding-left: 4px;
+}
+
+.ts-checkboxes label {
+	display: flex;
+	align-items: center;
+	gap: 4px;
+	font-size: 13px;
+	font-weight: 400;
+	color: #333;
+}
+
+.ts-actions {
+	display: flex;
+	justify-content: flex-end;
+	gap: 10px;
+	margin-top: 4px;
+}
+
+.ts-actions button {
+	padding: 7px 18px;
+	border-radius: 6px;
+	border: 1px solid #ccc;
+	background: #f5f5f5;
+	cursor: pointer;
+	font-size: 14px;
+}
+
+.ts-actions button.ts-ok {
+	background: #2563eb;
+	color: #fff;
+	border-color: #2563eb;
+}
+
+
+
+
+
+
+
+
+
+.dataPanel {
+	position: fixed;
+	inset: 0;
+	background: rgba(0, 0, 0, 0.45);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	z-index: 1000;
+}
+
+.dataPanel > div {
+	background: #fff;
+	border-radius: 10px;
+	padding: 20px 24px;
+	min-width: 320px;
+	display: flex;
+	flex-direction: column;
+	gap: 16px;
+	box-shadow: 0 4px 24px rgba(0,0,0,0.18);
+}
+
+.dataPanel > div > div {
+	display: flex;
+	flex-direction: column;
+	gap: 16px;
+}
+
+.dataPanel > div > div > div {
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+}
+
+.dataPanel > div > div > div > div {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	align-items: center;
+	gap: 10px;
+}
+
+.dataPanel span {
+	text-align: right;
+}
+
+/* Done + Cancel */
+.dataPanel > div > div:nth-child(3),
+.dataPanel > div > div:nth-child(4) {
+	padding: 10px 16px;
+	border-radius: 6px;
+	text-align: center;
+	cursor: pointer;
+	user-select: none;
+}
+
+/* Done */
+.dataPanel > div > div:nth-child(3) {
+	background: #4CAF50;
+	color: white;
+}
+
+/* Cancel */
+.dataPanel > div > div:nth-child(4) {
+	background: #f44336;
+	color: white;
+}
+
+/* hover */
+.dataPanel > div > div:nth-child(3):hover,
+.dataPanel > div > div:nth-child(4):hover {
+	filter: brightness(0.9);
+}
+
+
+
+
+
+
+
+
+
+.sideGamePanel {
+	position: absolute;
+	top: 0;
+	color: white;
+	padding: 10px;
+	font-size: 3vmin;
+	font-family: 'Courier New', Courier, monospace;
+}
+
+.sideGamePanel > * {
+	background-color: black;
+	display: block;
+	width: fit-content;
+}
+
+#gameCalendar {
+	left: 0px;
+}
+
+#gameMoney {
+	right: 0px;
+	text-align: right;
+}
+
+
+
+
+
+
+
+
+.hidden {
+	display: none !important; 
+}
+
+
+
+
