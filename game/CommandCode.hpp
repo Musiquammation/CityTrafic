@@ -10,4 +10,5 @@ enum class CommandCode {
 	DIRECTION,
 	PLACE_HOME,
 	PLACE_GROSSERY,
+	PLACE_TRUCK,
 };

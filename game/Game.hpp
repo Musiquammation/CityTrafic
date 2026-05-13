@@ -9,7 +9,6 @@
 
 #include "declarations.hpp"
 
-#include <set>
 
 
 class Game {
@@ -45,6 +44,7 @@ public:
 	friend int main();
 
 
+	void start();
 	void frame();
 
 	Cell* getEditCell(int x, int y);

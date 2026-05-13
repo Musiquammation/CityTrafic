@@ -118,7 +118,7 @@ void Map::resetCarMarks() const {
 uint32_t* Map::collectEditedCells(
 	int x, int y, int width, int height, int layer
 ) {
-	#if MAP_PRECISION != 0
+	#if MAP_PRECISION != 1
 		throw std::runtime_error{"collectedEditedCells compiled with map precision"};
 	#endif
 

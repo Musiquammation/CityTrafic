@@ -16,20 +16,7 @@ declare global {
 window.switchToTestState = false;
 
 
-function setElementAsBackground(
-	element: HTMLCanvasElement | HTMLImageElement,
-	div: HTMLElement
-) {
-	if (element instanceof HTMLCanvasElement) {
-		element.toBlob(blob => {
-			if (!blob) return;
-			const url = URL.createObjectURL(blob);
-			div.style.backgroundImage = `url(${url})`;
-		});
-	} else {
-		div.style.backgroundImage = `url(${element.src})`;
-	}
-}
+
 
 
 export class GameHandler {

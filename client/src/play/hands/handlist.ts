@@ -182,7 +182,7 @@ const placeHome = new HandButton(
 		
 		ask(play, 'rent', "Rent");
 
-		return 'placeHome';
+		return 'home';
 	},
 
 	// diseable
@@ -216,6 +216,112 @@ const placeHome = new HandButton(
 			writer.writeInt32(data.money);
 			writer.writeInt32(data.capacity);
 			writer.writeInt32(data.rent);
+		});
+	},
+
+	// mouseMove
+	(prevX, prevY, x, y, btn, play) => {
+	},
+);
+
+const placeGrocery = new HandButton(
+	{
+		list: {grocery: "assets/grocery.png"},
+		first: 'grocery'
+	},
+
+	// enable
+	play => {
+		play.handData = {};
+		
+		ask(play, 'money', "Total money given to workers " +
+				"(to motivate them to choose this job)");
+		
+		return 'grocery';
+	},
+
+	// diseable
+	play => {
+		play.handData = null;
+	},
+
+	// mouseUp
+	(x, y, btn, play) => {
+		
+
+	},
+
+	// mouseDown
+	(x, y, btn, play) => {
+		x = Math.floor(x);
+		y = Math.floor(y);
+
+		const current = play.getCell(x, y);
+		if (btn === HandPanel.RIGHT_BTN && current !== null) {
+			applyDefaultRightClick(x, y, current, play);
+		}
+		
+		const data = play.handData;
+		if (data === null)
+			return;
+
+		sendCommand(COMMAND_CODES.PLACE_GROSSERY, writer => {
+			writer.writeUint32(x);
+			writer.writeUint32(y);
+			writer.writeInt32(data.money);
+		});
+	},
+
+	// mouseMove
+	(prevX, prevY, x, y, btn, play) => {
+	},
+);
+
+const placeTruck = new HandButton(
+	{
+		list: {truck: "assets/truck.png"},
+		first: 'truck'
+	},
+
+	// enable
+	play => {
+		play.handData = {};
+		
+		ask(play, 'money', "Total money given to workers " +
+				"(to motivate them to choose this job)");
+		
+		return 'truck';
+	},
+
+	// diseable
+	play => {
+		play.handData = null;
+	},
+
+	// mouseUp
+	(x, y, btn, play) => {
+		
+
+	},
+
+	// mouseDown
+	(x, y, btn, play) => {
+		x = Math.floor(x);
+		y = Math.floor(y);
+
+		const current = play.getCell(x, y);
+		if (btn === HandPanel.RIGHT_BTN && current !== null) {
+			applyDefaultRightClick(x, y, current, play);
+		}
+		
+		const data = play.handData;
+		if (data === null)
+			return;
+
+		sendCommand(COMMAND_CODES.PLACE_TRUCK, writer => {
+			writer.writeUint32(x);
+			writer.writeUint32(y);
+			writer.writeInt32(data.money);
 		});
 	},
 
@@ -339,6 +445,10 @@ export const handlist = {
 	),
 
 
-	placeHome
+	placeHome,
+
+	placeGrocery,
+
+	placeTruck
 
 }

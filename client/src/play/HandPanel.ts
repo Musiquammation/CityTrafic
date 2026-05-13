@@ -91,6 +91,7 @@ export class HandPanel {
 		pushButton(handlist.parking);
 		pushButton(handlist.turn);
 		pushButton(handlist.placeHome, true);
+		pushButton(handlist.placeGrocery, true);
 
 
 
@@ -124,6 +125,7 @@ export class HandPanel {
 		this.selected = idx;
 
 
+		console.log(icon);
 		if (loader && icon) {
 			setElementAsBackground(
 				loader.get(icon),

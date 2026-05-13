@@ -104,9 +104,9 @@ def(test) {
 	// game.map.addBuilding(1, 9, grocery, game);
 	// grocery->grocery.stock += 1000.0f;
 
-	// auto agricultureJob = new AgricultorJob{0.5f, 0.4f};
-	// agricultureJob->employeesCounters.agricultors.goal = 1;
-	// game.map.addBuilding(8, 20, Building::create_plantation(agricultureJob, playerId, 10), game);
+	auto agricultureJob = new AgricultorJob{0.5f, 0.4f};
+	agricultureJob->employeesCounters.agricultors.goal = 1;
+	game.map.addBuilding(8, 20, Building::create_plantation(agricultureJob, playerId, 10), game);
 
 	// auto truckJob = new TruckJob{};
 	// truckJob->salaryPerHour = 15.0f;
@@ -114,6 +114,10 @@ def(test) {
 	// game.map.addBuilding(19, 10, Building::create_warehouse(truckJob, playerId), game);
 	//
 
+
+
+	for (auto& player: game.players)
+		player.money += 5000;
 
 	return ptr;
 }
@@ -200,6 +204,58 @@ def(placeHome) {
 }
 
 def(placeGrossery) {
+	int x = take(int32_t);
+	int y = take(int32_t);
+	int constructionMoney = take(int32_t);
+	int playerId = game.getPlayerId(player);
+
+	auto job = new CashierJob{};
+
+	auto building = Building::create_grocery(job, playerId);
+	auto constructionJob = new ConstructionJob{
+		(float)constructionMoney / (float)building->getConstructionCost()
+	};
+	auto construction = Building::create_construction(
+		constructionJob,
+		building,
+		playerId
+	);
+
+	if (!game.map.addBuilding(x, y, construction, game)) {
+		delete construction;
+		delete building;
+		delete constructionJob;
+	}
+
+
+	return ptr;
+}
+
+def(placeTruck) {
+	int x = take(int32_t);
+	int y = take(int32_t);
+	int constructionMoney = take(int32_t);
+	int playerId = game.getPlayerId(player);
+
+	auto job = new TruckJob{};
+
+	auto building = Building::create_warehouse(job, playerId);
+	auto constructionJob = new ConstructionJob{
+		(float)constructionMoney / (float)building->getConstructionCost()
+	};
+	auto construction = Building::create_construction(
+		constructionJob,
+		building,
+		playerId
+	);
+
+	if (!game.map.addBuilding(x, y, construction, game)) {
+		delete construction;
+		delete building;
+		delete constructionJob;
+	}
+
+
 	return ptr;
 }
 
@@ -259,6 +315,8 @@ const void* runGameCommand(
 	case CommandCode::PLACE_GROSSERY:
 		return GameCommand::placeGrossery(game, ptr, player);
 
+	case CommandCode::PLACE_TRUCK:
+		return GameCommand::placeTruck(game, ptr, player);
 	}
 
 	return ptr;

@@ -12,7 +12,9 @@ Match::Match(Pool* pool, hash_t hash):
     hash(hash),
     pool(pool),
     nextAutoSave(AUTOSAVE_COULDOWN)
-{}
+{
+    this->game->start();
+}
 
 Match::~Match() {
     delete this->game;

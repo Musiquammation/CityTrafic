@@ -54,7 +54,6 @@ self.onmessage = async event => {
 		}));
 	}
 
-	// @ts-ignore
 	const result = (api as any)[method](...args);
 
 	api.freeBuffer();

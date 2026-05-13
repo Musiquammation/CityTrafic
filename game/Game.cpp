@@ -29,6 +29,10 @@ int Game::searchPlayer(hash_t key) {
 }
 
 
+void Game::start() {
+	
+}
+
 void Game::frame() {
 	this->test();
 
