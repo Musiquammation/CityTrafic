@@ -3,7 +3,6 @@
 #include "declarations.hpp"
 #include "clientId_t.hpp"
 
-#include <set>
 
 namespace uWS {
 	template<bool A, bool B, typename C>
@@ -29,7 +28,6 @@ struct Client {
 	uint64_t updateJobsDate = 0;
 	Match* match = nullptr;
 
-	std::set<uint64_t> visitedRegions;
 	uWS::WebSocket<false, true, Client>* ws = nullptr;
 
 	void send(void* data, int size);

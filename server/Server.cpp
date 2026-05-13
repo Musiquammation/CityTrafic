@@ -152,6 +152,7 @@ uint8_t* Server::listen(Client* client, const uint8_t* ptr) {
 	int32_t h = take(int32_t);
 
 
+	auto pb = client->bounds;
 
 	// Compute region bounds
 	int rx0 = (int)std::floor(
@@ -182,42 +183,24 @@ uint8_t* Server::listen(Client* client, const uint8_t* ptr) {
 
 	std::vector<Region> newRegions;
 
-	/// Add new regions
+	/// Add new regions (we will not send updates)
 	for (int ry = ry0; ry <= ry1; ++ry) {
 		for (int rx = rx0; rx <= rx1; ++rx) {
+			// Region was already visible
+			if (rx >= pb.rx0 && ry >= pb.ry0 && rx <= pb.rx1 && ry <= pb.ry1)
+				continue;
+
 			uint64_t key = (uint64_t(rx) << 32) | uint32_t(ry);
-			if (!client->visitedRegions.contains(key)) {
-				newRegions.push_back({key, rx, ry});
-			}
+			newRegions.push_back({key, rx, ry});
 		}
 	}
 
 
 
-	// missed regions inside view
-	std::vector<Region> missedInView;
 	auto game = match->getGame<true>();
 
-	auto& editedCells = *(game->map.getEditLayer(client->cellsLayerId));
-	for (auto it = editedCells.begin(); it != editedCells.end(); ) {
-		const auto& i = *it;
-
-		if (i.x >= rx0 && i.y >= ry0 && i.x <= rx1 && i.y <= ry1) {
-			uint64_t key = (uint64_t(i.x) << 32) | uint64_t(i.y);
-
-			if (client->visitedRegions.contains(key)) {
-				missedInView.push_back({key, i.x, i.y});
-
-				it = editedCells.erase(it);
-				continue;
-			}
-		}
-
-		++it;
-	}
-
 	// total count
-	auto totalCount = uint32_t(newRegions.size() + missedInView.size());
+	auto totalCount = (uint32_t)newRegions.size();
 
 	uint8_t* const response = (uint8_t*)malloc(
 		+4            // final size
@@ -249,26 +232,7 @@ uint8_t* Server::listen(Client* client, const uint8_t* ptr) {
 
 		// move
 		res += MAP_PRECISION*MAP_PRECISION*2;
-
-		client->visitedRegions.insert(r.key);
 	}
-
-	// Send missed regions (and remove them from the set)
-	for (auto r: missedInView) {
-		push(int32_t, r.rx);
-		push(int32_t, r.ry);
-		game->map.copyCells(
-			(Cell*)res,
-			r.rx * MAP_PRECISION,
-			r.ry * MAP_PRECISION,
-			MAP_PRECISION,
-			MAP_PRECISION
-		);
-
-		// move
-		res += MAP_PRECISION*MAP_PRECISION*2;
-	}
-
 
 
 	// update view
@@ -324,7 +288,6 @@ uint8_t* Server::getUpdates(Client* client, const uint8_t* ptr) {
 		player->money,
 		updateClientJobs,
 		client->cellsLayerId,
-		client->visitedRegions,
 		MAP_PRECISION,
 		client->bounds.rx0,
 		client->bounds.ry0,

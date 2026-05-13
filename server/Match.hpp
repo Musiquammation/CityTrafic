@@ -6,7 +6,6 @@
 #include "GameOwner.hpp"
 
 #include <vector>
-#include <set>
 
 #include "game/calendar_t.hpp"
 

@@ -37,7 +37,6 @@ public:
 		int money,
 		bool updateClientJobs,
 		int cellsLayerId,
-		std::set<uint64_t>& visitedPoints,
 		int mapPrecision,
 		int rx0, int ry0, int rx1, int ry1
 	);

@@ -25,7 +25,6 @@ uint32_t* updateNet_helper_write(
 	int money,
 	bool updateClientJobs,
 	int cellsLayerId,
-	std::set<uint64_t>& visitedPoints,
 	int mapPrecision,
 	int rx0, int ry0, int rx1, int ry1
 ) {
@@ -75,7 +74,8 @@ uint32_t* updateNet_helper_write(
 	// Count missed regions
 	struct Region {
 		uint64_t key;
-		int32_t rx, ry;
+		int32_t rx;
+		int32_t ry;
 	};
 
 	std::vector<Region> missedInView;
@@ -87,12 +87,9 @@ uint32_t* updateNet_helper_write(
 		if (i.x >= rx0 && i.y >= ry0 && i.x <= rx1 && i.y <= ry1) {
 			uint64_t key = (uint64_t(i.x) << 32) | uint64_t(i.y);
 
-			if (visitedPoints.contains(key)) {
-				missedInView.push_back({key, i.x, i.y});
-
-				it = editedCells.erase(it);
-				continue;
-			}
+			missedInView.push_back({key, i.x, i.y});
+			it = editedCells.erase(it);
+			continue; // because we erased
 		}
 
 		++it;
