@@ -122,11 +122,9 @@ calendar_t Calendar::getFutureInstant(calendar_t base, instant_t time, const int
 
 			if (offset == 0) {
 				if (potentialIndicator > base) {
-					printf("date[direct] %ld\n", potentialIndicator);
 					return potentialIndicator;
 				}
 			} else {
-				printf("date[relatd] %ld\n", potentialIndicator);
 				return potentialIndicator;
 			}
 		}

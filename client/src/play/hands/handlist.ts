@@ -162,7 +162,6 @@ function ask(play: PlayState, label: string, text: string) {
 
 
 
-
 const placeHome = new HandButton(
 	{
 		list: {home: "assets/home.png"},
@@ -175,11 +174,12 @@ const placeHome = new HandButton(
 
 		
 		
-		ask(play, 'money',"Total money given to employees " +
-				"(to motivate citizen to get this job)");
+		ask(play, 'money', "Total money given to workers " +
+				"(to motivate them to choose this job)");
 
 		ask(play, 'capacity',
 				"Capacity (increase construction time)");
+		
 		ask(play, 'rent', "Rent");
 
 		return 'placeHome';

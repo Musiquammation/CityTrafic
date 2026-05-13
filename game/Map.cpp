@@ -12,7 +12,7 @@
 #include <unordered_map>
 
 #ifndef MAP_PRECISION
-#define MAP_PRECISION 0
+#define MAP_PRECISION 1
 #endif
 
 const Cell _outCellBuffer = {.data = 0};
@@ -70,12 +70,12 @@ void Map::expand(int x, int y, int right, int bottom) {
 }
 
 Cell* Map::getEditCell(int x, int y) {
-	printf("edit %d %d %d\n", x, y, MAP_PRECISION);
 	#if TESTING
 	if (x < this->x || x >= this->x + this->width || y < this->y || y >= this->y + this->height) {
 		throw std::range_error{"Cell coordinates out of range"};
 	}
 	#endif
+
 
 	for (auto line : this->editedCells) {
 		if (line) {
@@ -85,6 +85,7 @@ Cell* Map::getEditCell(int x, int y) {
 			});
 		}
 	}
+
 	return &this->cells[(y - this->y) * this->width + (x - this->x)];
 }
 
