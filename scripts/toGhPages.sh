@@ -13,7 +13,7 @@ mkdir -p draft/tmp
 # Copies des fichiers
 cp client/index.html draft/tmp/index.html
 cp client/index.css draft/tmp/index.css
-cp -r client/public/assets draft/tmp/assets
+cp -r client/public/assets draft/tmp
 cp client/wasm/api.js draft/tmp/api.js
 cp client/wasm/api.wasm draft/tmp/api.wasm
 cp client/dist/bundle.js draft/tmp/bundle.js
@@ -30,3 +30,5 @@ cp -r draft/tmp/api.js public/wasm/api.js
 cp -r draft/tmp/api.wasm public/wasm/api.wasm
 cp -r draft/tmp/bundle.js public/bundle.js
 cp -r draft/tmp/worker.js public/worker.js
+
+rm -r draft/tmp
