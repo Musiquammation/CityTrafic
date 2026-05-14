@@ -15,7 +15,20 @@ void Server::run(int port) {
 
 
 	// Run server
-	uWS::App().ws<Client>("/*", {
+	#ifdef SSL_KEY_PATH
+
+		uWS::SSLApp({
+			.key_file_name = SSL_KEY_PATH,
+			.cert_file_name = SSL_CERT_PATH
+		})
+
+	#else
+
+		uWS::App()
+
+	#endif
+
+	.ws<Client>("/*", {
 		/* Configuration */
 		.compression = uWS::DISABLED,
 		.maxPayloadLength = 16 * 1024 * 1024,
