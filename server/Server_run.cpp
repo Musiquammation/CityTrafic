@@ -15,7 +15,7 @@ void Server::run(int port) {
 
 
 	// Run server
-	#ifdef SSL_KEY_PATH
+	#if SSL_KEY_PATH != 0 && SSL_CERT_PATH != 0
 
 		uWS::SSLApp({
 			.key_file_name = SSL_KEY_PATH,
