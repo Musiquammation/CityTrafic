@@ -5,7 +5,7 @@
 
 #include <uWebSockets/src/App.h>
 #include <cstdlib>
-
+#include <stdio.h>
 
 void Server::run(int port) {
 	// Create thread for each pool
@@ -15,7 +15,12 @@ void Server::run(int port) {
 
 
 	// Run server
-	#if SSL_KEY_PATH != 0 && SSL_CERT_PATH != 0
+	#if (defined(SSL_KEY_PATH) && defined(SSL_CERT_PATH))
+
+		printf(
+			"Using SSL\n  SSL_KEY_PATH=%s\n  SSL_CERT_PATH=%s\n",
+			SSL_KEY_PATH, SSL_CERT_PATH
+		);
 
 		uWS::SSLApp({
 			.key_file_name = SSL_KEY_PATH,

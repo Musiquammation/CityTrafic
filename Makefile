@@ -2,8 +2,10 @@ PORT ?= 3000
 SERV_MAP_PRECISION ?= 8
 TEST_SERV ?= 1
 RELEASE_SERV ?= 0
-SSL_KEY_PATH ?= 0
-SSL_CERT_PATH ?= 0
+
+# Let empty
+SSL_KEY_PATH ?=
+SSL_CERT_PATH ?=
 
 # =========================
 # Compilateurs
@@ -28,6 +30,19 @@ ifeq ($(SANITIZE),1)
 else
     CXXFLAGS_NATIVE = $(CXXFLAGS)
     LDFLAGS_NATIVE  = $(LDFLAGS)
+endif
+
+# =========================
+# SSL FLAGS (IMPORTANT FIX)
+# =========================
+SSL_FLAGS =
+
+ifneq ($(SSL_KEY_PATH),)
+    SSL_FLAGS += -DSSL_KEY_PATH=\"$(SSL_KEY_PATH)\"
+endif
+
+ifneq ($(SSL_CERT_PATH),)
+    SSL_FLAGS += -DSSL_CERT_PATH=\"$(SSL_CERT_PATH)\"
 endif
 
 # =========================
@@ -71,7 +86,7 @@ SERVER_DEP := $(SERVER_OBJ:.o=.d)
 all: server test
 
 # =========================
-# SERVER (build only)
+# SERVER
 # =========================
 server: $(SERVER_BIN_DIR)/server
 
@@ -85,17 +100,21 @@ run-server: $(SERVER_BIN_DIR)/server
 $(SERVER_BIN_DIR)/%.o: $(SERVER_SRC_DIR)/%.cpp
 	@mkdir -p $(dir $@)
 	$(CXX) $(CXXFLAGS_NATIVE) $(UWS_INC) -I. \
-		-DCOMPILE_SERVER=1 -DTESTING_SERV=$(TEST_SERV) -DSSL_KEY_PATH=$(SSL_KEY_PATH) -DSSL_CERT_PATH=$(SSL_CERT_PATH) -DRELEASE_SERV=$(RELEASE_SERV) -DMAP_PRECISION=$(SERV_MAP_PRECISION) \
+		-DCOMPILE_SERVER=1 -DTESTING_SERV=$(TEST_SERV) \
+		$(SSL_FLAGS) \
+		-DRELEASE_SERV=$(RELEASE_SERV) -DMAP_PRECISION=$(SERV_MAP_PRECISION) \
 		-c $< -o $@
 
 $(SERVER_BIN_DIR)/game/%.o: $(GAME_SRC_DIR)/%.cpp
 	@mkdir -p $(dir $@)
 	$(CXX) $(CXXFLAGS_NATIVE) -I. \
-		-DCOMPILE_SERVER=1 -DTESTING_SERV=$(TEST_SERV) -DSSL_KEY_PATH=$(SSL_KEY_PATH) -DSSL_CERT_PATH=$(SSL_CERT_PATH) -DRELEASE_SERV=$(RELEASE_SERV) -DMAP_PRECISION=$(SERV_MAP_PRECISION) \
+		-DCOMPILE_SERVER=1 -DTESTING_SERV=$(TEST_SERV) \
+		$(SSL_FLAGS) \
+		-DRELEASE_SERV=$(RELEASE_SERV) -DMAP_PRECISION=$(SERV_MAP_PRECISION) \
 		-c $< -o $@
 
 # =========================
-# TEST (game only)
+# TEST
 # =========================
 test: $(GAME_BIN_DIR)/gametest
 

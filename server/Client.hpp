@@ -2,6 +2,7 @@
 
 #include "declarations.hpp"
 #include "clientId_t.hpp"
+#include "USING_SSL.hpp"
 
 
 namespace uWS {
@@ -28,7 +29,7 @@ struct Client {
 	uint64_t updateJobsDate = 0;
 	Match* match = nullptr;
 
-	uWS::WebSocket<false, true, Client>* ws = nullptr;
+	uWS::WebSocket<USING_SSL, true, Client>* ws = nullptr;
 
 	void send(void* data, int size);
 };
