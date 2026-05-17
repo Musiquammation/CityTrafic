@@ -24,6 +24,7 @@ Car::Car(int x, int y, Direction direction, float fuelCapacity):
 
 
 void Car::update(Game* game, std::vector<PriorityNode>& prioritiesBuffer) {
+	printf("%p\n", this->driver);
 	if (this->driver == nullptr)
 		return; // no driver
 

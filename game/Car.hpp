@@ -31,6 +31,7 @@ private:
 
 	friend class Api;
 	friend struct serialize;
+	friend int main();
 
 
 public:

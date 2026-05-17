@@ -352,6 +352,9 @@ getDanger_t getDanger(
 	Game* game,
 	std::vector<PriorityNode>& priorities
 ) {
+	printf("%p\n", debugFile);
+	debugLog("hello\n");
+
 	enum {
 		FRONT_RANGE = 64,
 		SIDE_RANGE = 64

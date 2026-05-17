@@ -1,8 +1,10 @@
 #include <iostream>
 
+#include "Character.hpp"
+
 #ifndef COMPILE_SERVER
 
-#define MAIN_TEST_ID 2
+#define MAIN_TEST_ID 0
 
 
 
@@ -52,17 +54,18 @@ int main() {
 		game.spawnCar(1, crossY, Direction::RIGHT),
 
 
-		game.spawnCar(crossX, 20, Direction::UP),
-		game.spawnCar(crossX, 21, Direction::UP),
-		game.spawnCar(crossX, 22, Direction::UP),
-		game.spawnCar(crossX, 23, Direction::UP),
-		game.spawnCar(crossX, 24, Direction::UP),
-		game.spawnCar(crossX, 25, Direction::UP),
-		game.spawnCar(crossX, 26, Direction::UP),
-		game.spawnCar(crossX, 27, Direction::UP)
+		// game.spawnCar(crossX, 20, Direction::UP),
+		// game.spawnCar(crossX, 21, Direction::UP),
+		// game.spawnCar(crossX, 22, Direction::UP),
+		// game.spawnCar(crossX, 23, Direction::UP),
+		// game.spawnCar(crossX, 24, Direction::UP),
+		// game.spawnCar(crossX, 25, Direction::UP),
+		// game.spawnCar(crossX, 26, Direction::UP),
+		// game.spawnCar(crossX, 27, Direction::UP)
 	};
 
 	for (int i = 0; i < (int)(sizeof(cars) / sizeof(cars[0])); i++) {
+		cars[i]->driver = (Character*)0x8;
 		printf("car %d: %p\n", i, cars[i]);
 	}
 	

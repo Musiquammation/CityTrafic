@@ -120,14 +120,14 @@ test: $(GAME_BIN_DIR)/gametest
 
 $(GAME_BIN_DIR)/gametest: $(GAME_OBJ)
 	@mkdir -p $(GAME_BIN_DIR)
-	$(CXX) $(GAME_OBJ) $(LDFLAGS_NATIVE) -o $@
+	$(CXX) $(GAME_OBJ) $(LDFLAGS_NATIVE) -DTESTING=1 -DMAIN_TEST_ID=0 -o $@
 
 run-test: $(GAME_BIN_DIR)/gametest
 	@./$(GAME_BIN_DIR)/gametest
 
 $(GAME_BIN_DIR)/%.o: $(GAME_SRC_DIR)/%.cpp
 	@mkdir -p $(dir $@)
-	$(CXX) $(CXXFLAGS_NATIVE) -DTESTING=1 -c $< -o $@
+	$(CXX) $(CXXFLAGS_NATIVE) -DTESTING=1 -DMAIN_TEST_ID=0 -c $< -o $@
 
 # =========================
 # EMSCRIPTEN
