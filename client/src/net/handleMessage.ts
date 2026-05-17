@@ -15,7 +15,6 @@ let REGION_SIZE = 1;
 
 function consumeAreas(reader: DataReader) {
 	const areasCount = reader.readUint32();
-	console.log(areasCount, REGION_SIZE);
 
 	for (let count = 0; count < areasCount; count++) {
 		const x0 = reader.readInt32() * REGION_SIZE;
