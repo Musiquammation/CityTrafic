@@ -80,9 +80,6 @@ int main() {
 	}
 
 	for (int frame = 0; frame < 300; frame++) {
-		printf("%f\n", ((Car*)0x50b000000300)->getAcceleration());
-
-
 		fprintf(debugFile, "FRAME:START(%d)\n", frame);
 
 		MapSize size = game.map.getMapSize();
