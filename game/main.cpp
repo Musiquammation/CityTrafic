@@ -1,5 +1,7 @@
 #include <iostream>
 
+#include "Car.hpp"
+#include "CellType.hpp"
 #include "Character.hpp"
 
 #ifndef COMPILE_SERVER
@@ -53,21 +55,29 @@ int main() {
 	for (int i = 0; i < 31; i++)
 		game.getEditCell(crossX, i)->setType(CellType::ROAD, game);
 
+	auto yield = game.getEditCell(crossX, crossY+1)->setType(
+		CellType::INSTRUCTION, game,
+		1<<6
+	);
+
 
 	Car* cars[] = {
 		game.spawnCar(1, crossY, Direction::RIGHT),
+		game.spawnCar(3, crossY, Direction::RIGHT),
+		game.spawnCar(5, crossY, Direction::RIGHT),
 
 
 		game.spawnCar(crossX, 20, Direction::UP),
-		game.spawnCar(crossX, 21, Direction::UP),
-		game.spawnCar(crossX, 22, Direction::UP),
+		// game.spawnCar(crossX, 21, Direction::UP),
+		// game.spawnCar(crossX, 22, Direction::UP),
 		game.spawnCar(crossX, 23, Direction::UP),
-		game.spawnCar(crossX, 24, Direction::UP),
-		game.spawnCar(crossX, 25, Direction::UP),
+		// game.spawnCar(crossX, 24, Direction::UP),
+		game.spawnCar(crossX, 30, Direction::UP),
 	};
 
 	for (int i = 0; i < (int)(sizeof(cars) / sizeof(cars[0])); i++) {
 		cars[i]->driver = (Character*)0x8;
+		cars[i]->setSpeed(0.4f);
 		printf("car %d: %p\n", i, cars[i]);
 	}
 	

@@ -68,6 +68,26 @@ enum class CellType {
      *   7: all
      */
     DIRECTION,
+
+    /**
+     * +00: (type)
+     * +04: type{0:yield, 1:stop, 2:?, 3:?}
+     * +06: direction
+     * +08: [data]
+     * +15: (taken)
+     *
+     * yield and stop have no data
+     *
+     */
+    INSTRUCTION,
+
+    /**
+     * +00: (type)
+     * +04: bits
+     * +14: (empty)
+     * +15: (taken)
+     */
+    LIGHT,
     
     COUNT
 };

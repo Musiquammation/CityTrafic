@@ -18,6 +18,7 @@ void CarHandler::updateCars(Game* game) {
 
 	for (auto& pair : this->cars) {
 		pair.second->update(game, prioritiesBuffer);
+		prioritiesBuffer.clear();
 	}
 }
 

@@ -146,12 +146,14 @@ struct Spy {
 };
 
 
-
-
-int fillGraph(
+/**
+ *
+ * @param firstIteration If true, then add empty child
+ */
+static int fillGraph(
 	int frontDist, int sideDist,
 	int range,
-	bool addEmptyChild,
+	bool firstIteration,
 	Game* game,
 	std::vector<PriorityNode>& priorities,
 	Spy spy,
@@ -168,18 +170,33 @@ int fillGraph(
 
 	auto cell = game->getCell(spy.x, spy.y);
 
-	
+
+	const Direction opposedSpyDir = Direction_getOpposite(spy.dir);
 	// Adapt to road
 	switch (cell->getType()) {
 	case CellType::NONE:
 		return -1;
 
-	// case CellType::YIELD:
-		// if (addEmptyChild)
-			// goto checkRoad;
-		// continue to ROAD behavior	
-		
+	case CellType::INSTRUCTION: {
+		auto type = ((cell->data >> 4) & 0x3);
+		switch (type) {
+			// yield
+			case 0: {
+				Direction dir = (Direction)((cell->data >> 6) & 0x3);
+				if (dir == opposedSpyDir && firstIteration) {
+					return -1;
+				}
+
+				goto checkRoad;
+			}
+
+			default:
+				throw std::runtime_error{"TODO CellType::INSTRUCTION"};
+
+		}
+	}
 	case CellType::ROAD:
+	checkRoad:
 	{
 		int children[3];
 		int childrenNodeIdx = -1;
@@ -242,7 +259,7 @@ int fillGraph(
 		if (validLength == 0 && !car)
 			return -1;
 
-		int fullValid = validLength + (addEmptyChild?0:1);
+		int fullValid = validLength + (firstIteration?0:1);
 		int* childrenArr = (int*)malloc((fullValid+1) * sizeof(PriorityNode));
 			
 		int j = 0;
@@ -434,80 +451,98 @@ getDanger_t getDanger(
 		bool checkRightPriority;
 		bool checkLeftPriority;
 
+
+
 		// Handle cell
 		switch (cellType) {
-		case CellType::NONE:
-		{
-			appendStopDist(
-				(float)dist - car->step - Car::WIDTH/2,
-				SOFT_DECELERATION,
-				{spy.x, spy.y}
-			);
-			goto finishUpdate;
-		}
+			case CellType::ROAD:
+			case CellType::PARKING: {
+				checkRightPriority = true;
+				checkLeftPriority = false;
 
-		case CellType::ROAD:
-		{
-			checkRightPriority = true;
-			checkLeftPriority = false;
+				defaultDetection:
+				if (other == nullptr || other == car)
+					break;
 
-			if (other == nullptr || other == car)
+				Direction otherDirection = other->direction;
+				float stopDist;
+
+				if (otherDirection == spy.dir) {
+					float shrinkedStep = other->step - Car::WIDTH/2;
+					if (shrinkedStep > 0)
+						shrinkedStep = 0;
+
+					stopDist = (float)dist + shrinkedStep - car->step - Car::WIDTH/2;
+
+				} else if (otherDirection == spyOpposedDir) {
+					throw std::runtime_error{"TODO: otherDirection == spyOpposedDir"};
+					stopDist = 10e6f;
+
+				} else { // Side direction
+					stopDist = (float)dist - car->step + (
+						(1-Car::HEIGHT)/2 - Car::WIDTH/2);
+
+				}
+
+				appendStopDist(
+					stopDist,
+					FRONT_DECELERATION,
+					{spy.x, spy.y}
+				);
+
 				break;
-
-			Direction otherDirection = other->direction;
-			float stopDist;
-
-			if (otherDirection == spy.dir) {
-				float shrinkedStep = other->step - Car::WIDTH/2;
-				if (shrinkedStep > 0)
-					shrinkedStep = 0;
-				
-				stopDist = (float)dist + shrinkedStep - car->step - Car::WIDTH/2;
-
-			} else if (otherDirection == spyOpposedDir) {
-				throw std::runtime_error{"TODO: otherDirection == spyOpposedDir"};
-				stopDist = 10e6f;
-
-			} else { // Side direction
-				stopDist = (float)dist - car->step + (
-					(1-Car::HEIGHT)/2 - Car::WIDTH/2);
-				
 			}
 
-			appendStopDist(
-				stopDist,
-				FRONT_DECELERATION,
-				{spy.x, spy.y}
-			);
+			case CellType::INSTRUCTION: {
+				auto type = ((cell->data >> 4) & 0x3);
+				switch (type) {
+					// yield
+					case 0: {
+						auto dir = (Direction)((cell->data >> 6) & 0x3);
+						if (car->direction == dir) {
+							checkRightPriority = true;
+							checkLeftPriority = true;
+						} else {
+							checkRightPriority = true;
+							checkLeftPriority = false;
 
-			break;
+						}
+						goto defaultDetection;
+					}
+
+					default:
+						throw std::runtime_error{"TODO CellType::INSTRUCTION"};
+
+				}
+
+				break;
+			}
+
+			default: {
+				appendStopDist(
+					(float)dist - car->step - Car::WIDTH/2,
+					SOFT_DECELERATION,
+					{spy.x, spy.y}
+				);
+				goto finishUpdate;
+			}
+
 		}
 
-		default:
-			checkRightPriority = false;
-			checkLeftPriority = false;
-			break;
-		}
 
 
-		if (dist >= SIDE_RANGE)
-			goto finishLeftPriority;
-
-		// Check right priority
-		if (checkRightPriority) {
-			// Place front right
+		auto checkPriority = [&](Direction checkerDir) {
 			Spy checker{spy};
-			const Direction otherDir = Direction_getLeft(spy.dir);
 
 			checker.move();
-			checker.dir = Direction_getRight(spy.dir);
+			checker.dir = checkerDir;
 			checker.move();
-			
+
 			std::set<Spy> visited;
 			int nodeIdx = fillGraph(dist, 0, SIDE_RANGE - dist,
 				true, game, priorities, checker, visited);
 
-			
+
 			if (nodeIdx >= 0) {
 				if (previousNodeIdx >= 0) {
 					PriorityNode& previous = priorities[previousNodeIdx];
@@ -529,17 +564,27 @@ getDanger_t getDanger(
 
 				previousNodeIdx = nodeIdx;
 			}
+		};
 
 
-			// PriorityNode& node = priorities[nodeIdx];
+		if (dist >= SIDE_RANGE)
+			goto skipPriorities;
+
+		// Check right priority
+		if (checkRightPriority) {
+			checkPriority(Direction_getRight(spy.dir));
+		}
+
+		// Check left priority
+		if (checkLeftPriority) {
+			checkPriority(Direction_getLeft(spy.dir));
 		}
 
 
 
-		finishRightPriority:
 
 
-		finishLeftPriority:
+	skipPriorities:
 
 
 	
