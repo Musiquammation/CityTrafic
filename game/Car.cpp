@@ -1,6 +1,6 @@
 #include "Car.hpp"
 
-
+#include "Direction.hpp"
 #include "Character.hpp"
 #include "DebugLogger.hpp"
 #include "getDanger.hpp"
@@ -11,6 +11,8 @@
 
 
 static DebugLogger print{"Car"};
+
+// #define ACCELERATION_SMOOTHING 0.05f;
 
 Car::Car(int x, int y, Direction direction, float fuelCapacity):
 	x(x), y(y),
@@ -24,37 +26,47 @@ Car::Car(int x, int y, Direction direction, float fuelCapacity):
 
 
 void Car::update(Game* game, std::vector<PriorityNode>& prioritiesBuffer) {
-	printf("%p\n", this->driver);
 	if (this->driver == nullptr)
 		return; // no driver
 
-	auto danger = getDanger(this, game, prioritiesBuffer);
+	auto [acceleration, targetPoint] = getDanger(this, game, prioritiesBuffer);
 
 
-	this->realTargetPoint = danger.targetPoint;
+	this->realTargetPoint = targetPoint;
 
-	if (danger.acceleration < 0) {
-		this->realSpeed += danger.acceleration;
+	if (acceleration < 0) {
+		this->realSpeed += acceleration;
 		if (this->realSpeed < 0) {
 			this->realSpeed = 0;
 		}
 
-	} else if (danger.acceleration > 0) {
+	} else if (acceleration > 0) {
 		float s = this->realSpeed;
-		this->realSpeed += danger.acceleration;
+		this->realSpeed += acceleration;
 		if (this->realSpeed > this->speedLimit) {
 			this->realSpeed = this->speedLimit;
 		}
 
 		float resultAcc = this->realSpeed - s;
-		this->fuel -= resultAcc * Car::ACCELERATION_FUEL_COST;
+		this->fuel -= resultAcc * ACCELERATION_FUEL_COST;
 	}
 
 }
 
 void Car::move() {
 	// Make members public
-	this->publicAcceleration = this->realSpeed - this->publicSpeed; // newSpeed - oldSpeed
+	#ifdef ACCELERATION_SMOOTHING
+	{
+		float flashAcceleration = this->realSpeed - this->publicSpeed;
+		this->publicAcceleration =
+			ACCELERATION_SMOOTHING*flashAcceleration +
+			(1.0f-ACCELERATION_SMOOTHING)*this->publicAcceleration;
+	}
+	#else
+	this->publicAcceleration = this->realSpeed - this->publicSpeed;
+	#endif
+
+
 	this->publicSpeed = this->realSpeed;
 	this->publicTargetPoint = this->realTargetPoint;
 	

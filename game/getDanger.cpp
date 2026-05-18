@@ -9,13 +9,17 @@
 #include "Cell.hpp"
 #include "debugFile.hpp"
 #include "PriorityNode.hpp"
-
+#include "Direction.hpp"
 
 #include <limits>
 #include <vector>
 #include <math.h>
 #include <set>
 
+#include "carstats.hpp"
+
+
+using namespace carstats;
 
 static constexpr float INFINITY_F = std::numeric_limits<float>::infinity();
 
@@ -28,9 +32,13 @@ float computeAcceleration(
 	float vx_max, float vy_max,
 	float X, float Y, float inf
 ) {
+	a_y=0; // it created bugs because a_y was alterning
+
 	// Handle already inside cases
-	if (X<0 && Y<0)
+	if (X<0 || Y<0) {
+		debugLog("revert %f %f\n", inf, -inf);
 		return -inf; // stop
+	}
 
 	if (X<0)
 		return inf; // accelerate
@@ -292,8 +300,10 @@ NodeAcc getNodeAcc(
 	float sideExitDist = (float)node->sideDist - other->step + 2 + Car::WIDTH/2;
 
 
-	debugLog("carEntryDist=%.3f ; carExitDist=%.3f sideEntryDist=%.3f sideExitDist=%.3f\n",
-		carEntryDist, carExitDist, sideEntryDist, sideExitDist);
+	debugLog("[y=%02d] ; entryDist=%.3f ; exitDist=%.3f sideEntryDist=%.3f"
+		"sideExitDist=%.3f speed=%.3f otherSpeed=%.3f otherAcc=%.3f\n",
+		other->y, carEntryDist, carExitDist, sideEntryDist, sideExitDist,
+		car->getSpeed(), other->getSpeed(), other->getAcceleration());
 
 
 	debugLog("fastAcc:\n");
@@ -303,6 +313,7 @@ NodeAcc getNodeAcc(
 		car->speedLimit, other->speedLimit,
 		carExitDist, sideEntryDist, -INFINITY_F
 	);
+	debugLog("fastAcc=%f\n", fastAcc);
 	
 	
 
@@ -315,6 +326,7 @@ NodeAcc getNodeAcc(
 		car->speedLimit, other->speedLimit,
 		carEntryDist, sideExitDist, INFINITY_F
 	);
+	debugLog("slowAcc=%f\n", slowAcc);
 
 
 
@@ -341,8 +353,8 @@ NodeAcc getNodeAcc(
 	}
 
 
-	
-	debugLog("bounds %.3f %.3f\n", bounds.slow, bounds.fast);
+	debugLog("[y=%02d] bslow=%.3f bfast=%.3f s=%.3f f=%.3f\n",
+		other->y, bounds.slow, bounds.fast, slowAcc, fastAcc);
 	return bounds;
 }
 
@@ -352,9 +364,6 @@ getDanger_t getDanger(
 	Game* game,
 	std::vector<PriorityNode>& priorities
 ) {
-	printf("%p\n", debugFile);
-	debugLog("hello\n");
-
 	enum {
 		FRONT_RANGE = 64,
 		SIDE_RANGE = 64
@@ -363,7 +372,7 @@ getDanger_t getDanger(
 
 	auto pathHandler = PathHandler<false>{car->pathHandler};
 
-	float maxAcceleration = Car::MAX_ACCELERATION;
+	float maxAcceleration = MAX_ACCELERATION;
 	const float speedLimit = car->speedLimit;
 	const float carSpeed = car->getSpeed();
 	const float carSpeed2 = carSpeed * carSpeed;
@@ -388,7 +397,7 @@ getDanger_t getDanger(
 			
 
 		} else if (maxAcceleration > 0) {
-			float acc = (speedLimit - carSpeed) * (1.0f/Car::SPEED_FACTOR);
+			float acc = (speedLimit - carSpeed) * (1.0f/SPEED_FACTOR);
 			if (acc < maxAcceleration) {
 				targetPoint = targetPt;
 				maxAcceleration = acc;
@@ -431,7 +440,7 @@ getDanger_t getDanger(
 		{
 			appendStopDist(
 				(float)dist - car->step - Car::WIDTH/2,
-				Car::SOFT_DECELERATION,
+				SOFT_DECELERATION,
 				{spy.x, spy.y}
 			);
 			goto finishUpdate;
@@ -467,7 +476,7 @@ getDanger_t getDanger(
 
 			appendStopDist(
 				stopDist,
-				Car::FRONT_DECELERATION,
+				FRONT_DECELERATION,
 				{spy.x, spy.y}
 			);
 
@@ -541,7 +550,7 @@ getDanger_t getDanger(
 			if (!pathHandler.next()) {
 				appendStopDist(
 					(float)dist - car->step + (1 - Car::WIDTH/2),
-					Car::SOFT_DECELERATION,
+					SOFT_DECELERATION,
 					{spy.x, spy.y}
 				);
 				goto finishUpdate;

@@ -4,7 +4,6 @@
 
 #ifndef COMPILE_SERVER
 
-#define MAIN_TEST_ID 0
 
 
 
@@ -25,8 +24,13 @@ struct RedCerr {
 RedCerr rcerr;
 
 
+#if (not defined(MAIN_TEST_ID)) || MAIN_TEST_ID == -1
 
-#if MAIN_TEST_ID == 0
+int main() {
+	return 0;
+}
+
+#elif MAIN_TEST_ID == 0
 
 #include "Game.hpp"
 #include "Cell.hpp"
@@ -54,14 +58,12 @@ int main() {
 		game.spawnCar(1, crossY, Direction::RIGHT),
 
 
-		// game.spawnCar(crossX, 20, Direction::UP),
-		// game.spawnCar(crossX, 21, Direction::UP),
-		// game.spawnCar(crossX, 22, Direction::UP),
-		// game.spawnCar(crossX, 23, Direction::UP),
-		// game.spawnCar(crossX, 24, Direction::UP),
-		// game.spawnCar(crossX, 25, Direction::UP),
-		// game.spawnCar(crossX, 26, Direction::UP),
-		// game.spawnCar(crossX, 27, Direction::UP)
+		game.spawnCar(crossX, 20, Direction::UP),
+		game.spawnCar(crossX, 21, Direction::UP),
+		game.spawnCar(crossX, 22, Direction::UP),
+		game.spawnCar(crossX, 23, Direction::UP),
+		game.spawnCar(crossX, 24, Direction::UP),
+		game.spawnCar(crossX, 25, Direction::UP),
 	};
 
 	for (int i = 0; i < (int)(sizeof(cars) / sizeof(cars[0])); i++) {
@@ -78,6 +80,9 @@ int main() {
 	}
 
 	for (int frame = 0; frame < 300; frame++) {
+		printf("%f\n", ((Car*)0x50b000000300)->getAcceleration());
+
+
 		fprintf(debugFile, "FRAME:START(%d)\n", frame);
 
 		MapSize size = game.map.getMapSize();

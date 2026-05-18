@@ -1,8 +1,9 @@
-#pragma once
+#ifndef DIRECTION_HPP
+#define DIRECTION_HPP
 
 #include "Vector.hpp"
 
-#include <stdint.h>
+#include <cstdint>
 #include <stdexcept>
 
 enum class Direction: uint8_t {
@@ -25,3 +26,5 @@ Direction Direction_getLeft(Direction dir);
 Direction Direction_getOpposite(Direction dir);
 int Direction_getTurn(Direction origin, Direction target);
 
+
+#endif
