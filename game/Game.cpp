@@ -12,6 +12,7 @@
 #include <stdio.h>
 #include <math.h>
 
+static constexpr int LIGHT_COULDOWN = 150;
 
 void Game::test() {
 	
@@ -26,6 +27,16 @@ int Game::searchPlayer(hash_t key) {
 
 	this->players.push_back(Player{hash_generate()});
 	return size;
+}
+
+void Game::applyLightLogic() {
+	this->lightCooldownLeft--;
+	if (this->lightCooldownLeft <= 0) {
+		this->lightCooldownLeft += LIGHT_COULDOWN;
+		this->lightCooldownValue++;
+		if (this->lightCooldownValue >= 8)
+			this->lightCooldownValue -= 8;
+	}
 }
 
 
@@ -55,7 +66,14 @@ void Game::frame() {
 	}
 
 
+	// Light logic
+	this->applyLightLogic();
+
+
+	// Calendar
 	this->calendar.move();
+
+	// Frame count
 	this->frameCount++;
 }
 
@@ -227,7 +245,8 @@ Vector<int> Game::searchHome(
 }
 
 Game::Game(int width, int height):
-	map(width, height)
+	map(width, height),
+	lightCooldownLeft(LIGHT_COULDOWN)
 {
 	printf("build\n");
 }

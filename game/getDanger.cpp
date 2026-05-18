@@ -195,6 +195,21 @@ static int fillGraph(
 
 		}
 	}
+
+	case CellType::LIGHT: {
+		Direction dir = (Direction)((cell->data >> 12) & 0x3);
+		if (
+			dir == opposedSpyDir &&
+			(cell->data & (1 << (4 + game->getLightCooldown()))) == 0
+		) {
+			// light is red, so we can ignore this priority
+			return -1;
+		}
+
+		goto checkRoad;
+	}
+
+
 	case CellType::ROAD:
 	checkRoad:
 	{
@@ -204,7 +219,7 @@ static int fillGraph(
 		Car* car;
 		if (cell->hasCar()) {
 			car = game->getCar(spy.x, spy.y);
-			if (car->direction != Direction_getOpposite(spy.dir))
+			if (car->direction != opposedSpyDir)
 				car = nullptr;
 
 		} else {
@@ -518,7 +533,25 @@ getDanger_t getDanger(
 				break;
 			}
 
+			case CellType::LIGHT: {
+				if ((Direction)((cell->data >> 12) & 0x3) != spy.dir)
+					goto defaultDetection; // ignore light
+
+				if (cell->data & (1 << (4 + game->getLightCooldown()))) {
+					// light is green
+					checkRightPriority = true;
+					checkLeftPriority = false;
+					goto defaultDetection;
+				} else {
+					// light is red
+					goto stopAtCell;
+				}
+
+				break;
+			}
+
 			default: {
+				stopAtCell:
 				appendStopDist(
 					(float)dist - car->step - Car::WIDTH/2,
 					SOFT_DECELERATION,
@@ -583,8 +616,7 @@ getDanger_t getDanger(
 
 
 
-
-	skipPriorities:
+		skipPriorities:
 
 
 	

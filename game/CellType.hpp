@@ -84,6 +84,7 @@ enum class CellType {
     /**
      * +00: (type)
      * +04: bits
+     * +12: direction
      * +14: (empty)
      * +15: (taken)
      */

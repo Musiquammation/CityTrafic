@@ -55,9 +55,9 @@ int main() {
 	for (int i = 0; i < 31; i++)
 		game.getEditCell(crossX, i)->setType(CellType::ROAD, game);
 
-	auto yield = game.getEditCell(crossX, crossY+1)->setType(
-		CellType::INSTRUCTION, game,
-		1<<6
+	game.getEditCell(crossX, crossY+1)->setType(
+		CellType::LIGHT, game,
+		0b00'01'0000'0010'0000
 	);
 
 

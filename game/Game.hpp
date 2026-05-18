@@ -22,8 +22,11 @@ private:
 	uint64_t updateJobsDate = 0;
 	void test();
 	int searchPlayer(hash_t key);
+	int lightCooldownValue = 0;
+	int lightCooldownLeft;
 
-	
+	void applyLightLogic();
+
 public:
 	friend struct serialize;
 	friend struct GameCommand;
@@ -76,7 +79,10 @@ public:
 		int cy
 	);
 
+	int getLightCooldown() const {return this->lightCooldownValue;}
+
 	Game(int width, int height);
 	Game(): Game(32,32) {}
 	~Game();
+
 };
