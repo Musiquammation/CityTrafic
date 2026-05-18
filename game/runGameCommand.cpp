@@ -1,6 +1,7 @@
 #include "runGameCommand.hpp"
 
 #include "CommandCode.hpp"
+#include "direction.hpp"
 #include "Direction.hpp"
 
 #include "Game.hpp"
@@ -8,7 +9,6 @@
 #include "Building.hpp"
 #include "Cell.hpp"
 #include "CellType.hpp"
-#include "direction.hpp"
 #include "jobs/OilFieldJob.hpp"
 #include "jobs/CashierJob.hpp"
 #include "jobs/ConstructionJob.hpp"
@@ -80,9 +80,9 @@ def(test) {
 	int playerId = game.getPlayerId(player);
 	
 	auto home = Building::create_home(playerId, 3, 500);
-	game.map.addBuilding(10, 4, home, game);
+	game.map.addBuilding(13, 4, home, game);
 
-	for (int i = 0; i < 1; i++) {
+	for (int i = 0; i < 2; i++) {
 		auto character = Character::spawnCharacter(game.getMap(), 10, 11);
 		character->give(2000);
 		character->setCar(cars[0]);
@@ -94,7 +94,7 @@ def(test) {
 
 	auto oilJob = new OilFieldJob{1.9f, 2.0f};
 	oilJob->give(10000);
-	oilJob->employeesCounters.raffiners.goal = 1;
+	oilJob->employeesCounters.raffiners.goal = 2;
 	auto oilField = Building::create_oilField(oilJob, playerId, 1000.0f, 50000, 4);
 	game.map.addBuilding(1, 5, oilField, game);
 	oilField->oilField.refined += 100;
@@ -105,7 +105,7 @@ def(test) {
 	// grocery->grocery.stock += 1000.0f;
 
 	auto agricultureJob = new AgricultorJob{0.5f, 0.4f};
-	agricultureJob->employeesCounters.agricultors.goal = 1;
+	agricultureJob->employeesCounters.agricultors.goal = 0;
 	game.map.addBuilding(8, 20, Building::create_plantation(agricultureJob, playerId, 10), game);
 
 	// auto truckJob = new TruckJob{};

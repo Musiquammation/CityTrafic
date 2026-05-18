@@ -142,7 +142,7 @@ void OilFieldJob::onLeave(
 	auto& data = it->second;
 	data.meeting = Calendar::getFutureInstant(
 		calendar.indicator,
-		this->finishTime,
+		this->startTime,
 		Calendar::WORKING_DAYS
 	);
 
